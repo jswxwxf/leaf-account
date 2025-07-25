@@ -1,0 +1,4 @@
+<view class="container">
+  <view>{{count}}</view>
+  <subcomp />
+</view>
