@@ -156,10 +156,9 @@ export function get(url, params = {}, options = {}) {
     url,
     method: 'get',
     data: params,
-    ...options,
   }
 
-  return dedupRequest(config, () => request(config), options)
+  return dedupRequest(config, () => request({ ...config, ...options }), options)
 }
 
 /**

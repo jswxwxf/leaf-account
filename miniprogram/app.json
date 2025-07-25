@@ -1,11 +1,38 @@
 {
-  "pages": ["pages/store-sample/index"],
+  "pages": [
+    "pages/account/index",
+    "pages/stats/index",
+    "pages/setting/index",
+    "pages/store-sample/index"
+  ],
   "window": {
     "backgroundColor": "#F6F6F6",
     "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#F6F6F6",
-    "navigationBarTitleText": "云开发 QuickStart",
-    "navigationBarTextStyle": "black"
+    "navigationBarBackgroundColor": "#5A9E62",
+    "navigationBarTitleText": "叶子记账",
+    "navigationBarTextStyle": "white"
+  },
+  "tabBar": {
+    "list": [
+      {
+        "pagePath": "pages/account/index",
+        "text": "记账",
+        "iconPath": "assets/images/ep-notebook.png",
+        "selectedIconPath": "assets/images/ep-notebook-selected.png"
+      },
+      {
+        "pagePath": "pages/stats/index",
+        "text": "统计",
+        "iconPath": "assets/images/ep-pie-chart.png",
+        "selectedIconPath": "assets/images/ep-pie-chart-selected.png"
+      },
+      {
+        "pagePath": "pages/setting/index",
+        "text": "设置",
+        "iconPath": "assets/images/ep-setting.png",
+        "selectedIconPath": "assets/images/ep-setting-selected.png"
+      }
+    ]
   },
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents"

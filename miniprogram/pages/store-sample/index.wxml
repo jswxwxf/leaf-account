@@ -1,4 +1,5 @@
 <view class="container">
+  <view class="i-ep-cloudy" />
   <view>{{state.count}}</view>
   <comp />
 </view>

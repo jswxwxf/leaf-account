@@ -1,0 +1,60 @@
+<view class="h-screen bg-gray-100">
+  <!-- Header -->
+  <view class="bg-[#5A9E62] text-white pt-4 pb-3 px-4">
+    <van-dropdown-menu active-color="#5A9E62">
+      <van-dropdown-item value="{{ typeValue }}" options="{{ typeOptions }}" />
+      <van-dropdown-item value="{{ dateValue }}" options="{{ dateOptions }}" />
+    </van-dropdown-menu>
+    <view class="flex justify-between items-center mt-4">
+      <view class="text-sm">
+        总支出 ¥3393.84
+      </view>
+      <view class="text-sm">
+        总入账 ¥1401.60
+      </view>
+    </view>
+  </view>
+
+  <!-- Bill List -->
+  <view class="px-2 py-3">
+    <view wx:for="{{ dailyBills }}" wx:key="date" class="bg-white rounded-lg shadow-sm mb-4">
+      <van-cell-group>
+        <van-cell>
+          <view slot="title" class="flex justify-between items-center">
+            <view class="flex items-center">
+              <text class="font-bold text-base">{{ item.date }}</text>
+              <text class="text-sm text-gray-500 ml-2">{{ item.day }}</text>
+            </view>
+            <view class="text-xs text-gray-500">
+              <text class="mr-4">出 {{ item.expense }}</text>
+              <text>入 {{ item.income }}</text>
+            </view>
+          </view>
+        </van-cell>
+        <van-cell wx:for="{{ item.bills }}" wx:key="time" wx:for-item="bill">
+          <view class="flex items-center">
+            <van-icon name="{{ bill.icon }}" class="text-2xl mr-3 p-3 bg-green-100 rounded-full" />
+            <view class="flex-1 text-left">
+              <view class="text-base text-black">{{ bill.category }}</view>
+              <view class="text-xs text-gray-500">{{ bill.time }} | {{ bill.source }}</view>
+            </view>
+            <view class="font-bold {{ bill.amountColor }}">{{ bill.amount }}</view>
+          </view>
+        </van-cell>
+      </van-cell-group>
+    </view>
+  </view>
+
+  <!-- Floating Button -->
+  <!-- <van-button
+    round
+    custom-class="!fixed !right-4 !bottom-16 !w-28 !h-10"
+    type="primary"
+    color="#5A9E62"
+  >
+    <view class="flex items-center">
+      <van-icon name="records" class="mr-1" />
+      记一笔
+    </view>
+  </van-button> -->
+</view>

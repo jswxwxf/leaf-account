@@ -1,6 +1,6 @@
 {
   "name": "leaf-account",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "一个基于 `vue-mini` + `tailwindcss` 构建的微信小程序记账应用。",
   "main": "eslint.config.js",
   "scripts": {
@@ -16,7 +16,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@egoist/tailwindcss-icons": "^1.9.0",
+    "@iconify-json/ep": "^1.2.2",
     "autoprefixer": "^10.4.21",
+    "json-server": "^1.0.0-beta.3",
     "miniprogram-api-typings": "latest",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
@@ -27,6 +30,7 @@
   "dependencies": {
     "@vant/weapp": "^1.11.7",
     "@vue-mini/core": "^1.2.3",
+    "dayjs": "^1.11.13",
     "lodash": "^4.17.21"
   }
 }
