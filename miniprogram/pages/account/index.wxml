@@ -2,7 +2,10 @@
 
 <view class="h-screen bg-gray-100">
   <!-- Header -->
-  <view class="bg-[#5A9E62] text-white pt-4 pb-3 px-4">
+  <view
+    class="text-white pt-4 pb-3 px-4"
+    style="background-image: url('../../assets/images/leaf.jpg'); background-size: cover; background-position: center;"
+  >
     <van-dropdown-menu active-color="#5A9E62">
       <van-dropdown-item value="{{ typeValue }}" options="{{ typeOptions }}" />
       <van-dropdown-item value="{{ dateValue }}" options="{{ dateOptions }}" />
@@ -35,7 +38,6 @@
         </van-cell>
         <van-cell wx:for="{{ item.bills }}" wx:key="time" wx:for-item="bill">
           <view class="flex items-center">
-            <van-icon name="{{ bill.icon }}" class="text-2xl mr-3 p-3 bg-green-100 rounded-full" />
             <view class="flex-1 text-left">
               <view class="text-base text-black">{{ bill.category }}</view>
               <view class="text-xs text-gray-500">{{ bill.time }} | {{ bill.note }}</view>
