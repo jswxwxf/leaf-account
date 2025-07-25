@@ -1,14 +1,18 @@
 import { ref } from '@vue-mini/core'
 
 export default function store() {
-  const count = ref(0)
+  const state = ref({
+    count: 0,
+  })
 
   function increment() {
-    count.value++
+    state.value.count++
   }
 
   return {
-    count,
+    state,
     increment,
   }
 }
+
+export const storeKey = Symbol('store-key')

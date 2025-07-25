@@ -1,9 +1,10 @@
 import { defineComponent, inject } from '@vue-mini/core'
+import { storeKey } from '../store'
 
 defineComponent({
   setup() {
     console.log('comp initialized')
-    const { count } = inject('store')
-    return { count }
+    const { state } = inject(storeKey)
+    return { state }
   },
 })
