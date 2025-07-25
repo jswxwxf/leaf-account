@@ -14,6 +14,11 @@ export default defineConfig({
       },
     },
   },
+  resolve: {
+    alias: {
+      '@': './miniprogram',
+    },
+  },
   plugins: [
     uvwt({
       rem2rpx: true,

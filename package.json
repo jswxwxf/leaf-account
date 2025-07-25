@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@vant/weapp": "^1.11.7",
-    "@vue-mini/core": "^1.2.3"
+    "@vue-mini/core": "^1.2.3",
+    "lodash": "^4.17.21"
   }
 }
