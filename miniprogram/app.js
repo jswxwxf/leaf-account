@@ -1,5 +1,5 @@
 import { createApp } from '@vue-mini/core'
-import '@/utils/lodash-fix.js'
+import '@/util/lodash-fix.js'
 
 // app.js
 createApp({

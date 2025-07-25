@@ -1,4 +1,4 @@
-import { defineComponent, ref, reactive } from '@vue-mini/core'
+import { defineComponent, ref, reactive, computed } from '@vue-mini/core'
 
 defineComponent({
   setup() {
@@ -16,6 +16,9 @@ defineComponent({
     ])
     const dateValue = ref(0)
 
+    const totalExpense = ref(3393.84)
+    const totalIncome = ref(1401.60)
+
     const dailyBills = reactive([
       {
         date: '7月24日',
@@ -27,17 +30,15 @@ defineComponent({
             category: '购物',
             icon: 'shopping-cart-o',
             time: '19:57',
-            source: '拼多多多平台商户',
-            amount: '-159.00',
-            amountColor: 'text-gray-800',
+            note: '拼多多多平台商户',
+            amount: -159.00,
           },
           {
             category: '购物',
             icon: 'shopping-cart-o',
             time: '16:47',
-            source: '拼多多多平台商户',
-            amount: '-24.51',
-            amountColor: 'text-gray-800',
+            note: '拼多多多平台商户',
+            amount: -24.51,
           },
         ],
       },
@@ -51,25 +52,22 @@ defineComponent({
             category: '商家转账',
             icon: 'shop-o',
             time: '21:35',
-            source: '拼多多多-打开拼多多，领更多...',
-            amount: '+0.50',
-            amountColor: 'text-green-500',
+            note: '拼多多多-打开拼多多，领更多...',
+            amount: 0.50,
           },
           {
             category: '购物',
             icon: 'shopping-cart-o',
             time: '21:35',
-            source: '拼多多多平台商户',
-            amount: '-2.92',
-            amountColor: 'text-gray-800',
+            note: '拼多多多平台商户',
+            amount: -2.92,
           },
           {
             category: '服务',
             icon: 'service-o',
             time: '21:35',
-            source: '腾讯',
-            amount: '-1.00',
-            amountColor: 'text-gray-800',
+            note: '腾讯',
+            amount: -1.00,
           },
         ],
       },
@@ -81,6 +79,8 @@ defineComponent({
       dateOptions,
       dateValue,
       dailyBills,
+      totalExpense,
+      totalIncome,
     }
   },
 })

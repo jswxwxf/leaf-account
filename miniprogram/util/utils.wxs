@@ -1,0 +1,31 @@
+function formatMoney(number) {
+  if (number === null || typeof number === 'undefined') {
+    return '';
+  }
+
+  var num = parseFloat(number);
+  if (isNaN(num)) {
+    return '';
+  }
+
+  var sign = num >= 0 ? '+' : '-';
+  var absNum = Math.abs(num);
+
+  var fixedNum = absNum.toFixed(2);
+  var parts = fixedNum.split('.');
+  var integerPart = parts[0];
+  var decimalPart = parts[1];
+
+  var integerPartWithCommas = '';
+  while (integerPart.length > 3) {
+    integerPartWithCommas = ',' + integerPart.slice(-3) + integerPartWithCommas;
+    integerPart = integerPart.slice(0, integerPart.length - 3);
+  }
+  integerPartWithCommas = integerPart + integerPartWithCommas;
+
+  return sign + integerPartWithCommas + '.' + decimalPart;
+}
+
+module.exports = {
+  formatMoney: formatMoney
+};

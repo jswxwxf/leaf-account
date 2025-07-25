@@ -1,3 +1,5 @@
+<wxs src="../../util/utils.wxs" module="utils" />
+
 <view class="h-screen bg-gray-100">
   <!-- Header -->
   <view class="bg-[#5A9E62] text-white pt-4 pb-3 px-4">
@@ -7,10 +9,10 @@
     </van-dropdown-menu>
     <view class="flex justify-between items-center mt-4">
       <view class="text-sm">
-        总支出 ¥3393.84
+        总支出 ¥{{ utils.formatMoney(-totalExpense) }}
       </view>
       <view class="text-sm">
-        总入账 ¥1401.60
+        总入账 ¥{{ utils.formatMoney(totalIncome) }}
       </view>
     </view>
   </view>
@@ -36,9 +38,9 @@
             <van-icon name="{{ bill.icon }}" class="text-2xl mr-3 p-3 bg-green-100 rounded-full" />
             <view class="flex-1 text-left">
               <view class="text-base text-black">{{ bill.category }}</view>
-              <view class="text-xs text-gray-500">{{ bill.time }} | {{ bill.source }}</view>
+              <view class="text-xs text-gray-500">{{ bill.time }} | {{ bill.note }}</view>
             </view>
-            <view class="font-bold {{ bill.amountColor }}">{{ bill.amount }}</view>
+            <view class="font-bold {{ bill.amount > 0 ? 'text-green-500' : 'text-gray-800' }}">{{ utils.formatMoney(bill.amount) }}</view>
           </view>
         </van-cell>
       </van-cell-group>
