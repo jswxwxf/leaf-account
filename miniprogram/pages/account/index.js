@@ -32,6 +32,7 @@ defineComponent({
             time: '19:57',
             note: '拼多多多平台商户',
             amount: -159.00,
+            tags: ['非日常'],
           },
           {
             category: '购物',
@@ -39,6 +40,7 @@ defineComponent({
             time: '16:47',
             note: '拼多多多平台商户',
             amount: -24.51,
+            tags: ['日常'],
           },
         ],
       },
@@ -52,8 +54,9 @@ defineComponent({
             category: '商家转账',
             icon: 'shop-o',
             time: '21:35',
-            note: '拼多多多-打开拼多多，领更多...',
+            note: '拼多多多-打开拼多多，领更多优惠',
             amount: 0.50,
+            tags: ['日常'],
           },
           {
             category: '购物',
@@ -61,6 +64,7 @@ defineComponent({
             time: '21:35',
             note: '拼多多多平台商户',
             amount: -2.92,
+            tags: ['日常', '非日常'],
           },
           {
             category: '服务',
