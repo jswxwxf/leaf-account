@@ -4,11 +4,16 @@
   <account-header />
 
   <!-- Bill List -->
-  <scroll-view scroll-y class="overflow-hidden flex-1">
+  <scroll-view scroll-y class="flex-1 overflow-hidden">
     <view class="px-2 py-3">
-      <block wx:for="{{ dailyBills }}" wx:key="date">
+      <block wx:for="{{ dailyBills }}" wx:key="_id">
         <bill-group item="{{ item }}" />
       </block>
+      <!-- Loading and No More States -->
+      <view class="py-4 text-center text-gray-500 text-sm">
+        <view wx:if="{{ loading }}">正在加载...</view>
+        <view wx:if="{{ !loading && dailyBills.length === 0 }}">暂无数据</view>
+      </view>
     </view>
   </scroll-view>
 

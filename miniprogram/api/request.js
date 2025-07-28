@@ -14,14 +14,14 @@ const promiseCache = {}
  * @param {Object} options 请求配置
  * @returns {Promise} 请求结果
  */
-export function request(options = {}) {
+export async function request(options = {}) {
   const {
     url,
     method = 'GET',
     data = {},
     header = {},
     timeout = TIMEOUT,
-    showToast = true,
+    showError = true, // 默认显示错误提示
     ...otherOptions
   } = options
 
@@ -37,76 +37,53 @@ export function request(options = {}) {
     defaultHeader.Authorization = `Bearer ${token}`
   }
 
-  return new Promise((resolve, reject) => {
-    wx.request({
-      url: url.startsWith('http') ? url : `${BASE_URL}${url}`,
-      method: method.toUpperCase(),
-      data,
-      header: defaultHeader,
-      timeout,
-      success: (res) => {
-        const { statusCode, data: responseData } = res
-
-        // HTTP 状态码检查
-        if (statusCode >= 200 && statusCode < 300) {
-          // 业务状态码检查
-          if (responseData.code !== undefined) {
-            switch (responseData.code) {
-              case 0:
-                // 成功
-                resolve(responseData)
-                break
-              case 401:
-                // token过期，清除本地存储并跳转登录
-                wx.removeStorageSync('token')
-                if (showToast) {
-                  wx.showToast({
-                    title: '登录已过期，请重新登录',
-                    icon: 'none',
-                  })
-                }
-                // 可以在这里添加跳转到登录页的逻辑
-                reject(new Error('登录已过期'))
-                break
-              default:
-                // 其他业务错误
-                if (showToast) {
-                  wx.showToast({
-                    title: responseData.message || '请求失败',
-                    icon: 'none',
-                  })
-                }
-                reject(new Error(responseData.message || '请求失败'))
-            }
-          } else {
-            // 没有业务状态码，直接返回数据
-            resolve(responseData)
-          }
-        } else {
-          // HTTP 状态码错误
-          const errorMessage = getHttpErrorMessage(statusCode)
-          if (showToast) {
-            wx.showToast({
-              title: errorMessage,
-              icon: 'none',
-            })
-          }
-          reject(new Error(errorMessage))
-        }
-      },
-      fail: (error) => {
-        console.error('网络请求失败:', error)
-        if (showToast) {
-          wx.showToast({
-            title: '网络请求失败',
-            icon: 'none',
-          })
-        }
-        reject(error)
-      },
-      ...otherOptions,
+  try {
+    const res = await new Promise((resolve, reject) => {
+      wx.request({
+        url: url.startsWith('http') ? url : `${BASE_URL}${url}`,
+        method: method.toUpperCase(),
+        data,
+        header: defaultHeader,
+        timeout,
+        success: resolve,
+        fail: reject,
+        ...otherOptions,
+      })
     })
-  })
+
+    const { statusCode, data: responseData } = res
+
+    // HTTP 状态码检查
+    if (statusCode >= 200 && statusCode < 300) {
+      // 业务状态码检查 (如果存在)
+      if (responseData.code !== undefined && responseData.code !== 0) {
+        const bizError = new Error(responseData.message || '业务请求失败')
+        bizError.code = responseData.code
+        throw bizError
+      }
+      return responseData
+    } else {
+      // HTTP 状态码错误
+      const httpError = new Error(getHttpErrorMessage(statusCode))
+      httpError.statusCode = statusCode
+      throw httpError
+    }
+  } catch (error) {
+    // 统一错误处理
+    console.error('Request Failed:', {
+      url: options.url,
+      method: options.method,
+      error,
+    })
+
+    if (showError) {
+      const title = error.message || '网络请求失败'
+      wx.showToast({ title, icon: 'none' })
+    }
+
+    // 将原始错误向上抛出，以便上层可以进行特定处理
+    throw error
+  }
 }
 
 /**
@@ -218,7 +195,7 @@ export function del(url, params = {}, options = {}) {
  * @returns {Promise} 上传结果
  */
 export function uploadFile(url, filePath, formData = {}, options = {}) {
-  const { showToast = true, ...uploadOptions } = options
+  const { showError = true, ...uploadOptions } = options
   const token = wx.getStorageSync('token')
   const header = {
     ...uploadOptions.header,
@@ -241,8 +218,8 @@ export function uploadFile(url, filePath, formData = {}, options = {}) {
           if (data.code === 0) {
             resolve(data)
           } else {
-            if (showToast) {
-              wx.showToast({
+            if (showError) {
+              wx.showError({
                 title: data.message || '上传失败',
                 icon: 'none',
               })
@@ -255,8 +232,8 @@ export function uploadFile(url, filePath, formData = {}, options = {}) {
       },
       fail: (error) => {
         console.error('文件上传失败:', error)
-        if (showToast) {
-          wx.showToast({
+        if (showError) {
+          wx.showError({
             title: '文件上传失败',
             icon: 'none',
           })

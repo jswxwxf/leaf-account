@@ -18,7 +18,7 @@
       <view class="flex items-center">
         <view class="flex-1 text-left min-w-0">
           <view class="text-base text-black">{{ bill.category }}</view>
-          <view class="text-xs text-gray-500 overflow-hidden van-ellipsis">{{ bill.time }} | {{ bill.note }}</view>
+          <view class="text-xs text-gray-500 overflow-hidden van-ellipsis">{{ bill.note }}</view>
         </view>
         <view class="flex items-center ml-2">
           <view class="w-16 flex flex-col items-end mr-2">

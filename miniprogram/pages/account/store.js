@@ -7,6 +7,8 @@ import { groupBillsByDate } from '@/service/bill-service.js'
 export default function store() {
   // 原始账单列表
   const rawBills = ref([])
+  const loading = ref(false)
+
   // 按天分组的账单
   const dailyBills = computed(() => groupBillsByDate(rawBills.value))
 
@@ -14,7 +16,7 @@ export default function store() {
   const typeValue = ref(0)
   const dateValue = ref(0) // TODO: 后续用于月份筛选
 
-  // 总计 (使用 lodash)
+  // 总计
   const totalExpense = computed(() =>
     sumBy(rawBills.value, (bill) => (bill.amount < 0 ? Math.abs(bill.amount) : 0)).toFixed(2),
   )
@@ -25,18 +27,25 @@ export default function store() {
 
   // 获取账单数据
   async function fetchBills(params = {}) {
-    try {
-      const res = await getBills(params)
-      rawBills.value = orderBy(res, ['date', 'time'], ['desc', 'desc'])
-    } catch (error) {
-      console.error('获取账单失败:', error)
-      wx.showToast({ title: '获取账单失败', icon: 'none' })
+    if (loading.value) return
+    loading.value = true
+
+    const res = await getBills(params).finally(() => {
+      loading.value = false
+    })
+
+    if (!res) {
+      rawBills.value = []
+      return
     }
+
+    rawBills.value = orderBy(res, ['date', 'time'], ['desc', 'desc'])
   }
 
+  // 页面生成时获取初始数据
   fetchBills({ date_like: DateTime.now().toFormat('yyyy-MM') })
 
-  // 页面显示时获取初始数据
+  // 页面显示时刷新数据
   onShow(() => {
     fetchBills({ date_like: DateTime.now().toFormat('yyyy-MM') })
   })
@@ -47,7 +56,8 @@ export default function store() {
     dateValue,
     totalExpense,
     totalIncome,
-    fetchBills,
+    loading,
+    fetchBills, // 暴露 fetchBills 以便将来进行筛选
   }
 }
 

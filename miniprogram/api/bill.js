@@ -23,12 +23,7 @@ const API_ENDPOINT = '/bills'
  * @returns {Promise<Bill[]>}
  */
 export function getBills(params = {}) {
-  const defaultParams = {
-    _sort: 'date,time',
-    _order: 'desc,desc',
-    ...params,
-  }
-  return get(API_ENDPOINT, defaultParams)
+  return get(API_ENDPOINT, params)
 }
 
 /**
