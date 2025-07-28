@@ -7,6 +7,10 @@ import { groupBillsByDate } from '@/service/bill-service.js'
 export default function store() {
   // 原始账单列表
   const rawBills = ref([])
+  // 分页状态
+  const page = ref(1)
+  const pageSize = 20
+  const hasMore = ref(true)
   const loading = ref(false)
 
   // 按天分组的账单
@@ -26,28 +30,54 @@ export default function store() {
   )
 
   // 获取账单数据
-  async function fetchBills(params = {}) {
+  async function fetchBills(params = {}, isLoadMore = false) {
     if (loading.value) return
     loading.value = true
 
-    const res = await getBills(params).finally(() => {
+    const res = await getBills({
+      ...params,
+      _page: page.value,
+      _per_page: pageSize,
+    }).finally(() => {
       loading.value = false
     })
 
-    if (!res) {
-      rawBills.value = []
+    // 如果请求失败，res 为 null，或 res.data 不是数组，则中止后续操作
+    if (!res || !Array.isArray(res.data)) {
+      hasMore.value = false
       return
     }
 
-    rawBills.value = orderBy(res, ['date', 'time'], ['desc', 'desc'])
+    if (isLoadMore) {
+      rawBills.value.push(...res.data)
+    } else {
+      rawBills.value = res.data
+    }
+
+    hasMore.value = rawBills.value.length < res.items
   }
 
-  // 页面生成时获取初始数据
-  fetchBills({ date_like: DateTime.now().toFormat('yyyy-MM') })
+  // 加载更多
+  async function loadMore() {
+    if (!hasMore.value || loading.value) return
+    page.value++
+    await fetchBills(undefined, true)
+  }
+
+  // 重置并获取数据
+  async function resetAndFetchBills(params = {}) {
+    page.value = 1
+    hasMore.value = true
+    rawBills.value = []
+    await fetchBills(params)
+  }
+
+  // 初始化时获取数据
+  resetAndFetchBills()
 
   // 页面显示时刷新数据
   onShow(() => {
-    fetchBills({ date_like: DateTime.now().toFormat('yyyy-MM') })
+    resetAndFetchBills()
   })
 
   return {
@@ -57,7 +87,8 @@ export default function store() {
     totalExpense,
     totalIncome,
     loading,
-    fetchBills, // 暴露 fetchBills 以便将来进行筛选
+    hasMore,
+    loadMore,
   }
 }
 
