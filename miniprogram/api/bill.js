@@ -1,4 +1,4 @@
-import { get, post, put, del } from './service'
+import { get, post, put, del } from './request.js'
 
 /**
  * @typedef {object} Bill
