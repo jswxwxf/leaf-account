@@ -34,27 +34,29 @@ export default function store() {
     if (loading.value) return
     loading.value = true
 
-    const res = await getBills({
-      ...params,
-      _page: page.value,
-      _per_page: pageSize,
-    }).finally(() => {
+    try {
+      const res = await getBills({
+        ...params,
+        _page: page.value,
+        _per_page: pageSize,
+      })
+
+      // 如果请求失败，res 为 null，或 res.data 不是数组，则中止后续操作
+      if (!res || !Array.isArray(res.data)) {
+        hasMore.value = false
+        return
+      }
+
+      if (isLoadMore) {
+        rawBills.value.push(...res.data)
+      } else {
+        rawBills.value = res.data
+      }
+
+      hasMore.value = rawBills.value.length < res.items
+    } finally {
       loading.value = false
-    })
-
-    // 如果请求失败，res 为 null，或 res.data 不是数组，则中止后续操作
-    if (!res || !Array.isArray(res.data)) {
-      hasMore.value = false
-      return
     }
-
-    if (isLoadMore) {
-      rawBills.value.push(...res.data)
-    } else {
-      rawBills.value = res.data
-    }
-
-    hasMore.value = rawBills.value.length < res.items
   }
 
   // 加载更多
@@ -68,8 +70,7 @@ export default function store() {
   async function resetAndFetchBills(params = {}) {
     page.value = 1
     hasMore.value = true
-    rawBills.value = []
-    await fetchBills(params)
+    await fetchBills(params, false)
   }
 
   // 初始化时获取数据

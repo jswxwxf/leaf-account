@@ -20,13 +20,13 @@
           <view class="text-base text-black">{{ bill.category }}</view>
           <view class="text-xs text-gray-500 overflow-hidden van-ellipsis">{{ bill.note }}</view>
         </view>
-        <view class="flex items-center ml-2">
-          <view class="w-16 flex flex-col items-end mr-2">
-            <block wx:for="{{ bill.tags }}" wx:key="*this" wx:for-item="tag">
-              <van-tag type="{{ tag === '日常' ? 'success' : 'warning' }}" class="mb-1">{{ tag }}</van-tag>
-            </block>
-          </view>
-          <view class="w-16 text-right font-bold {{ bill.amount > 0 ? 'text-green-500' : 'text-gray-800' }}">{{ utils.formatMoney(bill.amount) }}</view>
+        <view wx:if="{{ bill.tags.length }}" class="w-16 flex flex-col items-end mr-2">
+          <block wx:for="{{ bill.tags }}" wx:key="*this" wx:for-item="tag">
+            <van-tag type="{{ tag === '日常' ? 'success' : 'warning' }}" class="mb-1">{{ tag }}</van-tag>
+          </block>
+        </view>
+        <view class="w-16 text-right font-bold {{ bill.amount > 0 ? 'text-green-500' : 'text-gray-800' }}">
+          {{ utils.formatMoney(bill.amount) }}
         </view>
       </view>
     </van-cell>
