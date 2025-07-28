@@ -1,0 +1,19 @@
+<wxs src="../../../util/utils.wxs" module="utils" />
+
+<view
+  class="text-white pt-4 pb-3 px-4"
+  style="background-image: url('../../../assets/images/leaf.jpg'); background-size: cover; background-position: center;"
+>
+  <van-dropdown-menu active-color="#5A9E62">
+    <van-dropdown-item value="{{ typeValue }}" options="{{ typeOptions }}" />
+    <van-dropdown-item value="{{ dateValue }}" options="{{ dateOptions }}" />
+  </van-dropdown-menu>
+  <view class="flex justify-between items-center mt-4">
+    <view class="text-sm bg-black/30 px-3 py-1 rounded-lg">
+      总支出 ¥{{ utils.formatMoney(-totalExpense) }}
+    </view>
+    <view class="text-sm bg-black/30 px-3 py-1 rounded-lg">
+      总入账 ¥{{ utils.formatMoney(totalIncome) }}
+    </view>
+  </view>
+</view>
