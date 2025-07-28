@@ -10,6 +10,7 @@
     "build": "weapp-vite build",
     "open": "weapp-vite open",
     "g": "weapp-vite generate",
+    "server": "json-server --watch db.json",
     "postinstall": "weapp-tw patch"
   },
   "keywords": [],
@@ -30,7 +31,8 @@
   "dependencies": {
     "@vant/weapp": "^1.11.7",
     "@vue-mini/core": "^1.2.3",
-    "dayjs": "^1.11.13",
-    "lodash": "^4.17.21"
+    "clsx": "^2.1.1",
+    "lodash": "^4.17.21",
+    "luxon": "^3.7.1"
   }
 }

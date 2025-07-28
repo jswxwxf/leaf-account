@@ -1,4 +1,4 @@
-<wxs src="../../../util/utils.wxs" module="utils" />
+<wxs src="../../../utils/utils.wxs" module="utils" />
 
 <view class="bg-white rounded-lg shadow-sm mb-4">
   <van-cell-group>
@@ -14,7 +14,7 @@
         </view>
       </view>
     </van-cell>
-    <van-cell wx:for="{{ item.bills }}" wx:key="time" wx:for-item="bill">
+    <van-cell wx:for="{{ item.bills }}" wx:key="_id" wx:for-item="bill">
       <view class="flex items-center">
         <view class="flex-1 text-left min-w-0">
           <view class="text-base text-black">{{ bill.category }}</view>

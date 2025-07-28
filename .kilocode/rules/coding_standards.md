@@ -41,6 +41,23 @@
 - `"noUnusedParameters": true`: 不允许未使用的参数。
 - `"moduleResolution": "bundler"`: 使用现代的模块解析策略。
 
+### 模块导入路径
+
+为了提高代码的可读性和可维护性，本项目约定使用路径别名来简化模块导入。
+
+- **路径别名**: 项目已在 `vite.config.mts` 和 `tsconfig.json` 中配置了 `@` 别名，它指向 `miniprogram` 根目录。
+- **使用规范**: 当模块引用层级超过两层（即出现 `../../`）时，应强制使用 `@` 别名路径。
+- **文件后缀**: 由于 `weapp-vite` 的限制，使用别名时 **必须** 带上 `.js` 文件后缀。
+
+```typescript
+// 推荐
+import { getDayOfWeek } from '@/utils/date.js'
+import { getBills } from '@/api/bill.js'
+
+// 不推荐
+import { getDayOfWeek } from '../../utils/date'
+```
+
 ## 4. CSS (Tailwind CSS & Less)
 
 项目使用 [Tailwind CSS](https://tailwindcss.com/) 进行样式开发，并使用 [Less](https://lesscss.org/)作为 CSS 预处理器。

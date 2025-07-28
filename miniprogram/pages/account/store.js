@@ -1,69 +1,42 @@
-import { ref } from '@vue-mini/core'
+import { ref, computed, onShow } from '@vue-mini/core'
+import { sumBy, orderBy } from 'lodash'
+import { DateTime } from '@/utils/date.js'
+import { getBills } from '@/api/bill.js'
+import { groupBillsByDate } from '@/service/bill-service.js'
 
 export default function store() {
-  const dailyBills = ref([
-    {
-      date: '7月24日',
-      day: '昨天',
-      income: '0.00',
-      expense: '183.51',
-      bills: [
-        {
-          category: '购物',
-          icon: 'shopping-cart-o',
-          time: '19:57',
-          note: '拼多多多平台商户',
-          amount: -159.0,
-          tags: ['非日常'],
-        },
-        {
-          category: '购物',
-          icon: 'shopping-cart-o',
-          time: '16:47',
-          note: '拼多多多平台商户',
-          amount: -24.51,
-          tags: ['日常'],
-        },
-      ],
-    },
-    {
-      date: '7月23日',
-      day: '星期三',
-      income: '101.50',
-      expense: '112.62',
-      bills: [
-        {
-          category: '商家转账',
-          icon: 'shop-o',
-          time: '21:35',
-          note: '拼多多多-打开拼多多，领更多优惠',
-          amount: 0.5,
-          tags: ['日常'],
-        },
-        {
-          category: '购物',
-          icon: 'shopping-cart-o',
-          time: '21:35',
-          note: '拼多多多平台商户',
-          amount: -2.92,
-          tags: ['日常', '非日常'],
-        },
-        {
-          category: '服务',
-          icon: 'service-o',
-          time: '21:35',
-          note: '腾讯',
-          amount: -1.0,
-        },
-      ],
-    },
-  ])
+  // 原始账单列表
+  const rawBills = ref([])
+  // 按天分组的账单
+  const dailyBills = computed(() => groupBillsByDate(rawBills.value))
 
+  // 筛选器值
   const typeValue = ref(0)
-  const dateValue = ref(0)
+  const dateValue = ref(0) // TODO: 后续用于月份筛选
 
-  const totalExpense = ref(3393.84)
-  const totalIncome = ref(1401.6)
+  // 总计 (使用 lodash)
+  const totalExpense = computed(() =>
+    sumBy(rawBills.value, bill => (bill.amount < 0 ? Math.abs(bill.amount) : 0)).toFixed(2),
+  )
+  const totalIncome = computed(() =>
+    sumBy(rawBills.value, bill => (bill.amount > 0 ? bill.amount : 0)).toFixed(2),
+  )
+
+  // 获取账单数据
+  async function fetchBills(params = {}) {
+    try {
+      const res = await getBills(params)
+      rawBills.value = orderBy(res, ['date', 'time'], ['desc', 'desc'])
+    } catch (error) {
+      console.error('获取账单失败:', error)
+      wx.showToast({ title: '获取账单失败', icon: 'none' })
+    }
+  }
+
+  // 页面显示时获取初始数据
+  onShow(() => {
+    fetchBills({ date_like: DateTime.now().toFormat('yyyy-MM') })
+  })
 
   return {
     dailyBills,
@@ -71,6 +44,7 @@ export default function store() {
     dateValue,
     totalExpense,
     totalIncome,
+    fetchBills,
   }
 }
 

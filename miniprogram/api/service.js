@@ -3,7 +3,7 @@
  */
 
 // 基础配置
-const BASE_URL = 'https://your-api-domain.com/api'
+const BASE_URL = 'http://localhost:3000'
 const TIMEOUT = 10000
 
 // 请求去重缓存
