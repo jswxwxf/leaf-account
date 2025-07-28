@@ -22,38 +22,9 @@
 
   <!-- Bill List -->
   <view class="px-2 py-3">
-    <view wx:for="{{ dailyBills }}" wx:key="date" class="bg-white rounded-lg shadow-sm mb-4">
-      <van-cell-group>
-        <van-cell>
-          <view slot="title" class="flex justify-between items-center">
-            <view class="flex items-center">
-              <text class="font-bold text-base">{{ item.date }}</text>
-              <text class="text-sm text-gray-500 ml-2">{{ item.day }}</text>
-            </view>
-            <view class="text-xs text-gray-500">
-              <text class="mr-4">出 {{ item.expense }}</text>
-              <text>入 {{ item.income }}</text>
-            </view>
-          </view>
-        </van-cell>
-        <van-cell wx:for="{{ item.bills }}" wx:key="time" wx:for-item="bill">
-          <view class="flex items-center">
-            <view class="flex-1 text-left min-w-0">
-              <view class="text-base text-black">{{ bill.category }}</view>
-              <view class="text-xs text-gray-500 overflow-hidden van-ellipsis">{{ bill.time }} | {{ bill.note }}</view>
-            </view>
-            <view class="flex items-center ml-2">
-              <view class="w-16 flex flex-col items-end mr-2">
-                <block wx:for="{{ bill.tags }}" wx:key="*this" wx:for-item="tag">
-                  <van-tag type="{{ tag === '日常' ? 'success' : 'warning' }}" class="mb-1">{{ tag }}</van-tag>
-                </block>
-              </view>
-              <view class="w-16 text-right font-bold {{ bill.amount > 0 ? 'text-green-500' : 'text-gray-800' }}">{{ utils.formatMoney(bill.amount) }}</view>
-            </view>
-          </view>
-        </van-cell>
-      </van-cell-group>
-    </view>
+    <block wx:for="{{ dailyBills }}" wx:key="date">
+      <bill-group item="{{ item }}" />
+    </block>
   </view>
 
   <!-- Floating Button -->
