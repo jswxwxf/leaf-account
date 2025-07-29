@@ -11,7 +11,7 @@
           custom-class="!w-28 !h-10 flex justify-end opacity-70"
           type="primary"
           color="#5A9E62"
-          @tap="openAddBillPopup"
+          @tap="handleAddBill"
         >
           <view class="flex items-center">
             <van-icon name="records" class="mr-1" />
