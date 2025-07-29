@@ -14,8 +14,13 @@ defineComponent({
   methods: {
     show() {
       this.setData({ visible: true })
+      return new Promise((resolve, reject) => {
+        this._resolve = resolve
+        this._reject = reject
+      })
     },
     handleClose() {
+      this._reject()
       this.setData({ visible: false })
     },
     handleFormChange(e) {

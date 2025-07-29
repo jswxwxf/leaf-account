@@ -1,12 +1,13 @@
 <view class="h-screen bg-gray-100 flex flex-col">
   <!-- Header -->
-  <account-header />
+  <account-header id="account-header" wx:if="{{ !billPopped }}" />
+  <bill-popup id="bill-popup" />
 
   <!-- Bill List -->
   <scroll-view scroll-y class="flex-1 overflow-hidden" lower-threshold="100" @scrolltolower="loadMore">
     <view class="pb-16 pt-2 relative">
       <!-- Floating Button -->
-      <view class="flex justify-end py-2 fixed bottom-2 right-4 z-10">
+      <view class="flex justify-end py-2 fixed bottom-2 right-4 z-10" hidden="{{ billPopped }}">
         <van-button
           custom-class="!w-28 !h-10 flex justify-end opacity-70"
           type="primary"
@@ -31,5 +32,3 @@
     </view>
   </scroll-view>
 </view>
-
-<bill-popup id="bill-popup" />
