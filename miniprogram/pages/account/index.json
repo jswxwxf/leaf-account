@@ -3,7 +3,8 @@
   "component": true,
   "styleIsolation": "apply-shared",
   "usingComponents": {
+    "account-header": "./header/index",
     "bill-group": "./bill-group/index",
-    "account-header": "./header/index"
+    "bill-popup": "./bill-popup/index"
   }
 }

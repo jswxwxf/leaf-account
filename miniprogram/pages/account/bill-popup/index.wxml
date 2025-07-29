@@ -1,0 +1,19 @@
+<van-popup show="{{ visible }}" position="top" @close="handleClose" overlay="{{false}}" root-portal>
+  <view class="h-full w-full bg-white p-4 flex flex-col">
+    <!-- Main Content -->
+    <view class="flex-1">
+      <view class="text-center">记账表单内容</view>
+    </view>
+
+    <!-- Footer -->
+    <view class="flex items-center pt-2">
+      <view class="flex-1" />
+      <view class="flex-1 text-center text-sm text-gray-500">
+        <!-- 提示信息 -->
+      </view>
+      <view class="flex-1 flex justify-end">
+        <view class="i-ep-close text-2xl" @tap="handleClose" />
+      </view>
+    </view>
+  </view>
+</van-popup>

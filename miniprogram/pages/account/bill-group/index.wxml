@@ -1,6 +1,6 @@
 <wxs src="../../../utils/utils.wxs" module="utils" />
 
-<view class="bg-white rounded-lg shadow-sm mb-4">
+<view class="bg-white rounded-lg shadow-sm mb-2">
   <van-cell-group>
     <van-cell>
       <view slot="title" class="flex justify-between items-center">
@@ -20,9 +20,9 @@
           <view class="text-base text-black">{{ bill.category }}</view>
           <view class="text-xs text-gray-500 overflow-hidden van-ellipsis">{{ bill.note }}</view>
         </view>
-        <view wx:if="{{ bill.tags.length }}" class="w-16 flex flex-col items-end mr-2">
+        <view wx:if="{{ bill.tags.length }}" class="flex items-end">
           <block wx:for="{{ bill.tags }}" wx:key="*this" wx:for-item="tag">
-            <van-tag type="{{ tag === '日常' ? 'success' : 'warning' }}" class="mb-1">{{ tag }}</van-tag>
+            <van-tag type="{{ tag === '日常' ? 'success' : 'warning' }}" size="small" class="ml-1">{{ tag }}</van-tag>
           </block>
         </view>
         <view class="w-16 text-right font-bold {{ bill.amount > 0 ? 'text-green-500' : 'text-gray-800' }}">
