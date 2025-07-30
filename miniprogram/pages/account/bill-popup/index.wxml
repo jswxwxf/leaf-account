@@ -1,37 +1,61 @@
-<van-popup show="{{ visible }}" position="top" @close="handleClose" overlay="{{false}}" round close-icon-position="bottom-right" custom-style="position: static;">
-  <view class="h-full w-full bg-white px-4 pt-2 flex flex-col border-b border-solid border-gray-300 rounded-b-2xl">
-    <!-- Main Content -->
-    <view class="flex-1">
-      <view class="grid grid-cols-5 gap-2">
-        <!-- Header -->
-        <view class="font-bold px-1 py-2">日期</view>
-        <view class="font-bold px-1 py-2">分类</view>
-        <view class="font-bold px-1 py-2">金额</view>
-        <view class="font-bold px-1 py-2">备注</view>
-        <view class="font-bold px-1 py-2">标签</view>
-
-        <!-- Rows -->
-        <block wx:for="{{ list }}" wx:for-item="bill" wx:for-index="rowIndex" wx:key="rowIndex">
-          <input class="px-1 py-2 border-0 border-b border-solid border-gray-300 text-sm" placeholder="日期" value="{{ bill.date }}" data-row-index="{{ rowIndex }}" data-field="date" @input="handleFormChange" />
-          <input class="px-1 py-2 border-0 border-b border-solid border-gray-300 text-sm" placeholder="分类" value="{{ bill.category }}" data-row-index="{{ rowIndex }}" data-field="category" @input="handleFormChange" />
-          <input class="px-1 py-2 border-0 border-b border-solid border-gray-300 text-sm" type="digit" placeholder="金额" value="{{ bill.amount }}" data-row-index="{{ rowIndex }}" data-field="amount" @input="handleFormChange" />
-          <input class="px-1 py-2 border-0 border-b border-solid border-gray-300 text-sm" placeholder="备注" value="{{ bill.note }}" data-row-index="{{ rowIndex }}" data-field="note" @input="handleFormChange" />
-          <input class="px-1 py-2 border-0 border-b border-solid border-gray-300 text-sm" placeholder="标签" value="{{ bill.tags }}" data-row-index="{{ rowIndex }}" data-field="tags" @input="handleFormChange" />
-        </block>
-      </view>
+<van-popup
+  show="{{ visible }}"
+  position="top"
+  @close="handleClose"
+  overlay="{{false}}"
+  close-icon-position="bottom-right"
+  custom-style="position: static;"
+>
+  <view class="h-full w-full bg-white px-4 pt-2 flex flex-col border-b border-solid border-gray-300 max-h-screen">
+    <!-- Main Content: Form -->
+    <view class="flex-1 overflow-y-auto">
+      <van-field
+        label="日期"
+        model:value="{{ bill.date }}"
+        placeholder="请输入日期"
+        data-field="date"
+        @change="handleFormChange"
+      />
+      <van-field
+        label="分类"
+        model:value="{{ bill.category }}"
+        placeholder="请输入分类"
+        data-field="category"
+        @change="handleFormChange"
+      />
+      <van-field
+        label="金额"
+        type="digit"
+        model:value="{{ bill.amount }}"
+        placeholder="请输入金额"
+        data-field="amount"
+        @change="handleFormChange"
+      />
+      <van-field
+        label="备注"
+        model:value="{{ bill.note }}"
+        placeholder="请输入备注"
+        data-field="note"
+        @change="handleFormChange"
+      />
+      <van-field
+        label="标签"
+        model:value="{{ bill.tags }}"
+        placeholder="请输入标签（多个用逗号隔开）"
+        data-field="tags"
+        @change="handleFormChange"
+      />
     </view>
 
     <!-- Footer -->
-    <view class="flex items-center py-4">
-      <view class="flex-1" />
-      <view class="flex-1 text-center text-sm text-gray-500">
-        <!-- 提示信息 -->
+    <view class="flex items-center py-4 border-t border-solid border-gray-100">
+      <view class="flex-1">
+        <van-button type="primary" size="small" @tap="handleConfirm">确定</van-button>
       </view>
-      <view class="flex-1 flex justify-end">
+      <view class="flex-1 text-center text-sm text-gray-500"></view>
+      <view class="flex-1 flex justify-end items-center space-x-6">
         <view class="i-ep-close text-2xl" @tap="handleClose" />
       </view>
     </view>
   </view>
 </van-popup>
-
-
