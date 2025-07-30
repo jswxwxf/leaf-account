@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "usingComponents": {
+    "van-field": "@vant/weapp/field/index",
+    "van-calendar": "@vant/weapp/calendar/index"
+  },
+  "styleIsolation": "apply-shared"
+}

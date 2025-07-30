@@ -1,0 +1,17 @@
+<van-field
+  label="{{ label }}"
+  value="{{ formattedDate }}"
+  placeholder="请选择日期"
+  is-link
+  readonly
+  bind:click-input="showCalendar"
+/>
+<van-calendar
+  show="{{ show }}"
+  bind:close="hideCalendar"
+  bind:confirm="handleConfirm"
+  min-date="{{ minDate }}"
+  max-date="{{ maxDate }}"
+  default-date="{{ value }}"
+  class="custom-calendar"
+/>

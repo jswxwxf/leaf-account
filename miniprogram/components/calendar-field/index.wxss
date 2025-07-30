@@ -1,0 +1,7 @@
+/* miniprogram/components/calendar-field/index.wxss */
+.custom-calendar {
+  --calendar-selected-day-background-color: #22c55e !important;
+  --calendar-selected-day-text-color: #ffffff !important;
+  --button-danger-background-color: #22c55e !important;
+  --button-danger-border-color: #22c55e !important;
+}

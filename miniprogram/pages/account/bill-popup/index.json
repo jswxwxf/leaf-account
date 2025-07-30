@@ -1,5 +1,7 @@
 {
   "component": true,
-  "usingComponents": {},
+  "usingComponents": {
+    "calendar-field": "/components/calendar-field/index"
+  },
   "styleIsolation": "apply-shared"
 }

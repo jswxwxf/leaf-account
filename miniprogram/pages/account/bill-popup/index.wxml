@@ -9,10 +9,9 @@
   <view class="h-full w-full bg-white px-4 pt-2 flex flex-col border-b border-solid border-gray-300 max-h-screen">
     <!-- Main Content: Form -->
     <van-cell-group class="flex-1 overflow-y-auto">
-      <van-field
+      <calendar-field
         label="日期"
         value="{{ bill.datetime }}"
-        placeholder="请输入日期"
         data-field="datetime"
         @change="handleFormChange"
       />

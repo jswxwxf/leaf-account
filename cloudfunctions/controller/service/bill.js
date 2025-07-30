@@ -13,6 +13,11 @@ async function saveBill(event) {
 
   const billToSave = { ...bill }
 
+  // 0. 处理 datetime
+  if (billToSave.datetime) {
+    billToSave.datetime = new Date(billToSave.datetime)
+  }
+
   // 1. 处理 category
   if (bill.category && typeof bill.category === 'string') {
     const categoryId = await findOrCreate('category', bill.category)

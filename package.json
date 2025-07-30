@@ -19,6 +19,7 @@
   "devDependencies": {
     "@egoist/tailwindcss-icons": "^1.9.0",
     "@iconify-json/ep": "^1.2.2",
+    "@types/luxon": "^3.7.1",
     "autoprefixer": "^10.4.21",
     "json-server": "^1.0.0-beta.3",
     "miniprogram-api-typings": "latest",

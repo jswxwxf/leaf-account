@@ -1,31 +1,168 @@
-function formatMoney(number) {
-  if (number === null || typeof number === 'undefined') {
-    return '';
+/**
+ * WXS 安全的 JSON.stringify 版本
+ * @param {any} jsonData - 需要序列化的 JSON 对象
+ * @returns {string} - 序列化后的 JSON 字符串
+ */
+function stringify(jsonData) {
+  return JSON.stringify(jsonData)
+}
+
+/**
+ * 格式化金额，添加千分位逗号
+ * @param {number|string} value - 需要格式化的值
+ * @param {number} [digits=2] - 保留的小数位数
+ * @returns {string} - 格式化后的金额字符串
+ */
+function formatMoney(value, digits) {
+  // 设置默认值
+  if (digits === undefined) {
+    digits = 2
   }
 
-  var num = parseFloat(number);
-  if (isNaN(num)) {
-    return '';
+  if (value === undefined || value === null || value === '') {
+    return ''
   }
 
-  var sign = num >= 0 ? '+' : '-';
-  var absNum = Math.abs(num);
+  // 将值转换为数字
+  var number = parseFloat(value)
 
-  var fixedNum = absNum.toFixed(2);
-  var parts = fixedNum.split('.');
-  var integerPart = parts[0];
-  var decimalPart = parts[1];
-
-  var integerPartWithCommas = '';
-  while (integerPart.length > 3) {
-    integerPartWithCommas = ',' + integerPart.slice(-3) + integerPartWithCommas;
-    integerPart = integerPart.slice(0, integerPart.length - 3);
+  // 处理非数字情况
+  if (isNaN(number)) {
+    return value.toString()
   }
-  integerPartWithCommas = integerPart + integerPartWithCommas;
 
-  return sign + integerPartWithCommas + '.' + decimalPart;
+  // 四舍五入并保留指定小数位数
+  number = number.toFixed(digits)
+
+  // 分割整数部分和小数部分
+  var parts = number.split('.')
+  var integerPart = parts[0]
+  var decimalPart = parts.length > 1 ? '.' + parts[1] : ''
+
+  // 添加千分位分隔符
+  var formatted = ''
+  var count = 0
+  var i
+
+  for (i = integerPart.length - 1; i >= 0; i--) {
+    formatted = integerPart[i] + formatted
+    count++
+
+    // 每三位添加一个逗号，但最后一位后面不添加
+    if (count % 3 === 0 && i > 0) {
+      formatted = ',' + formatted
+    }
+  }
+
+  return formatted + decimalPart
+}
+
+/**
+ * 从格式化的金额字符串中解析出原始数字
+ * @param {string} formattedValue - 格式化的金额字符串
+ * @returns {number} - 解析后的数字
+ */
+function parseMoney(formattedValue) {
+  if (typeof formattedValue !== 'string') {
+    return formattedValue
+  }
+
+  // 不使用正则表达式，改用循环移除逗号
+  var cleaned = ''
+  var j
+
+  for (j = 0; j < formattedValue.length; j++) {
+    var char = formattedValue.charAt(j)
+    if (char !== ',') {
+      cleaned += char
+    }
+  }
+
+  return parseFloat(cleaned)
+}
+
+// 补零函数
+function padZero(num) {
+  return num < 10 ? '0' + num : num
+}
+
+/**
+ * 格式化日期（WXS兼容版）
+ * @param {Date|number|string} date - 支持日期对象/时间戳/字符串(自动处理ISO格式)
+ * @param {string} [format='YYYY.MM.DD'] - 格式模板
+ * @returns {string} 格式化后的日期字符串
+ */
+function formatDateTime(date, format) {
+  if (!date) return ''
+  format = format || 'YYYY.MM.DD'
+
+  // 处理不同格式的日期输入
+  var d = null
+  if (typeof date === 'string') {
+    // 使用getRegExp处理ISO格式和普通日期字符串
+    var formattedStr = date.replace(getRegExp('T', 'g'), ' ').replace(getRegExp('-', 'g'), '/')
+    // 去掉毫秒和'Z'
+    var dotIndex = formattedStr.indexOf('.')
+    if (dotIndex > -1) {
+      formattedStr = formattedStr.slice(0, dotIndex)
+    }
+    // 兼容Z结尾的情况
+    formattedStr = formattedStr.replace(getRegExp('Z', 'gi'), '')
+    d = getDate(formattedStr)
+  } else if (typeof date === 'number') {
+    d = getDate(date)
+  } else if (Object.prototype.toString.call(date) === '[object Date]') {
+    d = getDate(date.getTime())
+  } else {
+    return ''
+  }
+
+  if (isNaN(d.getTime())) return ''
+
+  // 获取日期组件
+  var year = d.getFullYear()
+  var month = d.getMonth() + 1
+  var day = d.getDate()
+  var hours = d.getHours()
+  var minutes = d.getMinutes()
+  var seconds = d.getSeconds()
+
+  // 使用getRegExp进行格式化替换
+  return format.replace(getRegExp('YYYY|YY|MM|M|DD|D|HH|H|mm|m|SS|S', 'g'), function (match) {
+    switch (match) {
+      case 'YYYY':
+        return year
+      case 'YY':
+        return String(year).slice(-2)
+      case 'MM':
+        return padZero(month)
+      case 'M':
+        return month
+      case 'DD':
+        return padZero(day)
+      case 'D':
+        return day
+      case 'HH':
+        return padZero(hours)
+      case 'H':
+        return hours
+      case 'mm':
+        return padZero(minutes)
+      case 'm':
+        return minutes
+      case 'SS':
+        return padZero(seconds)
+      case 'S':
+        return seconds
+      default:
+        return match
+    }
+  })
 }
 
 module.exports = {
-  formatMoney: formatMoney
-};
+  stringify: stringify,
+  formatMoney: formatMoney,
+  parseMoney: parseMoney,
+  formatDateTime: formatDateTime,
+}
