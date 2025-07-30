@@ -1,4 +1,5 @@
-import { get, post, put, del } from './request.js'
+import { get } from './request.js'
+import { post } from './request-cloud.js'
 
 /**
  * @typedef {object} Bill
@@ -31,41 +32,13 @@ export function getBills(params = {}) {
 }
 
 /**
- * 获取单个账单详情
- * @param {string | number} id - 账单ID
- * @returns {Promise<Bill>}
+ * 创建或更新一个账单（通过云函数）
+ * @param {Omit<Bill, '_id'> | Bill} bill - 账单数据
+ * @returns {Promise<any>}
  */
-export function getBill(id) {
-  if (!id) return Promise.reject(new Error('缺少账单ID'))
-  return get(`${API_ENDPOINT}/${id}`)
-}
-
-/**
- * 添加一个新账单
- * @param {Omit<Bill, '_id'>} bill - 账单数据
- * @returns {Promise<Bill>}
- */
-export function addBill(bill) {
-  return post(API_ENDPOINT, bill)
-}
-
-/**
- * 更新一个账单
- * @param {string | number} id - 要更新的账单ID
- * @param {Partial<Bill>} bill - 要更新的账单数据
- * @returns {Promise<Bill>}
- */
-export function updateBill(id, bill) {
-  if (!id) return Promise.reject(newError('缺少账单ID'))
-  return put(`${API_ENDPOINT}/${id}`, bill)
-}
-
-/**
- * 删除一个账单
- * @param {string | number} id - 要删除的账单ID
- * @returns {Promise<object>}
- */
-export function deleteBill(id) {
-  if (!id) return Promise.reject(new Error('缺少账单ID'))
-  return del(`${API_ENDPOINT}/${id}`)
+export function upsertBill(bill) {
+  return post('controller', {
+    $url: '/upsert/bill',
+    bill,
+  })
 }

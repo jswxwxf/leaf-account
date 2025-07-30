@@ -1,41 +1,54 @@
-import { defineComponent } from '@vue-mini/core'
+import { defineComponent, ref } from '@vue-mini/core'
 
 defineComponent({
-  data: {
-    visible: false,
-    list: Array.from({ length: 5 }, () => ({
-      date: '',
-      category: '',
-      amount: '',
-      note: '',
-      tags: '',
-    })),
-  },
-  methods: {
-    show() {
-      this.setData({ visible: true })
+  setup() {
+    const visible = ref(false)
+    const list = ref(
+      Array.from({ length: 5 }, () => ({
+        date: '',
+        category: '',
+        amount: '',
+        note: '',
+        tags: '',
+      })),
+    )
+
+    let _resolve, _reject
+
+    const show = () => {
+      visible.value = true
       return new Promise((resolve, reject) => {
-        this._resolve = resolve
-        this._reject = reject
+        _resolve = resolve
+        _reject = reject
       })
-    },
-    handleClose() {
-      this._reject(new Error('用户取消'))
-      this.setData({ visible: false })
-    },
-    handleConfirm() {
-      // const nonEmptyBills = this.data.list.filter(bill =>
+    }
+
+    const handleClose = () => {
+      _reject(new Error('用户取消'))
+      visible.value = false
+    }
+
+    const handleConfirm = () => {
+      // const nonEmptyBills = list.value.filter(bill =>
       //   Object.values(bill).some(value => value !== ''),
       // )
-      // this._resolve(nonEmptyBills)
-      // this.setData({ visible: false })
-    },
-    handleFormChange(e) {
+      // _resolve(nonEmptyBills)
+      // visible.value = false
+    }
+
+    const handleFormChange = (e) => {
       const { rowIndex, field } = e.currentTarget.dataset
       const { value } = e.detail
-      this.setData({
-        [`list[${rowIndex}].${field}`]: value,
-      })
-    },
+      list.value[rowIndex][field] = value
+    }
+
+    return {
+      visible,
+      list,
+      show,
+      handleClose,
+      handleConfirm,
+      handleFormChange,
+    }
   },
 })

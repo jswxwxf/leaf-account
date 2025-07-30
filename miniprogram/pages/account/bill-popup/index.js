@@ -1,20 +1,14 @@
 import { defineComponent, ref } from '@vue-mini/core'
 
 defineComponent({
-  props: {
-    initialData: {
-      type: Object,
-      default: () => ({}),
-    },
-  },
-  setup(props) {
+  setup() {
     const visible = ref(false)
     const bill = ref({})
 
     let _resolve, _reject
 
-    const show = () => {
-      bill.value = { ...props.initialData }
+    const show = (value) => {
+      bill.value = value
       visible.value = true
       return new Promise((resolve, reject) => {
         _resolve = resolve
@@ -28,13 +22,13 @@ defineComponent({
     }
 
     const handleConfirm = () => {
-      _resolve(bill.value)
+      _resolve({ ...bill.value })
       visible.value = false
     }
 
     const handleFormChange = (e) => {
       const { field } = e.currentTarget.dataset
-      const { value } = e.detail
+      let value = e.detail
       bill.value[field] = value
     }
 

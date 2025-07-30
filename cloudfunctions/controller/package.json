@@ -1,7 +1,7 @@
 {
-  "name": "helloFunctions",
+  "name": "controller",
   "version": "1.0.0",
-  "description": "",
+  "description": "小程序统一业务逻辑入口",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "wx-server-sdk": "~3.0.1"
+    "wx-server-sdk": "~2.6.3",
+    "tcb-router": "^1.1.2"
   }
 }

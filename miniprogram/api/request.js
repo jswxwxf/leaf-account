@@ -93,7 +93,7 @@ export async function request(options = {}) {
  * @param {Object} options 选项配置
  * @returns {Promise} 请求结果
  */
-async function dedupRequest(config, fnGeneratePromise, options = {}) {
+export async function dedupRequest(config, fnGeneratePromise, options = {}) {
   const opts = {
     dedupExpire: 0,
     ...options,
