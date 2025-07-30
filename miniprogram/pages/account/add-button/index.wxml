@@ -1,8 +1,8 @@
 <view class="custom-class fixed bottom-4 right-4 z-10" hidden="{{ hidden }}">
-  <split-button actions="{{ actions }}" @select="handleActionSelect">
-    <van-button type="primary" @click="handleMainClick">
+  <action-button actions="{{ actions }}" @select="handleActionSelect">
+    <van-button type="primary" @click.catch="handleMainClick">
       <van-icon name="records" class="mr-1" />
       记一笔
     </van-button>
-  </split-button>
+  </action-button>
 </view>

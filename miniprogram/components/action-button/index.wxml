@@ -1,7 +1,7 @@
-<view class="inline-flex overflow-hidden border border-gray-200 bg-white">
+<view class="inline-flex items-stretch overflow-hidden border border-gray-200 bg-white">
   <slot></slot>
-  <view class="divider w-px h-5 self-center bg-gray-200"></view>
-  <view class="dropdown-action px-2 flex bg-green-500 text-white items-center h-full" @tap.stop="onToggleActionSheet">
+  <view class="w-px bg-gray-200" />
+  <view class="flex items-center bg-green-500 px-2 text-white" @tap.catch="onToggleActionSheet">
     <van-icon name="arrow-up" />
   </view>
 </view>
