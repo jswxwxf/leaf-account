@@ -4,29 +4,30 @@ defineComponent({
   properties: {
     actions: {
       type: Array,
-      value: {},
+      value: [],
     },
   },
   setup(props, { triggerEvent }) {
-    const showPopover = ref(false)
+    const showActionSheet = ref(false)
 
-    const onTogglePopover = () => {
-      showPopover.value = !showPopover.value
+    const onToggleActionSheet = () => {
+      showActionSheet.value = !showActionSheet.value
     }
 
-    const onClosePopover = () => {
-      showPopover.value = false
+    const onCloseActionSheet = () => {
+      showActionSheet.value = false
     }
 
     const onSelect = (e) => {
+      // The event detail from action-sheet is the selected item itself
       triggerEvent('select', e.detail)
-      onClosePopover()
+      onCloseActionSheet()
     }
 
     return {
-      showPopover,
-      onTogglePopover,
-      onClosePopover,
+      showActionSheet,
+      onToggleActionSheet,
+      onCloseActionSheet,
       onSelect,
     }
   },

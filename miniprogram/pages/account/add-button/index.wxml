@@ -1,4 +1,4 @@
-<view class="fixed bottom-4 right-4 z-10" hidden="{{ hidden }}">
+<view class="custom-class fixed bottom-4 right-4 z-10" hidden="{{ hidden }}">
   <split-button actions="{{ actions }}" @select="handleActionSelect">
     <van-button type="primary" @click="handleMainClick">
       <van-icon name="records" class="mr-1" />

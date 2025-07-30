@@ -6,7 +6,7 @@
   <!-- Bill List -->
   <scroll-view scroll-y class="flex-1 overflow-hidden" lower-threshold="100" @scrolltolower="loadMore">
     <view class="pb-16 pt-2 relative">
-      <add-button hidden="{{ billPopped }}" @tap="handleAddBill" />
+      <add-button custom-class="opacity-70" hidden="{{ billPopped }}" @tap="handleAddBill" />
 
       <block wx:for="{{ dailyBills }}" wx:key="_id">
         <bill-group item="{{ item }}" />

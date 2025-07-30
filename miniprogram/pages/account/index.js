@@ -14,14 +14,14 @@ defineComponent({
     })
 
     async function handleAddBill() {
-      // billPopped.value = true
-      // try {
-      //   await billPopup.show({})
-      // } finally {
-      //   setTimeout(() => {
-      //     billPopped.value = false
-      //   }, 300)
-      // }
+      billPopped.value = true
+      try {
+        await billPopup.show({})
+      } finally {
+        setTimeout(() => {
+          billPopped.value = false
+        }, 300)
+      }
     }
 
     return {

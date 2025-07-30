@@ -7,12 +7,13 @@ defineComponent({
       value: false,
     },
   },
+  externalClasses: ['custom-class'],
   setup(props, { triggerEvent }) {
     const actions = ref([
-      { text: '记多笔', value: 'batch' },
-      { text: '拍照记帐', value: 'camera' },
-      { text: '识别图片', value: 'image' },
-      { text: '导入文件', value: 'import' },
+      { name: '记入多笔', value: 'batch' },
+      { name: '拍照记帐', value: 'camera' },
+      { name: '识别图片', value: 'image' },
+      { name: '导入文件', value: 'import' },
     ])
 
     const handleMainClick = (e) => {
