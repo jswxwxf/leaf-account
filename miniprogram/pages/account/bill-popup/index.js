@@ -1,7 +1,7 @@
-import { defineComponent, ref } from '@vue-mini/core'
+import { defineComponent, ref, onReady } from '@vue-mini/core'
 
 defineComponent({
-  setup() {
+  setup(props, { selectComponent }) {
     const visible = ref(false)
     const bill = ref({})
 
@@ -32,6 +32,15 @@ defineComponent({
       bill.value[field] = value
     }
 
+    const handleShowCategoryPopup = async () => {
+      try {
+        const category = await categoryPopupWrapper.show()
+        bill.value.category = category
+      } catch (err) {
+        // 用户取消
+      }
+    }
+
     return {
       visible,
       bill,
@@ -39,6 +48,7 @@ defineComponent({
       handleClose,
       handleConfirm,
       handleFormChange,
+      handleShowCategoryPopup,
     }
   },
 })

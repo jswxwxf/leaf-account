@@ -1,0 +1,8 @@
+<van-field
+  label="{{ label }}"
+  value="{{ value }}"
+  placeholder="请选择分类"
+  is-link
+  readonly
+  bind:click-input="handleClick"
+/>

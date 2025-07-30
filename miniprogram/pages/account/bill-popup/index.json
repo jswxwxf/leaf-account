@@ -1,7 +1,8 @@
 {
   "component": true,
   "usingComponents": {
-    "calendar-field": "/components/calendar-field/index"
+    "calendar-field": "/components/calendar-field/index",
+    "category-field": "/components/category-field/index"
   },
   "styleIsolation": "apply-shared"
 }

@@ -15,12 +15,9 @@
         data-field="datetime"
         @change="handleFormChange"
       />
-      <van-field
+      <category-field
         label="分类"
         value="{{ bill.category }}"
-        placeholder="请输入分类"
-        data-field="category"
-        @change="handleFormChange"
       />
       <van-field
         label="金额"

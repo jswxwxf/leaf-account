@@ -1,0 +1,44 @@
+<van-popup
+  show="{{ visible }}"
+  position="bottom"
+  round
+  closeable
+  bind:close="handleClose"
+>
+  <view class="p-4">
+    <view class="text-lg font-bold text-center mb-4">选择分类</view>
+
+    <!-- 分类列表 -->
+    <van-cell-group class="category-list mb-4" inset>
+      <van-cell
+        wx:for="{{ categories }}"
+        wx:key="index"
+        title="{{ item.name }}"
+        is-link
+        bind:click="handleSelect"
+        data-name="{{ item.name }}"
+      />
+    </van-cell-group>
+
+    <!-- 添加新分类 -->
+    <view class="add-category">
+      <view class="text-sm text-gray-500 mb-2">或输入新分类</view>
+      <van-field
+        value="{{ newCategory }}"
+        placeholder="请输入新的分类名称"
+        clearable
+        bind:change="onNewCategoryChange"
+      />
+      <van-button
+        type="primary"
+        size="normal"
+        block
+        class="mt-4 add-button"
+        bind:click="handleAddNew"
+        disabled="{{ !newCategory }}"
+      >
+        添加并选择
+      </van-button>
+    </view>
+  </view>
+</van-popup>

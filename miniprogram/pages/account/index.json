@@ -1,11 +1,12 @@
 {
   "$schema": "https://vite.icebreaker.top/component.json",
   "component": true,
-  "styleIsolation": "apply-shared",
   "usingComponents": {
     "account-header": "./header/index",
     "bill-group": "./bill-group/index",
     "bill-popup": "./bill-popup/index",
-    "add-button": "./add-button/index"
-  }
+    "add-button": "./add-button/index",
+    "category-helper": "/components/category-helper/index"
+  },
+  "styleIsolation": "apply-shared"
 }
