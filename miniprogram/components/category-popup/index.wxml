@@ -1,44 +1,31 @@
-<van-popup
-  show="{{ visible }}"
-  position="bottom"
-  round
-  closeable
-  bind:close="handleClose"
->
+<van-popup show="{{ visible }}" position="bottom" closeable safe-area-inset-bottom="{{false}}" bind:close="handleClose">
   <view class="p-4">
     <view class="text-lg font-bold text-center mb-4">选择分类</view>
 
     <!-- 分类列表 -->
-    <van-cell-group class="category-list mb-4" inset>
-      <van-cell
+    <view class="grid grid-cols-3 gap-3 mb-4 category-list">
+      <van-button
         wx:for="{{ categories }}"
         wx:key="index"
-        title="{{ item.name }}"
-        is-link
-        bind:click="handleSelect"
-        data-name="{{ item.name }}"
-      />
-    </van-cell-group>
-
-    <!-- 添加新分类 -->
-    <view class="add-category">
-      <view class="text-sm text-gray-500 mb-2">或输入新分类</view>
-      <van-field
-        value="{{ newCategory }}"
-        placeholder="请输入新的分类名称"
-        clearable
-        bind:change="onNewCategoryChange"
-      />
-      <van-button
         type="primary"
-        size="normal"
-        block
-        class="mt-4 add-button"
-        bind:click="handleAddNew"
-        disabled="{{ !newCategory }}"
+        plain
+        custom-class="flex items-center justify-center p-2 text-sm w-full"
+        @tap="handleSelect"
+        data-name="{{ item.name }}"
       >
-        添加并选择
+        {{ item.name }}
       </van-button>
     </view>
+    <van-field
+      value="{{ newCategory }}"
+      placeholder="在此输入新分类"
+      border="{{ false }}"
+      use-button-slot
+      bind:change="onNewCategoryChange"
+    >
+      <van-button slot="button" size="small" type="primary" bind:click="handleAddNew" disabled="{{ !newCategory }}">
+        确定
+      </van-button>
+    </van-field>
   </view>
 </van-popup>
