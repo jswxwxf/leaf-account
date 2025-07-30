@@ -7,6 +7,9 @@
   custom-style="position: static;"
 >
   <view class="h-full w-full bg-white px-4 pt-2 flex flex-col border-b border-solid border-gray-300 max-h-screen">
+    <!-- Header -->
+    <view class="text-lg font-bold text-center py-2">编辑账单</view>
+
     <!-- Main Content: Form -->
     <view class="flex-1 overflow-y-auto">
       <van-field

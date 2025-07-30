@@ -15,7 +15,7 @@
       </view>
     </van-cell>
     <block wx:for="{{ item.bills }}" wx:key="_id" wx:for-item="bill">
-      <van-swipe-cell right-width="{{ 125 }}">
+      <van-swipe-cell right-width="{{ 132 }}">
         <van-cell>
           <view class="flex items-center">
             <view class="flex-1 text-left min-w-0">
@@ -35,9 +35,8 @@
           </view>
         </van-cell>
         <view slot="right" class="van-swipe-cell__right flex h-full">
-          <view class="h-full w-10 flex items-center justify-center bg-blue-500 text-white text-sm">拷贝</view>
-          <view class="h-full w-10 flex items-center justify-center bg-green-500 text-white text-sm">编辑</view>
-          <view class="h-full w-10 flex items-center justify-center bg-red-500 text-white text-sm">删除</view>
+          <view class="h-full w-16 flex items-center justify-center bg-green-500 text-white text-sm">编辑</view>
+          <view class="h-full w-16 flex items-center justify-center bg-red-500 text-white text-sm">删除</view>
         </view>
       </van-swipe-cell>
     </block>

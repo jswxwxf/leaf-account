@@ -5,6 +5,7 @@
   "usingComponents": {
     "account-header": "./header/index",
     "bill-group": "./bill-group/index",
-    "bill-popup": "./bill-popup/index"
+    "bill-popup": "./bill-popup/index",
+    "add-button": "./add-button/index"
   }
 }

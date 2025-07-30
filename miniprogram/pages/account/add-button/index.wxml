@@ -1,0 +1,13 @@
+<view class="flex justify-end py-2 fixed bottom-2 right-4 z-10" hidden="{{ hidden }}">
+  <van-button
+    custom-class="!w-28 !h-10 flex justify-end opacity-70"
+    type="primary"
+    color="#5A9E62"
+    @tap="handleTap"
+  >
+    <view class="flex items-center">
+      <van-icon name="records" class="mr-1" />
+      记一笔
+    </view>
+  </van-button>
+</view>
