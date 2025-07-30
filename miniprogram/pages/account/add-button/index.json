@@ -1,8 +1,7 @@
 {
   "component": true,
   "usingComponents": {
-    "action-button": "../../../components/action-button/index",
-    "van-icon": "@vant/weapp/icon/index"
+    "action-button": "/components/action-button/index"
   },
   "styleIsolation": "apply-shared"
 }
