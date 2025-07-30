@@ -1,0 +1,17 @@
+<view class="inline-flex overflow-hidden border border-gray-200">
+  <view class="flex items-center bg-green-500">
+    <slot></slot>
+    <view class="divider w-px h-5 bg-gray-200"></view>
+    <van-popover
+      show="{{ showPopover }}"
+      actions="{{ actions }}"
+      placement="bottom-end"
+      @close="onClosePopover"
+      @select="onSelect"
+    >
+      <view class="dropdown-action px-2 flex items-center h-full text-white" @tap.stop="onTogglePopover">
+        <van-icon name="arrow-up" />
+      </view>
+    </van-popover>
+  </view>
+</view>

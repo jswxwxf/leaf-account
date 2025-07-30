@@ -1,7 +1,7 @@
 {
   "component": true,
   "usingComponents": {
-    "van-button": "@vant/weapp/button/index",
+    "split-button": "../../../components/split-button/index",
     "van-icon": "@vant/weapp/icon/index"
   },
   "styleIsolation": "apply-shared"
