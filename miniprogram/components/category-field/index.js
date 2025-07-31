@@ -1,5 +1,5 @@
 import { defineComponent, ref } from '@vue-mini/core'
-import { showCategoryPopup } from '../category-helper/utils.js'
+import { showCategoryPopup } from '@/utils/index.js'
 
 defineComponent({
   properties: {

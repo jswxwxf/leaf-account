@@ -22,5 +22,6 @@
   </scroll-view>
 </view>
 
+<van-toast id="van-toast" />
 <category-helper />
 <tags-helper />

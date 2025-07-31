@@ -1,8 +1,15 @@
 <van-field
   label="标签"
-  value="{{ value }}"
-  placeholder="请输入标签"
   is-link
   readonly
   @click-input="handleClick"
-/>
+>
+  <view slot="input" class="flex flex-nowrap gap-1">
+    <block wx:if="{{ value.length }}">
+      <bill-tag wx:for="{{ value }}" wx:key="index" type="{{ item.type }}">
+        {{ item.name }}
+      </bill-tag>
+    </block>
+    <view wx:else class="text-gray-500">请选择标签</view>
+  </view>
+</van-field>

@@ -1,19 +1,20 @@
 import { defineComponent, ref } from '@vue-mini/core'
-import { showTagsPopup } from '../tags-helper/utils'
+import { showTagsPopup } from '@/utils/index.js'
 
 defineComponent({
   properties: {
     value: {
-      type: String,
-      value: '',
+      type: Array,
+      value: [],
     },
   },
-  setup(props, { triggetEvent }) {
-    const value = ref('')
+  setup(props, { triggerEvent }) {
+    const value = ref([])
 
     async function handleClick() {
-      const result = await showTagsPopup()
+      const result = await showTagsPopup(value.value)
       value.value = result
+      triggerEvent('change', result)
     }
 
     return {

@@ -1,5 +1,5 @@
 import { defineComponent, onDetach, onReady } from '@vue-mini/core'
-import { tagsPopup } from './utils.js'
+import { tagsPopup } from '@/utils/index.js'
 
 defineComponent({
   setup(props, { selectComponent }) {

@@ -1,16 +1,34 @@
+<wxs module="utils">
+  var isSelected = function(item, selectedTags) {
+    if (!item || !selectedTags) return false
+    return selectedTags.some(function(selected) {
+      return selected.name === item.name
+    })
+  }
+
+module.exports = {
+  isSelected: isSelected,
+}
+</wxs>
+
 <van-popup show="{{ visible }}" position="bottom" closeable safe-area-inset-bottom="{{false}}" bind:close="handleClose">
   <view class="p-4">
-    <view class="text-lg font-bold text-center mb-4">选择标签</view>
+    <view class="flex items-center justify-center relative mb-4 h-8">
+      <view class="absolute left-0">
+        <van-button size="small" type="primary" @click="handleConfirm">确定</van-button>
+      </view>
+      <view class="text-lg font-bold">选择标签</view>
+    </view>
 
     <!-- 标签列表 -->
     <view class="grid grid-cols-5 gap-3 mb-4 tag-list">
       <van-button
         wx:for="{{ tags }}"
         wx:key="index"
-        plain
-        custom-class="flex items-center justify-center p-2 text-sm w-full tag-button"
+        plain="{{ !utils.isSelected(item, selectedTags) }}"
+        custom-class="flex items-center justify-center p-2 text-sm w-full tag-button {{ utils.isSelected(item, selectedTags) ? 'ring-2 ring-blue-500' : '' }}"
         @tap="handleSelect"
-        data-name="{{ item.name }}"
+        data-item="{{ item }}"
       >
         <bill-tag type="{{item.type}}">{{ item.name }}</bill-tag>
       </van-button>
@@ -31,8 +49,9 @@
         <view class="w-4 h-4 bg-yellow-500 {{tag.type === '30' ? 'ring-2 ring-offset-2' : ''}}" data-type="30" @tap="handleTypeChange" />
       </view>
       <van-button slot="button" size="small" type="primary" @click="handleAddNew" disabled="{{ !tag.name }}">
-        确定
+        新增
       </van-button>
     </van-field>
+
   </view>
 </van-popup>

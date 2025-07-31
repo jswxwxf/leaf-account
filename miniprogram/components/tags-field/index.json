@@ -1,4 +1,7 @@
 {
   "component": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "bill-tag": "../bill-tag/index"
+  },
+  "styleIsolation": "apply-shared"
 }
