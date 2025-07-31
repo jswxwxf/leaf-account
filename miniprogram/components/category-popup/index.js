@@ -1,8 +1,9 @@
 import { defineComponent, ref, onMounted } from '@vue-mini/core'
+import Toast from '@vant/weapp/toast/toast.js'
 import { get } from '../../api/request.js'
 
 function newCategory() {
-  return { name: '', type: 'expense' }
+  return { name: '', type: '20' }
 }
 
 defineComponent({
@@ -20,10 +21,10 @@ defineComponent({
       // } catch (error) {
       //   console.error('获取分类列表失败', error)
       categories.value = [
-        { name: '餐饮', type: '10' },
-        { name: '交通', type: '10' },
-        { name: '购物', type: '10' },
-        { name: '收入', type: '20' },
+        { name: '餐饮', type: '20' },
+        { name: '交通', type: '20' },
+        { name: '购物', type: '20' },
+        { name: '收入', type: '10' },
       ]
       // }
     }
@@ -58,12 +59,19 @@ defineComponent({
     }
 
     const toggleCategoryType = (event) => {
-      category.value.type = category.value.type === 'expense' ? 'income' : 'expense'
+      category.value.type = category.value.type === '20' ? '10' : '20'
     }
 
     const handleAddNew = () => {
       const name = category.value.name.trim()
       if (!name) return
+
+      // 检查是否已存在同名分类
+      const isExisting = categories.value.some((c) => c.name === name)
+      if (isExisting) {
+        Toast('分类已存在')
+        return
+      }
       hide()
       // 返回整个对象
       _resolve({ ...category.value })

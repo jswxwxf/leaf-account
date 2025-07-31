@@ -22,10 +22,10 @@
   transition: box-shadow 0.2s ease-in-out;
 }
 
-.input-wrapper--type-expense {
+.input-wrapper--type-20 {
   box-shadow: 0 0 5px rgba(238, 10, 36, 0.4);
 }
 
-.input-wrapper--type-income {
+.input-wrapper--type-10 {
   box-shadow: 0 0 5px rgba(7, 193, 96, 0.4);
 }

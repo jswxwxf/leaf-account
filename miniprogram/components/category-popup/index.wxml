@@ -8,7 +8,7 @@
         wx:for="{{ categories }}"
         wx:key="index"
         plain
-        custom-class="flex items-center justify-center p-2 text-sm w-full {{item.type === '10' ? 'expense-button' : 'income-button'}}"
+        custom-class="flex items-center justify-center p-2 text-sm w-full {{item.type === '20' ? 'expense-button' : 'income-button'}}"
         @tap="handleSelect"
         data-name="{{ item.name }}"
       >
@@ -26,10 +26,10 @@
       custom-class="flex-1 input-wrapper input-wrapper--type-{{category.type}}"
     >
       <view slot="right-icon">
-        <view wx:if="{{category.type === 'expense'}}" class="flex items-center gap-1" @tap="toggleCategoryType">
+        <view wx:if="{{category.type === '20'}}" class="flex items-center gap-1" @tap="toggleCategoryType">
           <van-icon name="cash-back-record-o" color="#ee0a24" size="20px" />支
         </view>
-        <view wx:if="{{category.type === 'income'}}" class="flex items-center gap-1" @tap="toggleCategoryType">
+        <view wx:if="{{category.type === '10'}}" class="flex items-center gap-1" @tap="toggleCategoryType">
           <van-icon name="gold-coin-o" color="#07c160" size="20px" />收
         </view>
       </view>
