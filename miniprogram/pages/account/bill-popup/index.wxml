@@ -31,10 +31,8 @@
         data-field="note"
         @change="handleFormChange"
       />
-      <van-field
-        label="标签"
+      <tags-field
         value="{{ bill.tags }}"
-        placeholder="请输入标签（多个用逗号隔开）"
         data-field="tags"
         @change="handleFormChange"
       />
