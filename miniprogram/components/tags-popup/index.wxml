@@ -12,7 +12,7 @@
         @tap="handleSelect"
         data-name="{{ item.name }}"
       >
-        <van-tag size="large" plain>{{ item.name }}</van-tag>
+        <bill-tag type="{{item.type}}">{{ item.name }}</bill-tag>
       </van-button>
     </view>
 
@@ -23,14 +23,14 @@
       border="{{ false }}"
       use-button-slot
       bind:change="onTagChange"
-      custom-class="flex-1 input-wrapper input-wrapper--{{selectedColor}}"
+      custom-class="flex-1 input-wrapper input-wrapper--type-{{tag.type}}"
     >
       <view slot="right-icon" class="flex gap-1 items-center h-full">
-        <view class="w-4 h-4 bg-blue-500" data-color="blue" bind:tap="handleColorChange" />
-        <view class="w-4 h-4 bg-red-500" data-color="red" bind:tap="handleColorChange" />
-        <view class="w-4 h-4 bg-yellow-500" data-color="yellow" bind:tap="handleColorChange" />
+        <view class="w-4 h-4 bg-blue-500 {{tag.type === '01' ? 'ring-2 ring-offset-2' : ''}}" data-type="01" @tap="handleTypeChange" />
+        <view class="w-4 h-4 bg-red-500 {{tag.type === '02' ? 'ring-2 ring-offset-2' : ''}}" data-type="02" @tap="handleTypeChange" />
+        <view class="w-4 h-4 bg-yellow-500 {{tag.type === '03' ? 'ring-2 ring-offset-2' : ''}}" data-type="03" @tap="handleTypeChange" />
       </view>
-      <van-button slot="button" size="small" type="primary" bind:click="handleAddNew" disabled="{{ !tag.name }}">
+      <van-button slot="button" size="small" type="primary" @click="handleAddNew" disabled="{{ !tag.name }}">
         确定
       </van-button>
     </van-field>

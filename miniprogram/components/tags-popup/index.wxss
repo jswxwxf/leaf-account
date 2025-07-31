@@ -20,15 +20,15 @@
   border-radius: 8px;
 }
 
-.input-wrapper--blue {
-   box-shadow: 0 0 5px rgba(59, 130, 246, 0.8);
+.input-wrapper--type-01 {
+  box-shadow: 0 0 5px rgba(59, 130, 246, 0.8);
 }
 
-.input-wrapper--red {
+.input-wrapper--type-02 {
   box-shadow: 0 0 5px rgba(239, 68, 68, 0.8);
 }
 
-.input-wrapper--yellow {
+.input-wrapper--type-03 {
   box-shadow: 0 0 5px rgba(234, 179, 8, 0.8);
 }
 

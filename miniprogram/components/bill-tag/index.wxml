@@ -1,0 +1,3 @@
+<van-tag size="large" custom-class="tag--type-{{type}}">
+  <slot />
+</van-tag>

@@ -1,0 +1,14 @@
+.tag--type-01 {
+  background-color: #3B82F6 !important; /* blue-500 */
+  color: #ffffff !important;
+}
+
+.tag--type-02 {
+  background-color: #EF4444 !important; /* red-500 */
+  color: #ffffff !important;
+}
+
+.tag--type-03 {
+  background-color: #EAB308 !important; /* yellow-500 */
+  color: #ffffff !important;
+}
