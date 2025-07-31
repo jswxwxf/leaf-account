@@ -83,6 +83,8 @@ import { getDayOfWeek } from '../../utils/date'
 
 本项目使用 `@vue-mini/core` 框架，它允许我们使用 Vue-like 的语法来开发小程序。
 
+> **重要提示**: 虽然 `@vue-mini/core` 的语法与 Vue 3 高度相似，但它并非完全等同。开发者应注意其在小程序环境下的特定实现和限制，避免直接套用所有 Vue 3 的模式，尤其是在事件处理、组件生命周期等方面。请务必参考 [Vue Mini 官方文档](https://vuemini.org/) 进行开发，以避免潜在问题。
+
 ### WXML
 
 - **标签**: 总是使用小写标签名，例如 `<view>` 而不是 `<View>`。

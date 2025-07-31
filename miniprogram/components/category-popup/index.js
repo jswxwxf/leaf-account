@@ -1,11 +1,15 @@
 import { defineComponent, ref, onMounted } from '@vue-mini/core'
 import { get } from '../../api/request.js'
 
+function newCategory() {
+  return { name: '', type: 'expense' }
+}
+
 defineComponent({
   setup(props, { triggerEvent }) {
     const visible = ref(false)
     const categories = ref([])
-    const newCategory = ref('')
+    const category = ref(newCategory())
 
     let _resolve, _reject
 
@@ -15,13 +19,18 @@ defineComponent({
       //   categories.value = res.data || []
       // } catch (error) {
       //   console.error('获取分类列表失败', error)
-      categories.value = [{ name: '餐饮' }, { name: '交通' }, { name: '购物' }]
+      categories.value = [
+        { name: '餐饮', type: '00' },
+        { name: '交通', type: '00' },
+        { name: '购物', type: '00' },
+        { name: '收入', type: '10' },
+      ]
       // }
     }
 
     const show = () => {
       visible.value = true
-      newCategory.value = ''
+      category.value = newCategory()
       fetchCategories()
       return new Promise((resolve, reject) => {
         _resolve = resolve
@@ -44,26 +53,35 @@ defineComponent({
       _resolve(name)
     }
 
-    const onNewCategoryChange = (event) => {
-      newCategory.value = event.detail
+    const onCategoryChange = (event) => {
+      category.value.name = event.detail
+    }
+
+    const toggleCategoryType = (event) => {
+      category.value.type = category.value.type === 'expense' ? 'income' : 'expense'
     }
 
     const handleAddNew = () => {
-      const name = newCategory.value.trim()
+      const name = category.value.name.trim()
       if (!name) return
       hide()
-      _resolve(name)
+      // 返回整个对象
+      _resolve({ ...category.value })
     }
 
     return {
       visible,
       categories,
-      newCategory,
+      category,
       show,
       handleClose,
       handleSelect,
-      onNewCategoryChange,
+      onCategoryChange,
+      toggleCategoryType,
       handleAddNew,
     }
   },
 })
+function newFunction() {
+  return { name: '', type: 'expense' }
+}

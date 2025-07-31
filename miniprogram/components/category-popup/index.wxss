@@ -1,5 +1,15 @@
 /* miniprogram/components/category-popup/index.wxss */
 .category-list {
-  max-height: 40vh;
+  max-height: 35vh;
   overflow-y: auto;
+}
+
+.expense-button {
+  --button-default-border-color: #fecaca; /* a light red color */
+  --button-default-color: #ef4444; /* a red color for text */
+}
+
+.income-button {
+  --button-default-border-color: #4ade80; /* a deeper green color */
+  --button-default-color: #15803d; /* a deeper green color for text */
 }

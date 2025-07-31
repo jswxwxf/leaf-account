@@ -34,8 +34,15 @@ defineComponent({
 
     const handleShowCategoryPopup = async () => {
       try {
-        const category = await categoryPopupWrapper.show()
-        bill.value.category = category
+        const categoryResult = await categoryPopupWrapper.show({ type: bill.value.type })
+        if (typeof categoryResult === 'object' && categoryResult.name) {
+          // 如果是新创建的分类，返回的是对象
+          // TODO: 这里可以调用接口保存新分类
+          bill.value.category = categoryResult.name
+        } else {
+          // 如果是选择的已有分类，返回的是字符串
+          bill.value.category = categoryResult
+        }
       } catch (err) {
         // 用户取消
       }

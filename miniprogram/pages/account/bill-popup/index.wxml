@@ -19,11 +19,8 @@
         label="分类"
         value="{{ bill.category }}"
       />
-      <van-field
-        label="金额"
-        type="digit"
+      <money-field
         value="{{ bill.amount }}"
-        placeholder="请输入金额"
         data-field="amount"
         @change="handleFormChange"
       />
