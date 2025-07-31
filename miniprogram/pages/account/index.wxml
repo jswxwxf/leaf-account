@@ -1,7 +1,6 @@
 <view class="h-screen bg-gray-100 flex flex-col">
   <!-- Header -->
   <account-header id="account-header" wx:if="{{ !billPopped }}" />
-  <category-helper />
   <bill-popup id="bill-popup" />
 
   <!-- Bill List -->
@@ -23,3 +22,5 @@
   </scroll-view>
 </view>
 
+<category-helper />
+<tags-helper />

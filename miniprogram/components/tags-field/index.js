@@ -1,4 +1,5 @@
-import { defineComponent } from '@vue-mini/core'
+import { defineComponent, ref } from '@vue-mini/core'
+import { showTagsPopup } from '../tags-helper/utils'
 
 defineComponent({
   properties: {
@@ -8,12 +9,16 @@ defineComponent({
     },
   },
   setup(props, { triggetEvent }) {
-    const handleFormChange = (event) => {
-      triggetEvent('change', event)
+    const value = ref('')
+
+    async function handleClick() {
+      const result = await showTagsPopup()
+      value.value = result
     }
 
     return {
-      handleFormChange,
+      value,
+      handleClick,
     }
-  }
+  },
 })

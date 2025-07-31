@@ -6,7 +6,8 @@
     "bill-group": "./bill-group/index",
     "bill-popup": "./bill-popup/index",
     "add-button": "./add-button/index",
-    "category-helper": "/components/category-helper/index"
+    "category-helper": "/components/category-helper/index",
+    "tags-helper": "/components/tags-helper/index"
   },
   "styleIsolation": "apply-shared"
 }

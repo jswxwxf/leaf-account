@@ -1,7 +1,8 @@
 <van-field
   label="标签"
   value="{{ value }}"
-  placeholder="请输入标签（多个用逗号隔开）"
-  data-field="tags"
-  @change="handleFormChange"
+  placeholder="请输入标签"
+  is-link
+  readonly
+  @click-input="handleClick"
 />

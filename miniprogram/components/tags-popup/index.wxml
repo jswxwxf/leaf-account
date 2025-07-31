@@ -1,0 +1,32 @@
+<van-popup show="{{ visible }}" position="bottom" closeable safe-area-inset-bottom="{{false}}" bind:close="handleClose">
+  <view class="p-4">
+    <view class="text-lg font-bold text-center mb-4">选择标签</view>
+
+    <!-- 标签列表 -->
+    <view class="grid grid-cols-5 gap-3 mb-4 tag-list">
+      <van-button
+        wx:for="{{ tags }}"
+        wx:key="index"
+        plain
+        custom-class="flex items-center justify-center p-2 text-sm w-full tag-button"
+        @tap="handleSelect"
+        data-name="{{ item.name }}"
+      >
+        <van-tag size="large">{{ item.name }}</van-tag>
+      </van-button>
+    </view>
+
+    <!-- 新标签输入 -->
+    <van-field
+      value="{{ tag.name }}"
+      placeholder="新标签"
+      border="{{ false }}"
+      use-button-slot
+      bind:change="onTagChange"
+    >
+      <van-button slot="button" size="small" type="primary" bind:click="handleAddNew" disabled="{{ !tag.name }}">
+        确定
+      </van-button>
+    </van-field>
+  </view>
+</van-popup>
