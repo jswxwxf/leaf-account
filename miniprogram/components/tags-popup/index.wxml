@@ -12,18 +12,24 @@
         @tap="handleSelect"
         data-name="{{ item.name }}"
       >
-        <van-tag size="large">{{ item.name }}</van-tag>
+        <van-tag size="large" plain>{{ item.name }}</van-tag>
       </van-button>
     </view>
 
     <!-- 新标签输入 -->
     <van-field
       value="{{ tag.name }}"
-      placeholder="新标签"
+      placeholder="新标签，点击右侧切换颜色"
       border="{{ false }}"
       use-button-slot
       bind:change="onTagChange"
+      custom-class="flex-1 input-wrapper input-wrapper--{{selectedColor}}"
     >
+      <view slot="right-icon" class="flex gap-1 items-center h-full">
+        <view class="w-4 h-4 bg-blue-500" data-color="blue" bind:tap="handleColorChange" />
+        <view class="w-4 h-4 bg-red-500" data-color="red" bind:tap="handleColorChange" />
+        <view class="w-4 h-4 bg-yellow-500" data-color="yellow" bind:tap="handleColorChange" />
+      </view>
       <van-button slot="button" size="small" type="primary" bind:click="handleAddNew" disabled="{{ !tag.name }}">
         确定
       </van-button>

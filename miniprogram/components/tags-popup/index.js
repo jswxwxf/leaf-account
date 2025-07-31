@@ -2,7 +2,7 @@ import { defineComponent, ref } from '@vue-mini/core'
 // import { get } from '../../api/request.js'
 
 function newTag() {
-  return { name: '' }
+  return { name: '', color: 'blue' }
 }
 
 defineComponent({
@@ -10,8 +10,15 @@ defineComponent({
     const visible = ref(false)
     const tags = ref([])
     const tag = ref(newTag())
+    const selectedColor = ref('blue')
 
     let _resolve, _reject
+
+    const handleColorChange = (event) => {
+      const { color } = event.currentTarget.dataset
+      selectedColor.value = color
+      tag.value.color = color
+    }
 
     const fetchTags = async () => {
       // Mock data for tags
@@ -25,6 +32,7 @@ defineComponent({
     const show = () => {
       visible.value = true
       tag.value = newTag()
+      selectedColor.value = 'blue'
       fetchTags()
       return new Promise((resolve, reject) => {
         _resolve = resolve
@@ -55,18 +63,23 @@ defineComponent({
       const name = tag.value.name.trim()
       if (!name) return
       hide()
-      _resolve(name)
+      _resolve({
+        name,
+        color: selectedColor.value
+      })
     }
 
     return {
       visible,
       tags,
       tag,
+      selectedColor,
       show,
       handleClose,
       handleSelect,
       onTagChange,
       handleAddNew,
+      handleColorChange,
     }
   },
 })

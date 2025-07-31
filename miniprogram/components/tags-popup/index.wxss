@@ -8,3 +8,27 @@
   padding: 0 !important;
   border: none !important;
 }
+
+.tag-color {
+  margin-top: -2px;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+.input-wrapper--blue {
+   box-shadow: 0 0 5px rgba(59, 130, 246, 0.8);
+}
+
+.input-wrapper--red {
+  box-shadow: 0 0 5px rgba(239, 68, 68, 0.8);
+}
+
+.input-wrapper--yellow {
+  box-shadow: 0 0 5px rgba(234, 179, 8, 0.8);
+}
+
