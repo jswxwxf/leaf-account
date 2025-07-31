@@ -8,7 +8,7 @@
         wx:for="{{ categories }}"
         wx:key="index"
         plain
-        custom-class="flex items-center justify-center p-2 text-sm w-full {{item.type === '00' ? 'expense-button' : 'income-button'}}"
+        custom-class="flex items-center justify-center p-2 text-sm w-full {{item.type === '10' ? 'expense-button' : 'income-button'}}"
         @tap="handleSelect"
         data-name="{{ item.name }}"
       >
@@ -22,7 +22,8 @@
       placeholder="新分类，点击右边图标切换类型"
       border="{{ false }}"
       use-button-slot
-      bind:change="oncategoryChange"
+      @change="onCategoryChange"
+      custom-class="flex-1 input-wrapper input-wrapper--type-{{category.type}}"
     >
       <view slot="right-icon">
         <view wx:if="{{category.type === 'expense'}}" class="flex items-center gap-1" @tap="toggleCategoryType">

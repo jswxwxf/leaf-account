@@ -20,10 +20,10 @@ defineComponent({
       // } catch (error) {
       //   console.error('获取分类列表失败', error)
       categories.value = [
-        { name: '餐饮', type: '00' },
-        { name: '交通', type: '00' },
-        { name: '购物', type: '00' },
-        { name: '收入', type: '10' },
+        { name: '餐饮', type: '10' },
+        { name: '交通', type: '10' },
+        { name: '购物', type: '10' },
+        { name: '收入', type: '20' },
       ]
       // }
     }

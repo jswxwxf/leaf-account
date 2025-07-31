@@ -4,7 +4,7 @@ defineComponent({
   properties: {
     type: {
       type: String,
-      value: '01',
+      value: '10',
     },
   },
   setup() {

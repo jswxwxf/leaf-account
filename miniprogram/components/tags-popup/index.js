@@ -2,7 +2,7 @@ import { defineComponent, ref } from '@vue-mini/core'
 // import { get } from '../../api/request.js'
 
 function newTag() {
-  return { name: '', type: '01' }
+  return { name: '', type: '10' }
 }
 
 defineComponent({
@@ -21,9 +21,9 @@ defineComponent({
     const fetchTags = async () => {
       // Mock data for tags
       tags.value = [
-        { name: '家庭', type: '01' },
-        { name: '旅行', type: '02' },
-        { name: '工作', type: '03' },
+        { name: '家庭', type: '10' },
+        { name: '旅行', type: '20' },
+        { name: '工作', type: '30' },
       ]
     }
 

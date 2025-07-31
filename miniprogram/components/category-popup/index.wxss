@@ -13,3 +13,19 @@
   --button-default-border-color: #4ade80; /* a deeper green color */
   --button-default-color: #15803d; /* a deeper green color for text */
 }
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 8px;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.input-wrapper--type-expense {
+  box-shadow: 0 0 5px rgba(238, 10, 36, 0.4);
+}
+
+.input-wrapper--type-income {
+  box-shadow: 0 0 5px rgba(7, 193, 96, 0.4);
+}
