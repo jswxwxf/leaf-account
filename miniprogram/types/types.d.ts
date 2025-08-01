@@ -31,9 +31,9 @@ export interface Bill {
   _id: string
   note?: string
   amount: number
-  tags?: string[]
+  tags?: Tag[]
   datetime: number
-  category_id?: string
+  category: Category
   createdAt: number
   updatedAt: number
 }

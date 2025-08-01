@@ -8,12 +8,13 @@ defineComponent({
       value: '分类',
     },
   },
-  setup(props, { selectComponent }) {
+  setup(props, { triggerEvent }) {
     const value = ref('')
 
     async function handleClick() {
       const result = await showCategoryPopup()
       value.value = result
+      triggerEvent('change', result)
     }
 
     return {

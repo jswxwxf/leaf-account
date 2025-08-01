@@ -49,9 +49,9 @@ defineComponent({
     }
 
     const handleSelect = (event) => {
-      const { name } = event.currentTarget.dataset
+      const { item } = event.currentTarget.dataset
       hide()
-      _resolve(name)
+      _resolve(item)
     }
 
     const onCategoryChange = (event) => {

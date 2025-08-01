@@ -18,6 +18,8 @@
       <category-field
         label="分类"
         value="{{ bill.category }}"
+        data-field="category"
+        @change="handleFormChange"
       />
       <money-field
         value="{{ bill.amount }}"

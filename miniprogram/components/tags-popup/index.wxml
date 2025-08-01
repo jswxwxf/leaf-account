@@ -1,4 +1,4 @@
-<wxs module="utils">
+<wxs module="tools">
   var isSelected = function(item, selectedTags) {
     if (!item || !selectedTags) return false
     return selectedTags.some(function(selected) {
@@ -25,8 +25,8 @@ module.exports = {
       <van-button
         wx:for="{{ tags }}"
         wx:key="index"
-        plain="{{ !utils.isSelected(item, selectedTags) }}"
-        custom-class="flex items-center justify-center p-2 text-sm w-full tag-button {{ utils.isSelected(item, selectedTags) ? 'ring-2 ring-blue-500' : '' }}"
+        plain="{{ !tools.isSelected(item, selectedTags) }}"
+        custom-class="flex items-center justify-center p-2 text-sm w-full tag-button {{ tools.isSelected(item, selectedTags) ? 'ring-2 ring-blue-500' : '' }}"
         @tap="handleSelect"
         data-item="{{ item }}"
       >

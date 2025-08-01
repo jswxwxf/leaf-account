@@ -10,7 +10,7 @@
         plain
         custom-class="flex items-center justify-center p-2 text-sm w-full {{item.type === '20' ? 'expense-button' : 'income-button'}}"
         @tap="handleSelect"
-        data-name="{{ item.name }}"
+        data-item="{{ item }}"
       >
         {{ item.name }}
       </van-button>
