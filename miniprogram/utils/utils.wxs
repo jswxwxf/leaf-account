@@ -108,9 +108,10 @@ function formatDateTime(date, format) {
     }
     // 兼容Z结尾的情况
     formattedStr = formattedStr.replace(getRegExp('Z', 'gi'), '')
-    d = getDate(formattedStr)
+    // WXS 中 getDate 不支持字符串，此路径无效，但为防止意外，尝试转换
+    d = getDate(parseInt(formattedStr, 10))
   } else if (typeof date === 'number') {
-    d = getDate(date)
+    d = getDate(parseInt(date, 10))
   } else if (Object.prototype.toString.call(date) === '[object Date]') {
     d = getDate(date.getTime())
   } else {
@@ -160,9 +161,44 @@ function formatDateTime(date, format) {
   })
 }
 
+/**
+ * 获取日期是星期几，或者返回'今天'/'昨天'
+ * @param {number} timestamp - 必须是时间戳数字
+ * @returns {string} - '今天', '昨天', 或 '星期X'
+ */
+function getDayOfWeek(timestamp) {
+  if (!timestamp) return ''
+  var date = getDate(parseInt(timestamp, 10))
+  if (isNaN(date.getTime())) return ''
+
+  var today = getDate()
+  var yesterday = getDate(today.getTime() - 24 * 60 * 60 * 1000)
+
+  // 比较年、月、日
+  if (
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth() &&
+    date.getDate() === today.getDate()
+  ) {
+    return '今天'
+  }
+
+  if (
+    date.getFullYear() === yesterday.getFullYear() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getDate() === yesterday.getDate()
+  ) {
+    return '昨天'
+  }
+
+  var weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+  return weekdays[date.getDay()]
+}
+
 module.exports = {
   stringify: stringify,
   formatMoney: formatMoney,
   parseMoney: parseMoney,
   formatDateTime: formatDateTime,
+  getDayOfWeek: getDayOfWeek,
 }

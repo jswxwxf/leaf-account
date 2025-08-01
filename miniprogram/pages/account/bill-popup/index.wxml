@@ -41,9 +41,9 @@
         @change="handleFormChange"
       />
     </van-cell-group>
-    <view class="w-full text-wrap overflow-auto">
+    <!-- <view class="w-full text-wrap overflow-auto">
       {{utils.stringify(bill)}}
-    </view>
+    </view> -->
 
     <!-- Footer -->
     <view class="flex items-center py-4 border-t border-solid border-gray-100">

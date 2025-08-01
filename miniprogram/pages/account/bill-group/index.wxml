@@ -1,12 +1,12 @@
-<wxs src="../../../utils/utils.wxs" module="utils" />
+<wxs src="/utils/utils.wxs" module="utils" />
 
 <view class="bg-white rounded-lg shadow-sm mb-2">
   <van-cell-group>
     <van-cell>
       <view slot="title" class="flex justify-between items-center">
         <view class="flex items-center">
-          <text class="font-bold text-base">{{ item.date }}</text>
-          <text class="text-sm text-gray-500 ml-2">{{ item.day }}</text>
+          <text class="font-bold text-base">{{ utils.formatDateTime(item.datetime, 'YYYY年MM月') }}</text>
+          <text class="text-sm text-gray-500 ml-2">{{ utils.getDayOfWeek(item.datetime) }}</text>
         </view>
         <view class="text-xs text-gray-500">
           <text class="mr-4">出 {{ item.expense }}</text>
@@ -19,17 +19,17 @@
         <van-cell>
           <view class="flex items-center">
             <view class="flex-1 text-left min-w-0">
-              <view class="text-base text-black">{{ bill.category }}</view>
+              <view class="text-base text-black">{{ bill.category.name }}</view>
               <view class="text-xs text-gray-500 overflow-hidden van-ellipsis">{{ bill.note }}</view>
             </view>
             <view wx:if="{{ bill.tags.length }}" class="flex items-end">
-              <block wx:for="{{ bill.tags }}" wx:key="*this" wx:for-item="tag">
-                <van-tag type="{{ tag === '日常' ? 'success' : 'warning' }}" size="small" class="ml-1">
-                  {{ tag }}
-                </van-tag>
+              <block wx:for="{{ bill.tags }}" wx:key="_id" wx:for-item="tag">
+                <bill-tag size="small" custom-class="ml-1">
+                  {{ tag.name }}
+                </bill-tag>
               </block>
             </view>
-            <view class="w-16 text-right font-bold {{ bill.amount > 0 ? 'text-green-500' : 'text-gray-800' }}">
+            <view class="w-24 text-right font-bold {{ bill.amount > 0 ? 'text-green-500' : 'text-gray-800' }}">
               {{ utils.formatMoney(bill.amount) }}
             </view>
           </view>

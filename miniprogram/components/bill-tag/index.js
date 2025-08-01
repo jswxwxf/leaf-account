@@ -1,6 +1,7 @@
 import { defineComponent } from '@vue-mini/core'
 
 defineComponent({
+  externalClasses: ['custom-class'],
   properties: {
     type: {
       type: String,

@@ -45,6 +45,71 @@ async function saveBill(event, models) {
   }
 }
 
+/**
+ * 获取账单列表
+ * @param {object} event - 云函数的原始 event 对象
+ * @param {object} models - 数据模型实例
+ */
+async function getBills(event, models) {
+  // 从 event 中解构出业务参数
+  const { month } = event.query || {}
+  const { pageSize = 200, pageNumber = 1 } = event.paging || {}
+  try {
+    const whereClause = {}
+    // 如果传入了月份，则添加范围查询
+    if (month) {
+      const startDate = new Date(`${month}-01T00:00:00.000Z`)
+      const nextMonthDate = new Date(startDate)
+      nextMonthDate.setMonth(nextMonthDate.getMonth() + 1)
+
+      whereClause.datetime = models.command.gte(startDate).lt(nextMonthDate)
+    }
+
+    // 使用 .list() 方法进行查询，并使用 select 获取关联数据
+    const { data } = await models.bill.list({
+      select: {
+        _id: true,
+        amount: true,
+        datetime: true,
+        note: true,
+        category: {
+          _id: true,
+          name: true,
+          type: true,
+        },
+        tags: {
+          _id: true,
+          name: true,
+          type: true,
+        },
+      },
+      filter: {
+        where: whereClause,
+      },
+      orderBy: [
+        {
+          datetime: 'desc',
+        },
+      ],
+      pageSize,
+      pageNumber,
+    })
+
+    return {
+      code: 200,
+      message: '获取成功',
+      data: data.records,
+    }
+  } catch (e) {
+    console.error('getBills error', e)
+    return {
+      code: 500,
+      message: e.message || '数据库查询失败',
+    }
+  }
+}
+
 module.exports = {
   saveBill,
+  getBills,
 }

@@ -30,16 +30,12 @@ export default function store() {
   )
 
   // 获取账单数据
-  async function fetchBills(params = {}, isLoadMore = false) {
+  async function fetchBills(query = {}, isLoadMore = false) {
     if (loading.value) return
     loading.value = true
 
     try {
-      const res = await getBills({
-        ...params,
-        _page: page.value,
-        _per_page: pageSize,
-      })
+      const res = await getBills(query)
 
       // 如果请求失败，res 为 null，或 res.data 不是数组，则中止后续操作
       if (!res || !Array.isArray(res.data)) {
@@ -67,10 +63,10 @@ export default function store() {
   }
 
   // 重置并获取数据
-  async function resetAndFetchBills(params = {}) {
+  async function resetAndFetchBills(query = {}) {
     page.value = 1
     hasMore.value = true
-    await fetchBills(params, false)
+    await fetchBills(query, false)
   }
 
   // 初始化时获取数据
