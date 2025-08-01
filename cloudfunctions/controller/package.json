@@ -9,7 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "wx-server-sdk": "~2.6.3",
-    "tcb-router": "^1.1.2"
+    "@cloudbase/wx-cloud-client-sdk": "^1.6.1",
+    "tcb-router": "^1.1.2",
+    "wx-server-sdk": "~2.6.3"
   }
 }

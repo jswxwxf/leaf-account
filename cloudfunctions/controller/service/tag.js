@@ -1,17 +1,17 @@
-const cloud = require('wx-server-sdk')
-const db = cloud.database()
-
 /**
  * 获取所有标签
+ * @param {object} models - 数据模型实例
  */
-async function getTags() {
+async function getTags(models) {
   try {
     // 默认最多获取 100 条，对于标签来说足够了
-    const { data } = await db.collection('tag').limit(100).get()
+    const { data } = await models.tag.list({
+      limit: 100,
+    })
     return {
       code: 200,
       message: '获取成功',
-      data,
+      data: data.records,
     }
   } catch (e) {
     console.error('getTags error', e)
@@ -25,33 +25,26 @@ async function getTags() {
 /**
  * 批量添加新标签。如果标签已存在，则返回现有标签。
  * @param {Array<object>} tags - 要添加的标签对象数组
+ * @param {object} models - 数据模型实例
  */
-async function addTags(tags) {
+async function addTags(tags, models) {
   if (!tags || !Array.isArray(tags) || tags.length === 0) {
     return { code: 400, message: '缺少标签数据' }
   }
   try {
-    const result = await db.runTransaction(async (transaction) => {
-      const newDocs = []
-      const tagCollection = transaction.collection('tag')
-
-      for (const tag of tags) {
-        // 检查标签是否已存在，避免重复
-        const { data: existing } = await tagCollection.where({ name: tag.name }).get()
-        if (existing && existing.length > 0) {
-          newDocs.push(existing[0])
-        } else {
-          const { _id } = await tagCollection.add({
-            data: tag,
-          })
-          newDocs.push({ _id, ...tag })
-        }
-      }
-      return newDocs
+    // 使用 models.tag.createMany 进行批量创建
+    const result = await models.tag.createMany({
+      data: tags,
     })
-    return { code: 200, message: '批量处理成功', data: result }
+    // 根据 addCategory 的修复方式，我们假设 createMany 返回一个包含 ids 的 data 对象
+    const { idList } = result.data
+    const createdTags = tags.map((tag, i) => ({
+      ...tag,
+      _id: idList[i],
+    }))
+    return { code: 200, message: '批量添加成功', data: createdTags }
   } catch (e) {
-    console.error('addTags transaction error', e)
+    console.error('addTags error', e)
     return {
       code: 500,
       message: e.message || '数据库批量添加失败',
