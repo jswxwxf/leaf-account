@@ -1,10 +1,13 @@
 const cloud = require('wx-server-sdk')
 const TcbRouter = require('tcb-router')
-const { saveBill } = require('./service/bill.js')
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV,
 })
+
+const { saveBill } = require('./service/bill.js')
+const { getCategories } = require('./service/category.js')
+const { getTags } = require('./service/tag.js')
 
 exports.main = (event, context) => {
   const app = new TcbRouter({ event })
@@ -14,9 +17,13 @@ exports.main = (event, context) => {
     ctx.body = await saveBill(event)
   })
 
-  // 未来可以扩展其他模型的路由
-  // app.router('category.get', async (ctx) => { ... })
-  // app.router('tag.list', async (ctx) => { ... })
+  app.router('/get/categories', async (ctx) => {
+    ctx.body = await getCategories()
+  })
+
+  app.router('/get/tags', async (ctx) => {
+    ctx.body = await getTags()
+  })
 
   return app.serve()
 }

@@ -1,6 +1,6 @@
 import { defineComponent, ref, onMounted } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
-import { get } from '../../api/request.js'
+import { getCategories } from '../../api/category.js'
 
 function newCategory() {
   return { name: '', type: '20' }
@@ -15,18 +15,8 @@ defineComponent({
     let _resolve, _reject
 
     const fetchCategories = async () => {
-      // try {
-      //   const res = await get('/category', { limit: 100 })
-      //   categories.value = res.data || []
-      // } catch (error) {
-      //   console.error('获取分类列表失败', error)
-      categories.value = [
-        { name: '餐饮', type: '20' },
-        { name: '交通', type: '20' },
-        { name: '购物', type: '20' },
-        { name: '收入', type: '10' },
-      ]
-      // }
+      const res = await getCategories()
+      categories.value = res.data || []
     }
 
     const show = () => {

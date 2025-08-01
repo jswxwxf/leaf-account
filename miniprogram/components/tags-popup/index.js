@@ -1,5 +1,6 @@
 import { defineComponent, ref } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast'
+import { getTags } from '@/api/tag.js'
 // import { get } from '../../api/request.js'
 
 function newTag() {
@@ -21,12 +22,8 @@ defineComponent({
     }
 
     const fetchTags = async () => {
-      // Mock data for tags
-      tags.value = [
-        { name: '家庭', type: '10' },
-        { name: '旅行', type: '20' },
-        { name: '工作', type: '30' },
-      ]
+      const res = await getTags()
+      tags.value = res.data || []
     }
 
     const show = (value = []) => {
@@ -51,7 +48,7 @@ defineComponent({
 
     const handleSelect = (event) => {
       const { item } = event.currentTarget.dataset
-      const index = selectedTags.value.findIndex(selected => selected.name === item.name)
+      const index = selectedTags.value.findIndex((selected) => selected.name === item.name)
 
       if (index > -1) {
         selectedTags.value.splice(index, 1)
@@ -69,9 +66,10 @@ defineComponent({
       if (!name) return
 
       // 检查标签是否已存在
-      const isExisting = tags.value.some(t => t.name === name) || selectedTags.value.some(t => t.name === name)
+      const isExisting =
+        tags.value.some((t) => t.name === name) || selectedTags.value.some((t) => t.name === name)
       if (isExisting) {
-        Toast("标签已存在")
+        Toast('标签已存在')
         return
       }
 
@@ -96,7 +94,7 @@ defineComponent({
     const utils = {
       isSelected(item, selectedTags) {
         if (!item || !selectedTags) return false
-        return selectedTags.some(selected => selected.name === item.name)
+        return selectedTags.some((selected) => selected.name === item.name)
       },
     }
 

@@ -5,9 +5,7 @@ import { post } from './request-cloud.js'
  * @typedef {object} Bill
  * @property {string} _id - 唯一标识
  * @property {string} category - 分类
- * @property {string} icon - 图标
- * @property {string} time - 时间 (HH:mm)
- * @property {string} date - 日期 (YYYY-MM-DD)
+ * @property {string} datetime - 日期时间 (YYYY-MM-DD HH:mm)
  * @property {number} amount - 金额 (支出为负, 收入为正)
  * @property {string} [note] - 备注
  * @property {string[]} [tags] - 标签

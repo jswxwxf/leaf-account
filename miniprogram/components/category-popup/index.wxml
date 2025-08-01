@@ -3,10 +3,10 @@
     <view class="text-lg font-bold text-center mb-4">选择分类</view>
 
     <!-- 分类列表 -->
-    <view class="grid grid-cols-3 gap-3 mb-4 category-list">
+    <view wx:if="{{categories.length > 0}}" class="grid grid-cols-3 gap-3 mb-4 category-list">
       <van-button
         wx:for="{{ categories }}"
-        wx:key="index"
+        wx:key="_id"
         plain
         custom-class="flex items-center justify-center p-2 text-sm w-full {{item.type === '20' ? 'expense-button' : 'income-button'}}"
         @tap="handleSelect"
@@ -14,6 +14,9 @@
       >
         {{ item.name }}
       </van-button>
+    </view>
+    <view wx:else class="text-center text-gray-500 pb-6">
+      暂无分类，请在下方添加
     </view>
 
     <!-- 新分类输入 -->
