@@ -7,18 +7,18 @@ defineComponent({
       type: String,
       value: '分类',
     },
+    value: {
+      type: Object,
+      value: {},
+    },
   },
   setup(props, { triggerEvent }) {
-    const value = ref('')
-
     async function handleClick() {
       const result = await showCategoryPopup()
-      value.value = result
       triggerEvent('change', result)
     }
 
     return {
-      value,
       handleClick,
     }
   },

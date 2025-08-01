@@ -19,7 +19,6 @@ defineComponent({
       billPopped.value = true
       try {
         const bill = await billPopup.show(newBill())
-        bill.tags = [bill.tags]
         await upsertBill(bill)
       } finally {
         setTimeout(() => {

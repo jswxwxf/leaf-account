@@ -1,3 +1,5 @@
+<wxs module="utils" src="/utils/utils.wxs" />
+
 <van-popup
   show="{{ visible }}"
   position="top"
@@ -39,6 +41,9 @@
         @change="handleFormChange"
       />
     </van-cell-group>
+    <view class="w-full text-wrap overflow-auto">
+      {{utils.stringify(bill)}}
+    </view>
 
     <!-- Footer -->
     <view class="flex items-center py-4 border-t border-solid border-gray-100">

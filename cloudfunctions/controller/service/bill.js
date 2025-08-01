@@ -13,8 +13,9 @@ async function saveBill(event, models) {
   try {
     const billToSave = { ...bill }
 
-    if (billToSave.datetime) {
-      billToSave.datetime = new Date(billToSave.datetime)
+    // 如果是支出，确保 amount 是负数
+    if (billToSave.category?.type === '20' && billToSave.amount > 0) {
+      billToSave.amount = -billToSave.amount
     }
 
     let savedBill

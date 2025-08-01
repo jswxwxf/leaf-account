@@ -10,8 +10,8 @@ export function newBill() {
     amount: '',
     datetime: Date.now(),
     note: '',
-    tags: '',
-    category: '',
+    tags: [],
+    category: null,
   }
 }
 

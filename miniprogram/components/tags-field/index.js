@@ -9,16 +9,12 @@ defineComponent({
     },
   },
   setup(props, { triggerEvent }) {
-    const value = ref([])
-
     async function handleClick() {
-      const result = await showTagsPopup(value.value)
-      value.value = result
+      const result = await showTagsPopup(props.value)
       triggerEvent('change', result)
     }
 
     return {
-      value,
       handleClick,
     }
   },
