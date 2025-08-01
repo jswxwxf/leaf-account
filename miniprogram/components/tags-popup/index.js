@@ -1,7 +1,6 @@
 import { defineComponent, ref } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast'
-import { getTags } from '@/api/tag.js'
-// import { get } from '../../api/request.js'
+import { getTags, addTags } from '@/api/tag.js'
 
 function newTag() {
   return { name: '', type: '10' }
@@ -11,14 +10,14 @@ defineComponent({
   setup(props, { triggerEvent }) {
     const visible = ref(false)
     const tags = ref([])
-    const tag = ref(newTag())
+    const theNewTag = ref(newTag())
     const selectedTags = ref([])
 
     let _resolve, _reject
 
     const handleTypeChange = (event) => {
       const { type } = event.currentTarget.dataset
-      tag.value.type = type
+      theNewTag.value.type = type
     }
 
     const fetchTags = async () => {
@@ -28,7 +27,7 @@ defineComponent({
 
     const show = (value = []) => {
       visible.value = true
-      tag.value = newTag()
+      theNewTag.value = newTag()
       selectedTags.value = [...value]
       fetchTags()
       return new Promise((resolve, reject) => {
@@ -58,11 +57,11 @@ defineComponent({
     }
 
     const onTagChange = (event) => {
-      tag.value.name = event.detail
+      theNewTag.value.name = event.detail
     }
 
     const handleAddNew = () => {
-      const name = tag.value.name.trim()
+      const name = theNewTag.value.name.trim()
       if (!name) return
 
       // 检查标签是否已存在
@@ -75,7 +74,7 @@ defineComponent({
 
       const theTag = {
         name,
-        type: tag.value.type,
+        type: theNewTag.value.type,
       }
 
       // 添加到列表和选中项
@@ -83,12 +82,32 @@ defineComponent({
       selectedTags.value.push(theTag)
 
       // 清空输入框
-      tag.value = newTag()
+      theNewTag.value = newTag()
     }
 
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
+      // 找出所有新创建的（没有_id）并且被选中的标签
+      const newTagsToCreate = selectedTags.value.filter((t) => !t._id)
+
+      let savedNewTags = []
+      if (newTagsToCreate.length > 0) {
+        // 调用云函数批量保存
+        const res = await addTags(newTagsToCreate)
+        if (res && res.data) {
+          savedNewTags = res.data
+        } else {
+          Toast.fail('保存新标签失败')
+          return
+        }
+      }
+
+      // 合并：已有的 + 新保存的
+      const finalSelectedTags = selectedTags.value
+        .filter((t) => t._id) // 先拿出所有已存在的
+        .concat(savedNewTags) // 再加上刚刚保存成功的
+
       hide()
-      _resolve(selectedTags.value)
+      _resolve(finalSelectedTags)
     }
 
     const utils = {
@@ -101,7 +120,7 @@ defineComponent({
     return {
       visible,
       tags,
-      tag,
+      theNewTag,
       selectedTags,
       show,
       handleClose,

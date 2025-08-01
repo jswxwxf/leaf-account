@@ -1,6 +1,6 @@
 import { defineComponent, ref, onMounted } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
-import { getCategories } from '../../api/category.js'
+import { getCategories, addCategory } from '@/api/category.js'
 
 function newCategory() {
   return { name: '', type: '20' }
@@ -10,7 +10,7 @@ defineComponent({
   setup(props, { triggerEvent }) {
     const visible = ref(false)
     const categories = ref([])
-    const category = ref(newCategory())
+    const theNewCategory = ref(newCategory())
 
     let _resolve, _reject
 
@@ -21,7 +21,7 @@ defineComponent({
 
     const show = () => {
       visible.value = true
-      category.value = newCategory()
+      theNewCategory.value = newCategory()
       fetchCategories()
       return new Promise((resolve, reject) => {
         _resolve = resolve
@@ -45,15 +45,15 @@ defineComponent({
     }
 
     const onCategoryChange = (event) => {
-      category.value.name = event.detail
+      theNewCategory.value.name = event.detail
     }
 
     const toggleCategoryType = (event) => {
-      category.value.type = category.value.type === '20' ? '10' : '20'
+      theNewCategory.value.type = theNewCategory.value.type === '20' ? '10' : '20'
     }
 
-    const handleAddNew = () => {
-      const name = category.value.name.trim()
+    const handleAddNew = async () => {
+      const name = theNewCategory.value.name.trim()
       if (!name) return
 
       // 检查是否已存在同名分类
@@ -62,15 +62,21 @@ defineComponent({
         Toast('分类已存在')
         return
       }
-      hide()
-      // 返回整个对象
-      _resolve({ ...category.value })
+
+      const res = await addCategory({ ...theNewCategory.value })
+      if (res && res.data) {
+        hide()
+        // 返回包含 _id 的完整分类对象
+        _resolve(res.data)
+      } else {
+        Toast.fail('添加失败')
+      }
     }
 
     return {
       visible,
       categories,
-      category,
+      theNewCategory,
       show,
       handleClose,
       handleSelect,

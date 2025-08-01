@@ -1,4 +1,4 @@
-import { get } from './request-cloud.js'
+import { get, post } from './request-cloud.js'
 
 /**
  * @typedef {object} Tag
@@ -13,4 +13,16 @@ import { get } from './request-cloud.js'
  */
 export function getTags() {
   return get('controller', { $url: '/get/tags' })
+}
+
+/**
+ * 批量添加新标签
+ * @param {Array<object>} tags - 标签对象数组
+ * @returns {Promise<any>}
+ */
+export function addTags(tags) {
+  return post('controller', {
+    $url: '/post/tags',
+    tags,
+  })
 }

@@ -1,4 +1,4 @@
-import { get } from './request-cloud.js'
+import { get, post } from './request-cloud.js'
 
 /**
  * @typedef {object} Category
@@ -13,4 +13,16 @@ import { get } from './request-cloud.js'
  */
 export function getCategories() {
   return get('controller', { $url: '/get/categories' })
+}
+
+/**
+ * 添加一个新分类
+ * @param {object} category - 分类数据
+ * @returns {Promise<any>}
+ */
+export function addCategory(category) {
+  return post('controller', {
+    $url: '/post/category',
+    category,
+  })
 }

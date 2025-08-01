@@ -6,8 +6,8 @@ cloud.init({
 })
 
 const { saveBill } = require('./service/bill.js')
-const { getCategories } = require('./service/category.js')
-const { getTags } = require('./service/tag.js')
+const { getCategories, addCategory } = require('./service/category.js')
+const { getTags, addTags } = require('./service/tag.js')
 
 exports.main = (event, context) => {
   const app = new TcbRouter({ event })
@@ -23,6 +23,14 @@ exports.main = (event, context) => {
 
   app.router('/get/tags', async (ctx) => {
     ctx.body = await getTags()
+  })
+
+  app.router('/post/category', async (ctx) => {
+    ctx.body = await addCategory(event.category)
+  })
+
+  app.router('/post/tags', async (ctx) => {
+    ctx.body = await addTags(event.tags)
   })
 
   return app.serve()
