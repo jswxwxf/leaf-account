@@ -1,7 +1,7 @@
 import { ref, computed, onShow } from '@vue-mini/core'
 import { sumBy, orderBy } from 'lodash'
 import { DateTime } from '@/utils/date.js'
-import { getBills } from '@/api/bill.js'
+import { getBillsByDate } from '@/api/bill.js'
 import { groupBillsByDate } from '@/service/bill-service.js'
 
 export default function store() {
@@ -35,7 +35,7 @@ export default function store() {
     loading.value = true
 
     try {
-      const res = await getBills(query)
+      const res = await getBillsByDate(query)
 
       // 如果请求失败，res 为 null，或 res.data 不是数组，则中止后续操作
       if (!res || !Array.isArray(res.data)) {

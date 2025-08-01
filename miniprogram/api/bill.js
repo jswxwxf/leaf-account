@@ -12,12 +12,12 @@ import { get, post } from './request-cloud.js'
 
 /**
  * 获取账单列表
- * @param {object} params - 查询参数
+ * @param {object} query - 查询参数
  * @returns {Promise<Bill[]>}
  */
-export function getBills(query = {}) {
+export function getBillsByDate(query = {}) {
   return get('controller', {
-    $url: '/get/bills',
+    $url: '/get/bills/bydate',
     query,
   })
 }

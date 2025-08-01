@@ -23,9 +23,9 @@ exports.main = (event, context) => {
     ctx.body = await saveBill(event, models)
   })
 
-  app.router('/get/bills', async (ctx) => {
+  app.router('/get/bills/bydate', async (ctx) => {
     // event 中包含了 $url 和其他参数
-    ctx.body = await getBills(event, models)
+    ctx.body = await getBillsByDate(event, models)
   })
 
   app.router('/get/categories', async (ctx) => {
