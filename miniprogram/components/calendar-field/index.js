@@ -1,5 +1,6 @@
 import { defineComponent, ref, computed } from '@vue-mini/core'
 import { formatDate } from '@/utils/date.js'
+import { showCalendar } from '@/utils/index.js'
 
 defineComponent({
   properties: {
@@ -8,8 +9,8 @@ defineComponent({
       value: '日期',
     },
     value: {
-      type: Date,
-      value: new Date(),
+      type: [Number, Date], // Allow both timestamp and Date object
+      value: Date.now(),
     },
     type: {
       type: String,
@@ -22,39 +23,20 @@ defineComponent({
   },
 
   setup(props, { triggerEvent }) {
-    const show = ref(false)
-
-    // 限制可选范围为最近五年
-    const minDate = new Date(new Date().getFullYear() - 5, 0, 1).getTime()
-    const maxDate = new Date().getTime()
-
     const formattedDate = computed(() => {
-      const format = props.type === 'short' ? 'MM-dd' : 'yyyy-MM-dd'
+      if (!props.value) return ''
+      const format = props.type === 'short' ? 'MM月dd日' : 'yyyy-MM-dd'
       return formatDate(props.value, format)
     })
 
-    const showCalendar = () => {
-      show.value = true
-    }
-
-    const hideCalendar = () => {
-      show.value = false
-    }
-
-    const handleConfirm = (event) => {
-      const selectedDate = event.detail
-      triggerEvent('change', selectedDate.getTime())
-      hideCalendar()
+    const handleClick = async () => {
+      const result = await showCalendar(props.value)
+      triggerEvent('change', result)
     }
 
     return {
-      show,
-      minDate,
-      maxDate,
       formattedDate,
-      showCalendar,
-      hideCalendar,
-      handleConfirm,
+      handleClick,
     }
   },
 })
