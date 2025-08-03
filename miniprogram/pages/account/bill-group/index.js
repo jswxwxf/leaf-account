@@ -13,8 +13,14 @@ defineComponent({
       triggerEvent('edit', bill)
     }
 
+    const handleDelete = (e) => {
+      const { bill } = e.currentTarget.dataset
+      triggerEvent('delete', bill)
+    }
+
     return {
       handleEdit,
+      handleDelete,
     }
   },
 })

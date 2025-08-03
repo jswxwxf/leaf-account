@@ -11,7 +11,7 @@ const client = init(cloud)
 const models = client.models
 const db = cloud.database()
 
-const { saveBill, getBillsByDate } = require('./service/bill.js')
+const { saveBill, getBillsByDate, deleteBill } = require('./service/bill.js')
 const { getCategories, addCategory } = require('./service/category.js')
 const { getTags, addTags } = require('./service/tag.js')
 
@@ -25,6 +25,10 @@ exports.main = (event, context) => {
 
   app.router('/get/bills/bydate', async (ctx) => {
     ctx.body = await getBillsByDate(event, models)
+  })
+
+  app.router('/delete/bill', async (ctx) => {
+    ctx.body = await deleteBill(event, models)
   })
 
   app.router('/get/categories', async (ctx) => {

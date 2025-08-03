@@ -36,7 +36,7 @@
         </van-cell>
         <view slot="right" class="van-swipe-cell__right flex h-full">
           <view class="h-full w-16 flex items-center justify-center bg-green-500 text-white text-sm" @tap="handleEdit" data-bill="{{bill}}">编辑</view>
-          <view class="h-full w-16 flex items-center justify-center bg-red-500 text-white text-sm">删除</view>
+          <view class="h-full w-16 flex items-center justify-center bg-red-500 text-white text-sm" @tap="handleDelete" data-bill="{{bill}}">删除</view>
         </view>
       </van-swipe-cell>
     </block>

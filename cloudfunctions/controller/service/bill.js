@@ -5,9 +5,9 @@
  * @param {object} models - 数据模型实例
  */
 async function saveBill(event, models) {
-  const { bill } = event
+  const { bill } = event.body
   if (!bill) {
-    return { code: 400, message: '缺少 bill 对象' }
+    return { code: 400, message: '请求中缺少 bill 对象' }
   }
 
   try {
@@ -144,7 +144,41 @@ async function getBillsByDate(event, models) {
   }
 }
 
+/**
+ * 删除账单。
+ * @param {object} event - 云函数的原始 event 对象
+ * @param {object} models - 数据模型实例
+ */
+async function deleteBill(event, models) {
+  const { id } = event
+  if (!id) {
+    return { code: 400, message: '请求中缺少 id 参数' }
+  }
+
+  try {
+    const result = await models.bill.delete({
+      filter: {
+        where: {
+          _id: {
+            $eq: id,
+          },
+        },
+      },
+    })
+
+    if (result.data.count > 0) {
+      return { code: 200, message: '删除成功' }
+    } else {
+      return { code: 404, message: '未找到要删除的记录' }
+    }
+  } catch (e) {
+    console.error('deleteBill error', e)
+    return { code: 500, message: e.message || '数据库操作失败' }
+  }
+}
+
 module.exports = {
   saveBill,
   getBillsByDate,
+  deleteBill,
 }

@@ -30,6 +30,18 @@ export function getBillsByDate(query = {}) {
 export function upsertBill(bill) {
   return post('controller', {
     $url: '/upsert/bill',
-    bill,
+    body: { bill },
+  })
+}
+
+/**
+ * 删除一个账单
+ * @param {string} id - 账单的 _id
+ * @returns {Promise<any>}
+ */
+export function deleteBill(id) {
+  return post('controller', {
+    $url: '/delete/bill',
+    id,
   })
 }

@@ -9,7 +9,7 @@
       <add-button hidden="{{ billPopped }}" @click="handleAddBill" />
 
       <block wx:for="{{ dailyBills }}" wx:key="_id">
-        <bill-group item="{{ item }}" @edit="handleEditBill" />
+        <bill-group item="{{ item }}" @edit="handleEditBill" @delete="handleDeleteBill" />
       </block>
 
       <!-- Loading and No More States -->
@@ -23,5 +23,7 @@
 </view>
 
 <van-toast id="van-toast" />
+<van-dialog id="van-dialog" />
+
 <category-helper />
 <tags-helper />

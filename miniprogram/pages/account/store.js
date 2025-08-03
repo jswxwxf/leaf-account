@@ -92,8 +92,16 @@ export default function store() {
     }
   }
 
+  function removeRawBill(billId) {
+    const index = rawBills.value.findIndex((b) => b._id === billId)
+    if (index > -1) {
+      rawBills.value.splice(index, 1)
+    }
+  }
+
   return {
     updateRawBill,
+    removeRawBill,
     dailyBills,
     typeValue,
     dateValue,
