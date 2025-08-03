@@ -21,13 +21,15 @@ export default function store() {
   const dateValue = ref(0) // TODO: 后续用于月份筛选
 
   // 总计
-  const totalExpense = computed(() =>
-    sumBy(rawBills.value, (bill) => (bill.amount < 0 ? Math.abs(bill.amount) : 0)).toFixed(2),
-  )
+  const totalExpense = computed(() => {
+    const total = sumBy(rawBills.value, (bill) => (bill.amount < 0 ? Math.abs(bill.amount) : 0))
+    return (total || 0).toFixed(2)
+  })
 
-  const totalIncome = computed(() =>
-    sumBy(rawBills.value, (bill) => (bill.amount > 0 ? bill.amount : 0)).toFixed(2),
-  )
+  const totalIncome = computed(() => {
+    const total = sumBy(rawBills.value, (bill) => (bill.amount > 0 ? bill.amount : 0))
+    return (total || 0).toFixed(2)
+  })
 
   // 获取账单数据
   async function fetchBills(query = {}, isLoadMore = false) {
@@ -77,7 +79,21 @@ export default function store() {
     resetAndFetchBills()
   })
 
+  function updateRawBill(newBill) {
+    const index = rawBills.value.findIndex((b) => b._id === newBill._id)
+    if (index > -1) {
+      // 更新
+      rawBills.value.splice(index, 1, newBill)
+    } else {
+      // 新增
+      rawBills.value.push(newBill)
+      // 重新排序
+      rawBills.value = orderBy(rawBills.value, ['datetime'], ['desc'])
+    }
+  }
+
   return {
+    updateRawBill,
     dailyBills,
     typeValue,
     dateValue,

@@ -7,7 +7,14 @@ defineComponent({
       value: {},
     },
   },
-  setup() {
-    return {}
+  setup(props, { triggerEvent }) {
+    const handleEdit = (e) => {
+      const { bill } = e.currentTarget.dataset
+      triggerEvent('edit', bill)
+    }
+
+    return {
+      handleEdit,
+    }
   },
 })

@@ -24,7 +24,7 @@
             </view>
             <view wx:if="{{ bill.tags.length }}" class="flex items-end">
               <block wx:for="{{ bill.tags }}" wx:key="_id" wx:for-item="tag">
-                <bill-tag size="small" custom-class="ml-1">
+                <bill-tag type="{{tag.type}}" custom-class="ml-1">
                   {{ tag.name }}
                 </bill-tag>
               </block>
@@ -35,7 +35,7 @@
           </view>
         </van-cell>
         <view slot="right" class="van-swipe-cell__right flex h-full">
-          <view class="h-full w-16 flex items-center justify-center bg-green-500 text-white text-sm">编辑</view>
+          <view class="h-full w-16 flex items-center justify-center bg-green-500 text-white text-sm" @tap="handleEdit" data-bill="{{bill}}">编辑</view>
           <view class="h-full w-16 flex items-center justify-center bg-red-500 text-white text-sm">删除</view>
         </view>
       </van-swipe-cell>

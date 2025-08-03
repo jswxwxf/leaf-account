@@ -1,6 +1,6 @@
 <view class="h-screen bg-gray-100 flex flex-col">
   <!-- Header -->
-  <account-header id="account-header" wx:if="{{ !billPopped }}" />
+  <account-header id="account-header" hidden="{{ billPopped }}" />
   <bill-popup id="bill-popup" />
 
   <!-- Bill List -->
@@ -9,7 +9,7 @@
       <add-button hidden="{{ billPopped }}" @click="handleAddBill" />
 
       <block wx:for="{{ dailyBills }}" wx:key="_id">
-        <bill-group item="{{ item }}" />
+        <bill-group item="{{ item }}" @edit="handleEditBill" />
       </block>
 
       <!-- Loading and No More States -->

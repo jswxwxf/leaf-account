@@ -9,7 +9,7 @@ defineComponent({
     },
     size: {
       type: String,
-      value: 'normal',
+      value: 'small',
     },
   },
   setup() {

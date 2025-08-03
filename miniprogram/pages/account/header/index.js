@@ -2,7 +2,12 @@ import { defineComponent, inject, ref } from '@vue-mini/core'
 import { storeKey } from '../store'
 
 defineComponent({
-  properties: {},
+  properties: {
+    hidden: {
+      type: Boolean,
+      value: false,
+    },
+  },
   setup() {
     const { typeValue, dateValue, totalExpense, totalIncome } = inject(storeKey)
 

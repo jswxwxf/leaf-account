@@ -1,4 +1,5 @@
-import { defineComponent } from '@vue-mini/core'
+import { defineComponent, ref, computed, watch } from '@vue-mini/core'
+import { formatMoney, parseMoney } from '@/utils/index.js'
 
 defineComponent({
   properties: {
@@ -8,35 +9,44 @@ defineComponent({
     },
   },
   setup(props, { triggerEvent }) {
-    const onInput = (event) => {
-      // 实时将输入值传递给父组件，不做任何处理
-      triggerEvent('change', event.detail)
+    const isFocused = ref(false)
+    const displayValue = ref('')
+
+    // 监听外部传入的 value，并更新 displayValue
+    watch(
+      () => props.value,
+      (newValue) => {
+        if (isFocused.value) return // 聚焦时，用户正在输入，不进行格式化
+        const num = parseMoney(newValue)
+        displayValue.value = isNaN(num) ? '' : formatMoney(num)
+      },
+      { immediate: true },
+    )
+
+    const onFocus = () => {
+      isFocused.value = true
+      // 聚焦时，显示原始数值以便编辑
+      const num = parseMoney(props.value)
+      displayValue.value = isNaN(num) ? '' : String(num)
     }
 
     const onBlur = (event) => {
-      let value = String(event.detail.value ?? '')
+      isFocused.value = false
+      const rawValue = event.detail.value
+      const num = parseMoney(rawValue)
 
-      // 如果值为空，则触发 change 并传递 null
-      if (value === '' || value === '-') {
-        triggerEvent('change', null)
-        return
+      if (isNaN(num)) {
+        displayValue.value = ''
+        triggerEvent('change', 0) // 当输入无效时，派发 0
+      } else {
+        displayValue.value = formatMoney(num)
+        triggerEvent('change', num) // 派发纯净的数值
       }
-
-      // 格式化数字，保留两位小数
-      const numberValue = parseFloat(value)
-      if (isNaN(numberValue)) {
-        triggerEvent('change', null)
-        return
-      }
-
-      const formattedValue = numberValue.toFixed(2)
-
-      // 触发事件，将格式化后的值传递给父组件
-      triggerEvent('change', formattedValue)
     }
 
     return {
-      onInput,
+      displayValue,
+      onFocus,
       onBlur,
     }
   },

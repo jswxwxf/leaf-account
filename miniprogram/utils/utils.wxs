@@ -31,6 +31,12 @@ function formatMoney(value, digits) {
     return value.toString()
   }
 
+  // 检查是否为负数
+  var isNegative = number < 0
+  if (isNegative) {
+    number = -number
+  }
+
   // 四舍五入并保留指定小数位数
   number = number.toFixed(digits)
 
@@ -52,6 +58,11 @@ function formatMoney(value, digits) {
     if (count % 3 === 0 && i > 0) {
       formatted = ',' + formatted
     }
+  }
+
+  // 如果原始数字是负数，则在结果前添加负号
+  if (isNegative) {
+    formatted = '-' + formatted
   }
 
   return formatted + decimalPart

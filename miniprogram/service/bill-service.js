@@ -26,8 +26,8 @@ export function groupBillsByDate(bills) {
   const grouped = groupBy(bills, 'datetime')
 
   const mapped = map(grouped, (dailyRawBills, datetime) => {
-    const income = sumBy(dailyRawBills, (bill) => (bill.amount > 0 ? bill.amount : 0))
-    const expense = sumBy(dailyRawBills, (bill) => (bill.amount < 0 ? Math.abs(bill.amount) : 0))
+    const income = sumBy(dailyRawBills, (bill) => (bill.amount > 0 ? bill.amount : 0)) || 0
+    const expense = sumBy(dailyRawBills, (bill) => (bill.amount < 0 ? Math.abs(bill.amount) : 0)) || 0
 
     return {
       datetime,

@@ -23,8 +23,15 @@ async function saveBill(event, models) {
       // 更新逻辑
       const billId = billToSave._id
       delete billToSave._id
-      await models.bill.where({ _id: billId }).update({
+      await models.bill.update({
         data: billToSave,
+        filter: {
+          where: {
+            _id: {
+              $eq: billId, // 推荐传入_id数据标识进行操作
+            },
+          },
+        },
       })
       // 更新成功后，返回完整的账单对象
       savedBill = { ...billToSave, _id: billId }
@@ -88,12 +95,14 @@ async function getBillsByDate(event, models) {
           {
             datetime: { $gte: dayStart.getTime() },
           },
-          { datetime: { $lt: dayEnd.getTime() } },
+          { datetime: { $lte: dayEnd.getTime() } },
         ],
       }
 
       // 3. 循环内不再需要 getCount
-      const result = await models.bill.list({
+      const {
+        data: { records: dailyBills },
+      } = await models.bill.list({
         select: {
           _id: true,
           amount: true,
@@ -106,7 +115,6 @@ async function getBillsByDate(event, models) {
         orderBy: [{ datetime: 'desc' }],
         pageSize: 1000, // 获取当天所有数据
       })
-      const dailyBills = result.data.records
 
       if (dailyBills && dailyBills.length > 0) {
         accumulatedBills = accumulatedBills.concat(dailyBills)
