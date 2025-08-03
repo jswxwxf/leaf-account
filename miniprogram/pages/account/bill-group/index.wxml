@@ -5,7 +5,7 @@
     <van-cell>
       <view slot="title" class="flex justify-between items-center">
         <view class="flex items-center">
-          <text class="font-bold text-base">{{ utils.formatDateTime(item.datetime, 'YYYY年MM月') }}</text>
+          <text class="font-bold text-base">{{ utils.formatDateTime(item.datetime, 'YYYY年MM月DD日') }}</text>
           <text class="text-sm text-gray-500 ml-2">{{ utils.getDayOfWeek(item.datetime) }}</text>
         </view>
         <view class="text-xs text-gray-500">

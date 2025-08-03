@@ -23,20 +23,23 @@ export function newBill() {
 export function groupBillsByDate(bills) {
   if (!bills || bills.length === 0) return []
 
-  const grouped = groupBy(bills, 'datetime')
+  // 使用 toISODate() 仅根据日期进行分组，忽略时间
+  const grouped = groupBy(bills, (bill) => DateTime.fromMillis(bill.datetime).toISODate())
 
-  const mapped = map(grouped, (dailyRawBills, datetime) => {
+  const mapped = map(grouped, (dailyRawBills, date) => {
     const income = sumBy(dailyRawBills, (bill) => (bill.amount > 0 ? bill.amount : 0)) || 0
     const expense = sumBy(dailyRawBills, (bill) => (bill.amount < 0 ? Math.abs(bill.amount) : 0)) || 0
 
     return {
-      datetime,
-      day: getDayOfWeek(datetime),
+      datetime: dailyRawBills[0].datetime,
+      day: getDayOfWeek(date),
       income: income.toFixed(2),
       expense: expense.toFixed(2),
-      bills: dailyRawBills,
+      // 确保组内的账单按时间倒序排列
+      bills: orderBy(dailyRawBills, 'datetime', 'desc'),
     }
   })
 
-  return orderBy(mapped, (item) => item.bills[0].datetime, 'desc')
+  // 按日期倒序排列所有分组
+  return orderBy(mapped, 'datetime', 'desc')
 }

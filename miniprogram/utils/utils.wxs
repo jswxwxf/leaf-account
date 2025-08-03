@@ -119,11 +119,13 @@ function formatDateTime(date, format) {
     }
     // 兼容Z结尾的情况
     formattedStr = formattedStr.replace(getRegExp('Z', 'gi'), '')
-    // WXS 中 getDate 不支持字符串，此路径无效，但为防止意外，尝试转换
-    d = getDate(parseInt(formattedStr, 10))
+    // WXS 中 getDate 对 'YYYY/MM/DD' 格式的字符串兼容性最好
+    d = getDate(formattedStr)
   } else if (typeof date === 'number') {
+    // 确保时间戳是整数
     d = getDate(parseInt(date, 10))
-  } else if (Object.prototype.toString.call(date) === '[object Date]') {
+  } else if (date.constructor.name === 'Date') {
+    // 使用更可靠的 WXS 类型检查方式
     d = getDate(date.getTime())
   } else {
     return ''
@@ -145,7 +147,7 @@ function formatDateTime(date, format) {
       case 'YYYY':
         return year
       case 'YY':
-        return String(year).slice(-2)
+        return ('' + year).slice(-2)
       case 'MM':
         return padZero(month)
       case 'M':
