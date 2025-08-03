@@ -1,12 +1,14 @@
 <view class="h-screen bg-gray-100 flex flex-col">
   <!-- Header -->
   <account-header id="account-header" hidden="{{ billPopped }}" />
+
   <bill-popup id="bill-popup" />
+  <batch-popup id="batch-popup" />
 
   <!-- Bill List -->
   <scroll-view scroll-y class="flex-1 overflow-hidden" lower-threshold="100" @scrolltolower="loadMore">
     <view class="pb-16 pt-2 relative">
-      <add-button hidden="{{ billPopped }}" @click="handleAddBill" />
+      <add-button hidden="{{ billPopped }}" @click="handleAddBill" @select="handleActionSelect" />
 
       <block wx:for="{{ dailyBills }}" wx:key="_id">
         <bill-group item="{{ item }}" @edit="handleEditBill" @delete="handleDeleteBill" />

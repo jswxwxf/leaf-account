@@ -11,6 +11,14 @@ defineComponent({
       type: Date,
       value: new Date(),
     },
+    type: {
+      type: String,
+      value: 'long', // 'long' or 'short'
+    },
+    placeholder: {
+      type: String,
+      value: '请选择日期',
+    },
   },
 
   setup(props, { triggerEvent }) {
@@ -21,7 +29,8 @@ defineComponent({
     const maxDate = new Date().getTime()
 
     const formattedDate = computed(() => {
-      return formatDate(props.value, 'yyyy-MM-dd')
+      const format = props.type === 'short' ? 'MM-dd' : 'yyyy-MM-dd'
+      return formatDate(props.value, format)
     })
 
     const showCalendar = () => {

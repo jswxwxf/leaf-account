@@ -1,7 +1,7 @@
 <van-field
   label="{{ label }}"
   value="{{ formattedDate }}"
-  placeholder="请选择日期"
+  placeholder="{{ placeholder }}"
   is-link
   readonly
   bind:click-input="showCalendar"

@@ -5,6 +5,7 @@
     "account-header": "./header/index",
     "bill-group": "./bill-group/index",
     "bill-popup": "./bill-popup/index",
+    "batch-popup": "./batch-popup/index",
     "add-button": "./add-button/index",
     "category-helper": "/components/category-helper/index",
     "tags-helper": "/components/tags-helper/index"

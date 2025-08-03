@@ -4,12 +4,12 @@ defineComponent({
   setup() {
     const visible = ref(false)
     const list = ref(
-      Array.from({ length: 5 }, () => ({
-        date: '',
-        category: '',
+      Array.from({ length: 3 }, () => ({
+        datetime: Date.now(),
+        category: null,
         amount: '',
         note: '',
-        tags: '',
+        tags: [],
       })),
     )
 
@@ -38,8 +38,8 @@ defineComponent({
 
     const handleFormChange = (e) => {
       const { rowIndex, field } = e.currentTarget.dataset
-      const { value } = e.detail
-      list.value[rowIndex][field] = value
+      // 自定义组件的 value 在 e.detail 中，而不是 e.detail.value
+      list.value[rowIndex][field] = e.detail
     }
 
     return {

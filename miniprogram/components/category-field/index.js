@@ -11,6 +11,10 @@ defineComponent({
       type: Object,
       value: {},
     },
+    placeholder: {
+      type: String,
+      value: '请选择分类',
+    },
   },
   setup(props, { triggerEvent }) {
     async function handleClick() {

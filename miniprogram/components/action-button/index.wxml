@@ -11,6 +11,7 @@
   actions="{{ actions }}"
   @close="onCloseActionSheet"
   @select="onSelect"
+  @cancel="onCloseActionSheet"
   cancel-text="取消"
   safe-area-inset-bottom="{{ false }}"
 />

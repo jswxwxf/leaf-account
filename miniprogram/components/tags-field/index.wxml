@@ -1,5 +1,5 @@
 <van-field
-  label="标签"
+  label="{{ label }}"
   is-link
   readonly
   @click-input="handleClick"
@@ -10,6 +10,6 @@
         {{ item.name }}
       </bill-tag>
     </block>
-    <view wx:else class="text-gray-500">请选择标签</view>
+    <view wx:else style="color: #c8c9cc;">{{ placeholder }}</view>
   </view>
 </van-field>

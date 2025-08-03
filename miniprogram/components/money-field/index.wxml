@@ -1,8 +1,8 @@
 <van-field
-  label="金额"
+  label="{{ label }}"
   type="digit"
   value="{{ displayValue }}"
-  placeholder="请输入金额"
+  placeholder="{{ placeholder }}"
   @focus="onFocus"
   @blur="onBlur"
 />

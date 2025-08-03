@@ -7,60 +7,61 @@
   custom-style="position: static;"
 >
   <view class="h-full w-full bg-white px-4 pt-2 flex flex-col border-b border-solid border-gray-300 max-h-screen">
-    <!-- Header -->
-    <view class="grid grid-cols-5 gap-2">
-      <view class="font-bold px-1 py-2">日期</view>
-      <view class="font-bold px-1 py-2">分类</view>
-      <view class="font-bold px-1 py-2">金额</view>
-      <view class="font-bold px-1 py-2">备注</view>
-      <view class="font-bold px-1 py-2">标签</view>
-    </view>
-
     <!-- Main Content: make it scrollable -->
-    <view class="flex-1 overflow-y-auto grid grid-cols-5 gap-2">
+    <view class="flex-1 overflow-y-auto">
       <!-- Rows -->
       <block wx:for="{{ list }}" wx:for-item="bill" wx:for-index="rowIndex" wx:key="rowIndex">
-        <input
-          class="px-1 py-2 border-0 border-b border-solid border-gray-300 text-sm"
-          placeholder="日期"
-          value="{{ bill.date }}"
-          data-row-index="{{ rowIndex }}"
-          data-field="date"
-          @input="handleFormChange"
-        />
-        <input
-          class="px-1 py-2 border-0 border-b border-solid border-gray-300 text-sm"
-          placeholder="分类"
-          value="{{ bill.category }}"
-          data-row-index="{{ rowIndex }}"
-          data-field="category"
-          @input="handleFormChange"
-        />
-        <input
-          class="px-1 py-2 border-0 border-b border-solid border-gray-300 text-sm"
-          type="digit"
-          placeholder="金额"
-          value="{{ bill.amount }}"
-          data-row-index="{{ rowIndex }}"
-          data-field="amount"
-          @input="handleFormChange"
-        />
-        <input
-          class="px-1 py-2 border-0 border-b border-solid border-gray-300 text-sm"
-          placeholder="备注"
-          value="{{ bill.note }}"
-          data-row-index="{{ rowIndex }}"
-          data-field="note"
-          @input="handleFormChange"
-        />
-        <input
-          class="px-1 py-2 border-0 border-b border-solid border-gray-300 text-sm"
-          placeholder="标签"
-          value="{{ bill.tags }}"
-          data-row-index="{{ rowIndex }}"
-          data-field="tags"
-          @input="handleFormChange"
-        />
+        <view class=" border-b border-solid border-gray-200">
+          <!-- Row 1: Date, Category, Amount -->
+          <view class="grid grid-cols-3 gap-2">
+            <calendar-field
+              label=""
+              value="{{ bill.datetime }}"
+              type="short"
+              placeholder="日期"
+              bind:change="handleFormChange"
+              data-field="datetime"
+              data-row-index="{{ rowIndex }}"
+            />
+            <category-field
+              label=""
+              value="{{ bill.category }}"
+              placeholder="分类"
+              bind:change="handleFormChange"
+              data-field="category"
+              data-row-index="{{ rowIndex }}"
+            />
+            <money-field
+              label=""
+              value="{{ bill.amount }}"
+              placeholder="金额"
+              bind:change="handleFormChange"
+              data-field="amount"
+              data-row-index="{{ rowIndex }}"
+            />
+          </view>
+          <!-- Row 2: Note and Tags -->
+          <view class="grid grid-cols-5 gap-2 mt-1">
+            <van-field
+              class="col-span-3"
+              label=""
+              value="{{ bill.note }}"
+              placeholder="备注"
+              @change="handleFormChange"
+              data-field="note"
+              data-row-index="{{ rowIndex }}"
+            />
+            <tags-field
+              class="col-span-2"
+              label=""
+              value="{{ bill.tags }}"
+              placeholder="标签"
+              bind:change="handleFormChange"
+              data-field="tags"
+              data-row-index="{{ rowIndex }}"
+            />
+          </view>
+        </view>
       </block>
     </view>
 

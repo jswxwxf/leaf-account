@@ -3,9 +3,17 @@ import { formatMoney, parseMoney } from '@/utils/index.js'
 
 defineComponent({
   properties: {
+    label: {
+      type: String,
+      value: '金额',
+    },
     value: {
       type: null, // 允许字符串和数字
       value: '',
+    },
+    placeholder: {
+      type: String,
+      value: '请输入金额',
     },
   },
   setup(props, { triggerEvent }) {

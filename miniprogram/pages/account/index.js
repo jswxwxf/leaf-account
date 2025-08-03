@@ -40,9 +40,11 @@ defineComponent({
     provide(storeKey, state)
 
     const billPopup = ref(null)
+    const batchPopup = ref(null)
 
     onReady(() => {
       billPopup.value = selectComponent('#bill-popup')
+      batchPopup.value = selectComponent('#batch-popup')
     })
 
     const { billPopped, processBill } = useBillPopup(state, billPopup)
@@ -67,12 +69,42 @@ defineComponent({
       Toast.success('删除成功')
     }
 
+    const handleBatchBills = async () => {
+      if (!batchPopup.value) return
+
+      billPopped.value = true
+
+      let bills = null
+
+      try {
+        bills = await batchPopup.value.show()
+      } finally {
+        billPopped.value = false
+      }
+
+      // if (bills) {
+      //   const res = await upsertBill(billToUpsert)
+      //   if (res.data) {
+      //     state.updateRawBill(res.data)
+      //   }
+      // }
+    }
+
+    const handleActionSelect = (e) => {
+      const action = e.detail
+      if (action.detail.value === 'batch') {
+        handleBatchBills()
+      }
+      // 可以为其他 action 添加逻辑
+    }
+
     return {
       ...state,
       billPopped,
       handleAddBill,
       handleEditBill,
       handleDeleteBill,
+      handleActionSelect,
     }
   },
 })
