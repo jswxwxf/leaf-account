@@ -9,8 +9,9 @@ cloud.init({
 // 初始化 client 和 models
 const client = init(cloud)
 const models = client.models
+const db = cloud.database()
 
-const { saveBill, getBills } = require('./service/bill.js')
+const { saveBill, getBillsByDate } = require('./service/bill.js')
 const { getCategories, addCategory } = require('./service/category.js')
 const { getTags, addTags } = require('./service/tag.js')
 
@@ -19,12 +20,10 @@ exports.main = (event, context) => {
 
   // 账单相关的路由
   app.router('/upsert/bill', async (ctx) => {
-    // 将 models 传入 service 函数
     ctx.body = await saveBill(event, models)
   })
 
   app.router('/get/bills/bydate', async (ctx) => {
-    // event 中包含了 $url 和其他参数
     ctx.body = await getBillsByDate(event, models)
   })
 

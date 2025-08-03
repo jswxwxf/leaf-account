@@ -60,6 +60,7 @@ async function getBillsByDate(event, models) {
       data: { total: totalBills },
     } = await models.bill.list({
       pageSize: 1,
+      pageNumber: 1,
       getCount: true,
     })
 
@@ -83,11 +84,16 @@ async function getBillsByDate(event, models) {
       dayEnd.setHours(23, 59, 59, 999)
 
       const whereClause = {
-        $and: [{ datetime: { $gte: dayStart } }, { datetime: { $lte: dayEnd } }],
+        $and: [
+          {
+            datetime: { $gte: dayStart.getTime() },
+          },
+          { datetime: { $lt: dayEnd.getTime() } },
+        ],
       }
 
       // 3. 循环内不再需要 getCount
-      const { data: dailyBills } = await models.bill.list({
+      const result = await models.bill.list({
         select: {
           _id: true,
           amount: true,
@@ -100,6 +106,7 @@ async function getBillsByDate(event, models) {
         orderBy: [{ datetime: 'desc' }],
         pageSize: 1000, // 获取当天所有数据
       })
+      const dailyBills = result.data.records
 
       if (dailyBills && dailyBills.length > 0) {
         accumulatedBills = accumulatedBills.concat(dailyBills)
@@ -116,11 +123,9 @@ async function getBillsByDate(event, models) {
     return {
       code: 200,
       message: '获取成功',
-      data: {
-        records: accumulatedBills,
-        // 如果全部加载完，则 nextStartDate 为 null，告知前端停止请求
-        nextStartDate: allDataLoaded ? null : currentDate.toISOString().split('T')[0],
-      },
+      data: accumulatedBills,
+      // 如果全部加载完，则 nextStartDate 为 null，告知前端停止请求
+      nextStartDate: allDataLoaded ? null : currentDate.toISOString().split('T')[0],
     }
   } catch (e) {
     console.error('getBills error', e)
@@ -133,5 +138,5 @@ async function getBillsByDate(event, models) {
 
 module.exports = {
   saveBill,
-  getBills,
+  getBillsByDate,
 }
