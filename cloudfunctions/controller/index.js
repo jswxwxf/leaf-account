@@ -15,6 +15,7 @@ const {
   saveBill,
   saveBills,
   getBillsByMonth,
+  getBills,
   deleteBill,
   getBillsByIds,
   getBillsSummaryByMonth,
@@ -42,6 +43,16 @@ exports.main = (event, context) => {
       ctx.body = { code: 200, success: true, message: '获取成功', ...result }
     } catch (e) {
       console.error('/get/bills/bymonth error:', e)
+      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+    }
+  })
+
+  app.router('/get/bills', async (ctx) => {
+    try {
+      const result = await getBills(event, models)
+      ctx.body = { code: 200, success: true, message: '获取成功', ...result }
+    } catch (e) {
+      console.error('/get/bills error:', e)
       ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
     }
   })

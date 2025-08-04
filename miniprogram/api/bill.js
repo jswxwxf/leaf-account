@@ -11,6 +11,18 @@ import { get, post } from './request-cloud.js'
  */
 
 /**
+ * 根据月份获取账单总计
+ * @param {object} query - 查询参数
+ * @returns {Promise<any>}
+ */
+export function getBillsSummaryByMonth(query = {}) {
+  return get('controller', {
+    $url: '/get/bills/summary/bymonth',
+    query,
+  })
+}
+
+/**
  * 获取账单列表
  * @param {object} query - 查询参数
  * @returns {Promise<Bill[]>}
@@ -18,6 +30,18 @@ import { get, post } from './request-cloud.js'
 export function getBillsByMonth(query = {}) {
   return get('controller', {
     $url: '/get/bills/bymonth',
+    query,
+  })
+}
+
+/**
+ * 获取所有账单
+ * @param {object} query - 查询参数
+ * @returns {Promise<Bill[]>}
+ */
+export function getBills(query = {}) {
+  return get('controller', {
+    $url: '/get/bills',
     query,
   })
 }
@@ -58,15 +82,4 @@ export function deleteBill(id) {
   })
 }
 
-/**
- * 根据月份获取账单总计
- * @param {object} query - 查询参数
- * @returns {Promise<any>}
- */
-export function getBillsSummaryByMonth(query = {}) {
-  return get('controller', {
-    $url: '/get/bills/summary/bymonth',
-    query,
-  })
-}
 

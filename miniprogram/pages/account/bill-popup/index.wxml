@@ -1,4 +1,4 @@
-<wxs module="utils" src="/utils/utils.wxs" />
+<wxs src="../../../utils/utils.wxs" module="utils" />
 
 <van-popup
   show="{{ visible }}"

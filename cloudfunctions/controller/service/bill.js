@@ -90,6 +90,24 @@ async function getBillsSummaryByMonth(event) {
 }
 
 /**
+ * 获取指定查询条件下的最小日期
+ * @param {object} models - 数据模型实例
+ * @param {object} where - 查询条件
+ */
+async function getMinDate(models, where = {}) {
+  const res = await models.bill.list({
+    filter: { where },
+    orderBy: [{ datetime: 'asc' }],
+    page: 1,
+    pageSize: 1,
+  })
+  if (res.data && res.data.records.length > 0) {
+    return new Date(res.data.records[0].datetime)
+  }
+  return null
+}
+
+/**
  * 获取账单列表
  * @param {object} event - 云函数的原始 event 对象
  * @param {object} models - 数据模型实例
@@ -101,7 +119,6 @@ async function getBillsByMonth(event, models) {
   if (startDateStr) {
     const today = new Date()
     const startDate = new Date(startDateStr)
-    // 如果查询的是当前月份，则从今天开始，否则从月底开始
     if (
       startDate.getFullYear() === today.getFullYear() &&
       startDate.getMonth() === today.getMonth()
@@ -116,7 +133,6 @@ async function getBillsByMonth(event, models) {
   const startMonth = currentDate.getMonth()
   const startYear = currentDate.getFullYear()
 
-  // 计算月份的开始和结束时间
   const monthStart = new Date(startYear, startMonth, 1)
   const monthEnd = new Date(startYear, startMonth + 1, 0)
   monthEnd.setHours(23, 59, 59, 999)
@@ -128,32 +144,34 @@ async function getBillsByMonth(event, models) {
     ],
   }
 
-  const {
-    data: { total: totalBills },
-  } = await models.bill.list({
-    filter: { where: monthWhereClause },
-    pageSize: 1,
-    getCount: true,
-  })
+  const minDateInMonth = await getMinDate(models, monthWhereClause)
+
+  if (!minDateInMonth) {
+    return { data: [], nextStartDate: null }
+  }
 
   let accumulatedBills = []
   const MIN_RECORDS = 20
   let loopCount = 0
-  const MAX_LOOP = 31 // 一个月最多31天
+  const MAX_LOOP = 31 // 一个月最多循环31次
+  let hasReachedEnd = false
 
-  while (
-    currentDate.getMonth() === startMonth && // 确保不出当前月份
-    accumulatedBills.length < MIN_RECORDS &&
-    accumulatedBills.length < totalBills &&
-    loopCount < MAX_LOOP
-  ) {
+  while (!hasReachedEnd && accumulatedBills.length < MIN_RECORDS && loopCount < MAX_LOOP) {
     const dayStart = new Date(currentDate)
     dayStart.setHours(0, 0, 0, 0)
     const dayEnd = new Date(currentDate)
     dayEnd.setHours(23, 59, 59, 999)
 
+    if (dayStart.getTime() < minDateInMonth.getTime()) {
+      hasReachedEnd = true
+      continue
+    }
+
     const whereClause = {
-      $and: [{ datetime: { $gte: dayStart.getTime() } }, { datetime: { $lte: dayEnd.getTime() } }],
+      $and: [
+        { datetime: { $gte: dayStart.getTime() } },
+        { datetime: { $lte: dayEnd.getTime() } },
+      ],
     }
 
     const {
@@ -180,13 +198,79 @@ async function getBillsByMonth(event, models) {
     loopCount++
   }
 
-  const allDataLoaded =
-    accumulatedBills.length >= totalBills || currentDate.getMonth() !== startMonth
+  return {
+    data: accumulatedBills,
+    nextStartDate: hasReachedEnd ? null : currentDate.toISOString().split('T')[0],
+  }
+}
+
+/**
+ * 获取所有账单列表（分页）
+ * @param {object} event - 云函数的原始 event 对象
+ * @param {object} models - 数据模型实例
+ */
+async function getBills(event, models) {
+  const { startDate: startDateStr } = event.query || {}
+
+  const minDate = await getMinDate(models)
+
+  if (!minDate) {
+    return { data: [], nextStartDate: null }
+  }
+
+  const currentDate = startDateStr ? new Date(startDateStr) : new Date()
+
+  let accumulatedBills = []
+  const MIN_RECORDS = 20
+  let loopCount = 0
+  const MAX_LOOP = 100 // 设置一个合理的循环上限以避免意外的死循环
+  let hasReachedEnd = false
+
+  while (!hasReachedEnd && accumulatedBills.length < MIN_RECORDS && loopCount < MAX_LOOP) {
+    const dayStart = new Date(currentDate)
+    dayStart.setHours(0, 0, 0, 0)
+    const dayEnd = new Date(currentDate)
+    dayEnd.setHours(23, 59, 59, 999)
+
+    if (dayStart.getTime() < minDate.getTime()) {
+      hasReachedEnd = true
+      continue
+    }
+
+    const whereClause = {
+      $and: [
+        { datetime: { $gte: dayStart.getTime() } },
+        { datetime: { $lte: dayEnd.getTime() } },
+      ],
+    }
+
+    const {
+      data: { records: dailyBills },
+    } = await models.bill.list({
+      select: {
+        _id: true,
+        amount: true,
+        datetime: true,
+        note: true,
+        category: { _id: true, name: true, type: true },
+        tags: { _id: true, name: true, type: true },
+      },
+      filter: { where: whereClause },
+      orderBy: [{ datetime: 'desc' }],
+      pageSize: 1000,
+    })
+
+    if (dailyBills && dailyBills.length > 0) {
+      accumulatedBills = accumulatedBills.concat(dailyBills)
+    }
+
+    currentDate.setDate(currentDate.getDate() - 1)
+    loopCount++
+  }
 
   return {
     data: accumulatedBills,
-    items: totalBills,
-    nextStartDate: allDataLoaded ? null : currentDate.toISOString().split('T')[0],
+    nextStartDate: hasReachedEnd ? null : currentDate.toISOString().split('T')[0],
   }
 }
 
@@ -287,6 +371,7 @@ module.exports = {
   saveBills,
   getBillsSummaryByMonth,
   getBillsByMonth,
+  getBills,
   getBillsByIds,
   deleteBill,
 }

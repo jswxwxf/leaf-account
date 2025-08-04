@@ -1,4 +1,4 @@
-<wxs src="/utils/utils.wxs" module="utils" />
+<wxs src="../../../utils/utils.wxs" module="utils" />
 
 <view class="bg-white rounded-lg shadow-sm mb-2">
   <van-cell-group>

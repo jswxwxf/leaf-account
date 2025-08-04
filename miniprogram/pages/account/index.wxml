@@ -1,6 +1,5 @@
 <view class="h-screen bg-gray-100 flex flex-col">
-  <!-- Header -->
-  <account-header id="account-header" hidden="{{ billPopped }}" />
+  <account-summary hidden="{{ billPopped }}" />
 
   <bill-popup id="bill-popup" />
   <batch-popup id="batch-popup" />

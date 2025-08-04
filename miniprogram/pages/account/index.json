@@ -2,7 +2,7 @@
   "$schema": "https://vite.icebreaker.top/component.json",
   "component": true,
   "usingComponents": {
-    "account-header": "./header/index",
+    "account-summary": "./summary/index",
     "bill-group": "./bill-group/index",
     "bill-popup": "./bill-popup/index",
     "batch-popup": "./batch-popup/index",

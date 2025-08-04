@@ -13,13 +13,13 @@ defineComponent({
     const { typeValue, dateValue, totalExpense, totalIncome } = inject(storeKey)
 
     const typeOptions = ref([
-      { text: '全部类型', value: 0 },
-      { text: '支出', value: 20 },
-      { text: '收入', value: 10 },
+      { text: '全部', value: '' },
+      { text: '支出', value: '20' },
+      { text: '收入', value: '10' },
     ])
 
     const generateDateOptions = () => {
-      const options = []
+      const options = [{ text: '全部', value: '' }]
       const current = DateTime.now()
       for (let i = 0; i < 120; i++) {
         const date = current.minus({ months: i })
