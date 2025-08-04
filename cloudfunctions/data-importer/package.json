@@ -1,0 +1,15 @@
+{
+  "name": "data-importer",
+  "version": "1.0.0",
+  "description": "A cloud function to import data from db.json",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3",
+    "@cloudbase/wx-cloud-client-sdk": "^1.0.0"
+  }
+}
