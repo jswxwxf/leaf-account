@@ -1,7 +1,7 @@
 import { ref, computed, onShow, watch } from '@vue-mini/core'
 import { sumBy, orderBy } from 'lodash'
 import { DateTime } from 'luxon'
-import { getBillsByMonth, getBillsSummaryByMonth, getBills } from '@/api/bill.js'
+import { getBillsSummary, getBills } from '@/api/bill.js'
 import { groupBillsByDate } from '@/service/bill-service.js'
 
 export default function store() {
@@ -11,14 +11,13 @@ export default function store() {
   const hasMore = ref(true)
   const nextStartDate = ref(null)
   const loading = ref(false)
-  const fetchApi = ref(null)
 
   // 按天分组的账单
   const dailyBills = computed(() => groupBillsByDate(rawBills.value))
 
   // 筛选器值
   const typeValue = ref('')
-  const dateValue = ref(DateTime.now().endOf('month').toFormat('yyyy-MM-dd'))
+  const monthValue = ref(DateTime.now().endOf('month').toFormat('yyyy-MM'))
 
   // 总计
   const totalExpense = ref(0)
@@ -26,11 +25,10 @@ export default function store() {
 
   // 获取账单数据
   async function fetchBills(query = {}, isLoadMore = false) {
-    if (loading.value || !fetchApi.value) return
     loading.value = true
 
     try {
-      const res = await fetchApi.value(query)
+      const res = await getBills(query)
 
       // 如果请求失败，res 为 null，或 res.data 不是数组，则中止后续操作
       if (!res || !Array.isArray(res.data)) {
@@ -53,7 +51,7 @@ export default function store() {
 
   async function fetchBillsSummary(query = {}) {
     try {
-      const res = await getBillsSummaryByMonth(query)
+      const res = await getBillsSummary(query)
       if (res && res.data) {
         totalIncome.value = res.data.totalIncome || 0
         totalExpense.value = res.data.totalExpense || 0
@@ -69,7 +67,10 @@ export default function store() {
   // 加载更多
   async function loadMore() {
     if (!hasMore.value || loading.value) return
-    const query = { startDate: nextStartDate.value }
+    const query = {
+      month: monthValue.value,
+      startDate: nextStartDate.value,
+    }
     await fetchBills(query, true)
   }
 
@@ -81,33 +82,27 @@ export default function store() {
   }
 
   // 刷新数据
-  function loadData(query = {}) {
+  function loadData() {
     // 当选择了“全部”时，日期选择器传来的值为 ''
-    // 所以只有 startDate 不为空时才获取汇总信息
-    if (query.startDate) {
+    // 所以只有 month 不为空时才获取汇总信息
+    if (monthValue.value) {
       // 正常获取汇总信息
-      fetchBillsSummary(query)
-      fetchApi.value = getBillsByMonth
-    } else {
-      // 当 query.startDate 为空时，表示查询所有账单, 清空月度总计
-      totalIncome.value = 0
-      totalExpense.value = 0
-      fetchApi.value = getBills
+      fetchBillsSummary({ month: monthValue.value })
     }
-    resetAndFetchBills(query)
+    resetAndFetchBills({ month: monthValue.value })
   }
 
   // 监听筛选条件变化，自动重新获取数据
-  watch(dateValue, (newDate) => {
-    loadData({ startDate: newDate })
+  watch(monthValue, () => {
+    loadData()
   })
 
   // 初始化时获取数据
-  loadData({ startDate: dateValue.value })
+  loadData()
 
   // 页面显示时刷新数据
   onShow(() => {
-    loadData({ startDate: dateValue.value })
+    loadData()
   })
 
   function updateBills(bills) {
@@ -139,7 +134,7 @@ export default function store() {
     removeBills,
     dailyBills,
     typeValue,
-    dateValue,
+    monthValue,
     totalExpense,
     totalIncome,
     loading,

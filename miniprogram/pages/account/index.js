@@ -51,7 +51,7 @@ defineComponent({
 
     const scrollTop = ref(0)
     // 监听月份变化，自动滚动到顶部
-    watch(state.dateValue, () => {
+    watch(state.monthValue, () => {
       // 通过先设置为一个极小值再设置为0，确保能触发滚动
       scrollTop.value = 0.1
       scrollTop.value = 0

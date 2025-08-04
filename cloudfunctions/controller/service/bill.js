@@ -54,22 +54,22 @@ async function saveBill(event, models) {
  * 根据月份获取账单总计
  * @param {object} event - 云函数的原始 event 对象
  */
-async function getBillsSummaryByMonth(event) {
-  const { startDate: dateStr } = event.query || {}
+async function getBillsSummary(event) {
+  const { month } = event.query || {}
+  let whereClause = {}
 
-  const queryDate = dateStr ? new Date(dateStr) : new Date()
-  const year = queryDate.getFullYear()
-  const month = queryDate.getMonth()
+  if (month) {
+    const [year, monthNum] = month.split('-').map(Number)
+    const monthStart = new Date(year, monthNum - 1, 1)
+    const monthEnd = new Date(year, monthNum, 0)
+    monthEnd.setHours(23, 59, 59, 999)
 
-  const monthStart = new Date(year, month, 1)
-  const monthEnd = new Date(year, month + 1, 0)
-  monthEnd.setHours(23, 59, 59, 999)
-
-  const monthWhereClause = {
-    $and: [
-      { datetime: { $gte: monthStart.getTime() } },
-      { datetime: { $lte: monthEnd.getTime() } },
-    ],
+    whereClause = {
+      $and: [
+          { datetime: { $gte: monthStart.getTime() } },
+          { datetime: { $lte: monthEnd.getTime() } },
+      ]
+    }
   }
 
   const _ = db.command
@@ -78,7 +78,7 @@ async function getBillsSummaryByMonth(event) {
   const aggregateResult = await db
     .collection('bill')
     .aggregate()
-    .match(monthWhereClause)
+    .match(whereClause)
     .group({
       _id: null,
       totalIncome: $.sum($.cond([$.gt(['$amount', 0]), '$amount', 0])),
@@ -112,121 +112,48 @@ async function getMinDate(models, where = {}) {
  * @param {object} event - 云函数的原始 event 对象
  * @param {object} models - 数据模型实例
  */
-async function getBillsByMonth(event, models) {
-  const { startDate: startDateStr } = event.query || {}
+async function getBills(event, models) {
+  const { month, startDate: startDateStr } = event.query || {}
 
+  let where = {}
   let currentDate
-  if (startDateStr) {
-    const today = new Date()
-    const startDate = new Date(startDateStr)
-    if (
-      startDate.getFullYear() === today.getFullYear() &&
-      startDate.getMonth() === today.getMonth()
-    ) {
-      currentDate = today
-    } else {
-      currentDate = startDate
-    }
-  } else {
-    currentDate = new Date()
-  }
-  const startMonth = currentDate.getMonth()
-  const startYear = currentDate.getFullYear()
 
-  const monthStart = new Date(startYear, startMonth, 1)
-  const monthEnd = new Date(startYear, startMonth + 1, 0)
-  monthEnd.setHours(23, 59, 59, 999)
-
-  const monthWhereClause = {
-    $and: [
-      { datetime: { $gte: monthStart.getTime() } },
-      { datetime: { $lte: monthEnd.getTime() } },
-    ],
-  }
-
-  const minDateInMonth = await getMinDate(models, monthWhereClause)
-
-  if (!minDateInMonth) {
-    return { data: [], nextStartDate: null }
-  }
-
-  let accumulatedBills = []
-  const MIN_RECORDS = 20
-  let loopCount = 0
-  const MAX_LOOP = 31 // 一个月最多循环31次
-  let hasReachedEnd = false
-
-  while (!hasReachedEnd && accumulatedBills.length < MIN_RECORDS && loopCount < MAX_LOOP) {
-    const dayStart = new Date(currentDate)
-    dayStart.setHours(0, 0, 0, 0)
-    const dayEnd = new Date(currentDate)
-    dayEnd.setHours(23, 59, 59, 999)
-
-    if (dayStart.getTime() < minDateInMonth.getTime()) {
-      hasReachedEnd = true
-      continue
-    }
-
-    const whereClause = {
+  if (month) {
+    const [year, monthNum] = month.split('-').map(Number)
+    const monthStart = new Date(year, monthNum - 1, 1)
+    const monthEnd = new Date(year, monthNum, 0)
+    monthEnd.setHours(23, 59, 59, 999)
+    where = {
       $and: [
-        { datetime: { $gte: dayStart.getTime() } },
-        { datetime: { $lte: dayEnd.getTime() } },
+        { datetime: { $gte: monthStart.getTime() } },
+        { datetime: { $lte: monthEnd.getTime() } },
       ],
     }
 
-    const {
-      data: { records: dailyBills },
-    } = await models.bill.list({
-      select: {
-        _id: true,
-        amount: true,
-        datetime: true,
-        note: true,
-        category: { _id: true, name: true, type: true },
-        tags: { _id: true, name: true, type: true },
-      },
-      filter: { where: whereClause },
-      orderBy: [{ datetime: 'desc' }],
-      pageSize: 1000,
-    })
-
-    if (dailyBills && dailyBills.length > 0) {
-      accumulatedBills = accumulatedBills.concat(dailyBills)
+    // 如果是当月，从今天开始，否则从月底开始
+    const today = new Date()
+    if (year === today.getFullYear() && monthNum - 1 === today.getMonth()) {
+      currentDate = startDateStr ? new Date(startDateStr) : today
+    } else {
+      currentDate = startDateStr ? new Date(startDateStr) : monthEnd
     }
-
-    currentDate.setDate(currentDate.getDate() - 1)
-    loopCount++
+  } else {
+    currentDate = startDateStr ? new Date(startDateStr) : new Date()
   }
 
-  return {
-    data: accumulatedBills,
-    nextStartDate: hasReachedEnd ? null : currentDate.toISOString().split('T')[0],
-  }
-}
-
-/**
- * 获取所有账单列表（分页）
- * @param {object} event - 云函数的原始 event 对象
- * @param {object} models - 数据模型实例
- */
-async function getBills(event, models) {
-  const { startDate: startDateStr } = event.query || {}
-
-  const minDate = await getMinDate(models)
+  const minDate = await getMinDate(models, where)
 
   if (!minDate) {
     return { data: [], nextStartDate: null }
   }
 
-  const currentDate = startDateStr ? new Date(startDateStr) : new Date()
-
   let accumulatedBills = []
   const MIN_RECORDS = 20
   let loopCount = 0
-  const MAX_LOOP = 100 // 设置一个合理的循环上限以避免意外的死循环
+  const MAX_LOOP = 30 // 设置一个合理的循环上限以避免意外的死循环
   let hasReachedEnd = false
 
-  while (!hasReachedEnd && accumulatedBills.length < MIN_RECORDS && loopCount < MAX_LOOP) {
+  while (accumulatedBills.length < MIN_RECORDS && loopCount < MAX_LOOP) {
     const dayStart = new Date(currentDate)
     dayStart.setHours(0, 0, 0, 0)
     const dayEnd = new Date(currentDate)
@@ -234,14 +161,11 @@ async function getBills(event, models) {
 
     if (dayStart.getTime() < minDate.getTime()) {
       hasReachedEnd = true
-      continue
+      break
     }
 
-    const whereClause = {
-      $and: [
-        { datetime: { $gte: dayStart.getTime() } },
-        { datetime: { $lte: dayEnd.getTime() } },
-      ],
+    const dailyWhereClause = {
+      $and: [{ datetime: { $gte: dayStart.getTime() } }, { datetime: { $lte: dayEnd.getTime() } }],
     }
 
     const {
@@ -255,7 +179,7 @@ async function getBills(event, models) {
         category: { _id: true, name: true, type: true },
         tags: { _id: true, name: true, type: true },
       },
-      filter: { where: whereClause },
+      filter: { where: dailyWhereClause },
       orderBy: [{ datetime: 'desc' }],
       pageSize: 1000,
     })
@@ -369,8 +293,7 @@ async function getBillsByIds(event, models) {
 module.exports = {
   saveBill,
   saveBills,
-  getBillsSummaryByMonth,
-  getBillsByMonth,
+  getBillsSummary,
   getBills,
   getBillsByIds,
   deleteBill,

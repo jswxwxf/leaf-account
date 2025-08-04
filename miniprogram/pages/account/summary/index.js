@@ -10,7 +10,7 @@ defineComponent({
     },
   },
   setup() {
-    const { typeValue, dateValue, totalExpense, totalIncome } = inject(storeKey)
+    const { typeValue, monthValue, totalExpense, totalIncome } = inject(storeKey)
 
     const typeOptions = ref([
       { text: '全部', value: '' },
@@ -18,30 +18,29 @@ defineComponent({
       { text: '收入', value: '10' },
     ])
 
-    const generateDateOptions = () => {
+    const generateMonthOptions = () => {
       const options = [{ text: '全部', value: '' }]
       const current = DateTime.now()
       for (let i = 0; i < 120; i++) {
         const date = current.minus({ months: i })
         options.push({
           text: date.toFormat('yyyy年MM月'),
-          value: date.endOf('month').toFormat('yyyy-MM-dd'),
+          value: date.endOf('month').toFormat('yyyy-MM'),
         })
       }
       return options
     }
-    const dateOptions = ref(generateDateOptions())
+    const monthOptions = ref(generateMonthOptions())
 
     const handleDateChange = (e) => {
-      dateValue.value = e.detail
-      console.log(dateValue.value)
+      monthValue.value = e.detail
     }
 
     return {
       typeOptions,
-      dateOptions,
+      monthOptions,
       typeValue,
-      dateValue,
+      monthValue,
       totalExpense,
       totalIncome,
       handleDateChange,

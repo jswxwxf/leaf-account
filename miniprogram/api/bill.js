@@ -15,21 +15,9 @@ import { get, post } from './request-cloud.js'
  * @param {object} query - 查询参数
  * @returns {Promise<any>}
  */
-export function getBillsSummaryByMonth(query = {}) {
+export function getBillsSummary(query = {}) {
   return get('controller', {
-    $url: '/get/bills/summary/bymonth',
-    query,
-  })
-}
-
-/**
- * 获取账单列表
- * @param {object} query - 查询参数
- * @returns {Promise<Bill[]>}
- */
-export function getBillsByMonth(query = {}) {
-  return get('controller', {
-    $url: '/get/bills/bymonth',
+    $url: '/get/bills/summary',
     query,
   })
 }
