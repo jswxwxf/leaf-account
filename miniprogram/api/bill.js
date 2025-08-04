@@ -15,9 +15,9 @@ import { get, post } from './request-cloud.js'
  * @param {object} query - 查询参数
  * @returns {Promise<Bill[]>}
  */
-export function getBillsByDate(query = {}) {
+export function getBillsByMonth(query = {}) {
   return get('controller', {
-    $url: '/get/bills/bydate',
+    $url: '/get/bills/bymonth',
     query,
   })
 }

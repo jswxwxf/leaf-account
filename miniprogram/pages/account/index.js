@@ -1,4 +1,4 @@
-import { defineComponent, ref, reactive, computed, provide, onReady } from '@vue-mini/core'
+import { defineComponent, ref, reactive, computed, provide, onReady, watch } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
 import Dialog from '@vant/weapp/dialog/dialog.js'
 import { newBill } from '@/service/bill-service.js'
@@ -48,6 +48,14 @@ defineComponent({
     })
 
     const { billPopped, processBill } = useBillPopup(state, billPopup)
+
+    const scrollTop = ref(0)
+    // 监听月份变化，自动滚动到顶部
+    watch(state.dateValue, () => {
+      // 通过先设置为一个极小值再设置为0，确保能触发滚动
+      scrollTop.value = 0.1
+      scrollTop.value = 0
+    })
 
     const handleAddBill = () => {
       processBill(newBill())
@@ -111,6 +119,7 @@ defineComponent({
     return {
       ...state,
       billPopped,
+      scrollTop,
       handleAddBill,
       handleEditBill,
       handleDeleteBill,

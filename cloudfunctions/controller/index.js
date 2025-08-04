@@ -11,7 +11,7 @@ const client = init(cloud)
 const models = client.models
 const db = cloud.database()
 
-const { saveBill, saveBills, getBillsByDate, deleteBill, getBillsByIds } = require('./service/bill.js')
+const { saveBill, saveBills, getBillsByMonth, deleteBill, getBillsByIds } = require('./service/bill.js')
 const { getCategories, addCategory } = require('./service/category.js')
 const { getTags, addTags } = require('./service/tag.js')
 
@@ -29,13 +29,12 @@ exports.main = (event, context) => {
     }
   })
 
-  app.router('/get/bills/bydate', async (ctx) => {
+  app.router('/get/bills/bymonth', async (ctx) => {
     try {
-      // getBillsByDate 返回一个包含 data 和 nextStartDate 的对象
-      const result = await getBillsByDate(event, models)
+      const result = await getBillsByMonth(event, models)
       ctx.body = { code: 200, success: true, message: '获取成功', ...result }
     } catch (e) {
-      console.error('/get/bills/bydate error:', e)
+      console.error('/get/bills/bymonth error:', e)
       ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
     }
   })

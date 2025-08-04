@@ -49,24 +49,52 @@ async function saveBill(event, models) {
  * @param {object} event - 云函数的原始 event 对象
  * @param {object} models - 数据模型实例
  */
-async function getBillsByDate(event, models) {
+async function getBillsByMonth(event, models) {
   const { startDate: startDateStr } = event.query || {}
+
+  let currentDate
+  if (startDateStr) {
+    const today = new Date()
+    const startDate = new Date(startDateStr)
+    // 如果查询的是当前月份，则从今天开始，否则从月底开始
+    if (
+      startDate.getFullYear() === today.getFullYear() &&
+      startDate.getMonth() === today.getMonth()
+    ) {
+      currentDate = today
+    } else {
+      currentDate = startDate
+    }
+  } else {
+    currentDate = new Date()
+  }
+  const startMonth = currentDate.getMonth()
+  const startYear = currentDate.getFullYear()
+
+  // 计算月份的开始和结束时间
+  const monthStart = new Date(startYear, startMonth, 1)
+  const monthEnd = new Date(startYear, startMonth + 1, 0)
+  monthEnd.setHours(23, 59, 59, 999)
+
+  const monthWhereClause = {
+    $and: [{ datetime: { $gte: monthStart.getTime() } }, { datetime: { $lte: monthEnd.getTime() } }],
+  }
 
   const {
     data: { total: totalBills },
   } = await models.bill.list({
+    filter: { where: monthWhereClause },
     pageSize: 1,
-    pageNumber: 1,
     getCount: true,
   })
 
-  let currentDate = startDateStr ? new Date(startDateStr) : new Date()
   let accumulatedBills = []
-  const MIN_RECORDS = 30
+  const MIN_RECORDS = 20
   let loopCount = 0
-  const MAX_LOOP = 10
+  const MAX_LOOP = 31 // 一个月最多31天
 
   while (
+    currentDate.getMonth() === startMonth && // 确保不出当前月份
     accumulatedBills.length < MIN_RECORDS &&
     accumulatedBills.length < totalBills &&
     loopCount < MAX_LOOP
@@ -104,10 +132,11 @@ async function getBillsByDate(event, models) {
     loopCount++
   }
 
-  const allDataLoaded = accumulatedBills.length >= totalBills
+  const allDataLoaded = accumulatedBills.length >= totalBills || currentDate.getMonth() !== startMonth
 
   return {
     data: accumulatedBills,
+    items: totalBills,
     nextStartDate: allDataLoaded ? null : currentDate.toISOString().split('T')[0],
   }
 }
@@ -207,7 +236,7 @@ async function getBillsByIds(event, models) {
 module.exports = {
   saveBill,
   saveBills,
-  getBillsByDate,
+  getBillsByMonth,
   getBillsByIds,
   deleteBill,
 }

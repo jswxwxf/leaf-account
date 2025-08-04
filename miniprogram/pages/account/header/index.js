@@ -1,5 +1,6 @@
 import { defineComponent, inject, ref } from '@vue-mini/core'
 import { storeKey } from '../store'
+import { DateTime } from '@/utils/date.js'
 
 defineComponent({
   properties: {
@@ -13,15 +14,28 @@ defineComponent({
 
     const typeOptions = ref([
       { text: '全部类型', value: 0 },
-      { text: '支出', value: 1 },
-      { text: '收入', value: 2 },
+      { text: '支出', value: 20 },
+      { text: '收入', value: 10 },
     ])
 
-    const dateOptions = ref([
-      { text: '2025年7月', value: 0 },
-      { text: '2025年6月', value: 1 },
-      { text: '2025年5月', value: 2 },
-    ])
+    const generateDateOptions = () => {
+      const options = []
+      const current = DateTime.now()
+      for (let i = 0; i < 120; i++) {
+        const date = current.minus({ months: i })
+        options.push({
+          text: date.toFormat('yyyy年MM月'),
+          value: date.endOf('month').toFormat('yyyy-MM-dd'),
+        })
+      }
+      return options
+    }
+    const dateOptions = ref(generateDateOptions())
+
+    const handleDateChange = (e) => {
+      dateValue.value = e.detail
+      console.log(dateValue.value)
+    }
 
     return {
       typeOptions,
@@ -30,6 +44,7 @@ defineComponent({
       dateValue,
       totalExpense,
       totalIncome,
+      handleDateChange,
     }
   },
 })

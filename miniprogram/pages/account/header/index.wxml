@@ -7,7 +7,12 @@
 >
   <van-dropdown-menu active-color="#5A9E62">
     <van-dropdown-item value="{{ typeValue }}" options="{{ typeOptions }}" />
-    <van-dropdown-item value="{{ dateValue }}" options="{{ dateOptions }}" />
+    <van-dropdown-item
+      value="{{ dateValue }}"
+      options="{{ dateOptions }}"
+      popup-style="max-height: 60vh"
+      bind:change="handleDateChange"
+     />
   </van-dropdown-menu>
   <view class="flex justify-between items-center mt-4">
     <view class="text-sm bg-black/30 px-3 py-1 rounded-lg">

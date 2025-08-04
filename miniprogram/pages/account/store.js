@@ -1,16 +1,15 @@
-import { ref, computed, onShow } from '@vue-mini/core'
+import { ref, computed, onShow, watch } from '@vue-mini/core'
 import { sumBy, orderBy } from 'lodash'
-import { DateTime } from '@/utils/date.js'
-import { getBillsByDate } from '@/api/bill.js'
+import { DateTime } from 'luxon'
+import { getBillsByMonth } from '@/api/bill.js'
 import { groupBillsByDate } from '@/service/bill-service.js'
 
 export default function store() {
   // 原始账单列表
   const rawBills = ref([])
   // 分页状态
-  const page = ref(1)
-  const pageSize = 20
   const hasMore = ref(true)
+  const nextStartDate = ref(null)
   const loading = ref(false)
 
   // 按天分组的账单
@@ -18,7 +17,7 @@ export default function store() {
 
   // 筛选器值
   const typeValue = ref(0)
-  const dateValue = ref(0) // TODO: 后续用于月份筛选
+  const dateValue = ref(DateTime.now().endOf('month').toFormat('yyyy-MM-dd'))
 
   // 总计
   const totalExpense = computed(() => {
@@ -37,7 +36,7 @@ export default function store() {
     loading.value = true
 
     try {
-      const res = await getBillsByDate(query)
+      const res = await getBillsByMonth(query)
 
       // 如果请求失败，res 为 null，或 res.data 不是数组，则中止后续操作
       if (!res || !Array.isArray(res.data)) {
@@ -51,7 +50,8 @@ export default function store() {
         rawBills.value = res.data
       }
 
-      hasMore.value = rawBills.value.length < res.items
+      nextStartDate.value = res.nextStartDate
+      hasMore.value = !!res.nextStartDate
     } finally {
       loading.value = false
     }
@@ -60,23 +60,28 @@ export default function store() {
   // 加载更多
   async function loadMore() {
     if (!hasMore.value || loading.value) return
-    page.value++
-    await fetchBills(undefined, true)
+    const query = { startDate: nextStartDate.value }
+    await fetchBills(query, true)
   }
 
   // 重置并获取数据
   async function resetAndFetchBills(query = {}) {
-    page.value = 1
     hasMore.value = true
+    nextStartDate.value = null
     await fetchBills(query, false)
   }
 
+  // 监听筛选条件变化，自动重新获取数据
+  watch(dateValue, (newDate) => {
+    resetAndFetchBills({ startDate: newDate })
+  })
+
   // 初始化时获取数据
-  resetAndFetchBills()
+  resetAndFetchBills({ startDate: dateValue.value })
 
   // 页面显示时刷新数据
   onShow(() => {
-    resetAndFetchBills()
+    resetAndFetchBills({ startDate: dateValue.value })
   })
 
   function updateBills(bills) {

@@ -6,7 +6,13 @@
   <batch-popup id="batch-popup" />
 
   <!-- Bill List -->
-  <scroll-view scroll-y class="flex-1 overflow-hidden" lower-threshold="100" @scrolltolower="loadMore">
+  <scroll-view
+    scroll-y
+    class="flex-1 overflow-hidden"
+    lower-threshold="100"
+    @scrolltolower="loadMore"
+    scroll-top="{{ scrollTop }}"
+  >
     <view class="pb-16 pt-2 relative">
       <add-button hidden="{{ billPopped }}" @click="handleAddBill" @select="handleActionSelect" />
 
