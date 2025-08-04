@@ -1,21 +1,21 @@
 import { defineComponent, ref } from '@vue-mini/core'
+import { isEmpty } from 'lodash'
 
 defineComponent({
   setup() {
     const visible = ref(false)
-    const list = ref(
-      Array.from({ length: 3 }, () => ({
-        datetime: Date.now(),
-        category: null,
-        amount: '',
-        note: '',
-        tags: [],
-      })),
-    )
+    const list = ref([])
 
     let _resolve, _reject
 
     const show = () => {
+      list.value = Array.from({ length: 3 }, () => ({
+        datetime: Date.now(),
+        category: '',
+        amount: '',
+        note: '',
+        tags: [],
+      }))
       visible.value = true
       return new Promise((resolve, reject) => {
         _resolve = resolve
@@ -29,11 +29,8 @@ defineComponent({
     }
 
     const handleConfirm = () => {
-      // const nonEmptyBills = list.value.filter(bill =>
-      //   Object.values(bill).some(value => value !== ''),
-      // )
-      // _resolve(nonEmptyBills)
-      // visible.value = false
+      _resolve(list.value)
+      visible.value = false
     }
 
     const handleFormChange = (e) => {

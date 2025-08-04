@@ -79,29 +79,33 @@ export default function store() {
     resetAndFetchBills()
   })
 
-  function updateRawBill(newBill) {
-    const index = rawBills.value.findIndex((b) => b._id === newBill._id)
-    if (index > -1) {
-      // 更新
-      rawBills.value.splice(index, 1, newBill)
-    } else {
-      // 新增
-      rawBills.value.push(newBill)
-      // 重新排序
+  function updateBills(bills) {
+    let hasNewBills = false
+    bills.forEach((newBill) => {
+      const index = rawBills.value.findIndex((b) => b._id === newBill._id)
+      if (index > -1) {
+        // 更新
+        rawBills.value.splice(index, 1, newBill)
+      } else {
+        // 新增
+        rawBills.value.push(newBill)
+        hasNewBills = true
+      }
+    })
+    // 如果有新增账单，则进行排序
+    if (hasNewBills) {
       rawBills.value = orderBy(rawBills.value, ['datetime'], ['desc'])
     }
   }
 
-  function removeRawBill(billId) {
-    const index = rawBills.value.findIndex((b) => b._id === billId)
-    if (index > -1) {
-      rawBills.value.splice(index, 1)
-    }
+  function removeBills(bills) {
+    const idsToRemove = new Set(bills.map(b => b._id))
+    rawBills.value = rawBills.value.filter(b => !idsToRemove.has(b._id))
   }
 
   return {
-    updateRawBill,
-    removeRawBill,
+    updateBills,
+    removeBills,
     dailyBills,
     typeValue,
     dateValue,

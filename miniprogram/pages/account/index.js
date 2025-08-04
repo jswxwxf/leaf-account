@@ -2,7 +2,7 @@ import { defineComponent, ref, reactive, computed, provide, onReady } from '@vue
 import Toast from '@vant/weapp/toast/toast.js'
 import Dialog from '@vant/weapp/dialog/dialog.js'
 import { newBill } from '@/service/bill-service.js'
-import { upsertBill, deleteBill } from '@/api/bill.js'
+import { upsertBill, deleteBill, saveBills } from '@/api/bill.js'
 import store, { storeKey } from './store'
 
 function useBillPopup(state, billPopupRef) {
@@ -23,7 +23,7 @@ function useBillPopup(state, billPopupRef) {
     if (billToUpsert) {
       const res = await upsertBill(billToUpsert)
       if (res.data) {
-        state.updateRawBill(res.data)
+        state.updateBills([res.data])
       }
     }
   }
@@ -65,7 +65,7 @@ defineComponent({
         confirmButtonText: '删除',
       })
       await deleteBill(bill._id)
-      state.removeRawBill(bill._id) // 从 store 中移除
+      state.removeBills([bill]) // 从 store 中移除
       Toast.success('删除成功')
     }
 
@@ -82,12 +82,10 @@ defineComponent({
         billPopped.value = false
       }
 
-      // if (bills) {
-      //   const res = await upsertBill(billToUpsert)
-      //   if (res.data) {
-      //     state.updateRawBill(res.data)
-      //   }
-      // }
+      const res = await saveBills(bills)
+      if (res.data) {
+        state.updateBills(res.data)
+      }
     }
 
     const handleActionSelect = (e) => {

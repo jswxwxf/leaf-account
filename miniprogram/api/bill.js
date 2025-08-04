@@ -35,6 +35,18 @@ export function upsertBill(bill) {
 }
 
 /**
+ * 批量保存账单
+ * @param {Bill[]} bills - 账单列表
+ * @returns {Promise<any>}
+ */
+export function saveBills(bills) {
+  return post('controller', {
+    $url: '/batch/bills',
+    body: { bills },
+  })
+}
+
+/**
  * 删除一个账单
  * @param {string} id - 账单的 _id
  * @returns {Promise<any>}
@@ -45,3 +57,4 @@ export function deleteBill(id) {
     id,
   })
 }
+

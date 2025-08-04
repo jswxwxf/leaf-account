@@ -2,23 +2,11 @@
  * 获取所有分类
  * @param {object} models - 数据模型实例
  */
-async function getCategories(models) {
-  try {
-    const { data } = await models.category.list({
-      limit: 100,
-    })
-    return {
-      code: 200,
-      message: '获取成功',
-      data: data.records,
-    }
-  } catch (e) {
-    console.error('getCategories error', e)
-    return {
-      code: 500,
-      message: e.message || '数据库查询失败',
-    }
-  }
+async function getCategories(event, models) {
+  const { data } = await models.category.list({
+    limit: 100,
+  })
+  return data.records
 }
 
 /**
@@ -26,23 +14,16 @@ async function getCategories(models) {
  * @param {object} category - 要添加的分类对象
  * @param {object} models - 数据模型实例
  */
-async function addCategory(category, models) {
+async function addCategory(event, models) {
+  const { category } = event
   if (!category || !category.name) {
-    return { code: 400, message: '缺少分类名称' }
+    throw new Error('缺少分类名称')
   }
-  try {
-    const result = await models.category.create({
-      data: category,
-    })
-    const { id } = result.data
-    return { code: 200, message: '添加成功', data: { _id: id, ...category } }
-  } catch (e) {
-    console.error('addCategory error', e)
-    return {
-      code: 500,
-      message: e.message || '数据库添加失败',
-    }
-  }
+  const result = await models.category.create({
+    data: category,
+  })
+  const { id } = result.data
+  return { _id: id, ...category }
 }
 
 module.exports = {
