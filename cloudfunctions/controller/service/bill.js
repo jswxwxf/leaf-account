@@ -1,4 +1,6 @@
 const cloud = require('wx-server-sdk')
+const { getCategoryIds } = require('./category.js')
+
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV,
 })
@@ -54,9 +56,9 @@ async function saveBill(event, models) {
  * 根据月份获取账单总计
  * @param {object} event - 云函数的原始 event 对象
  */
-async function getBillsSummary(event) {
-  const { month } = event.query || {}
-  let whereClause = {}
+async function getBillsSummary(event, models) {
+  const { month, type } = event.query || {}
+  const whereClause = { $and: [] }
 
   if (month) {
     const [year, monthNum] = month.split('-').map(Number)
@@ -64,12 +66,26 @@ async function getBillsSummary(event) {
     const monthEnd = new Date(year, monthNum, 0)
     monthEnd.setHours(23, 59, 59, 999)
 
-    whereClause = {
-      $and: [
-          { datetime: { $gte: monthStart.getTime() } },
-          { datetime: { $lte: monthEnd.getTime() } },
-      ]
+    whereClause.$and.push(
+      { datetime: { $gte: monthStart.getTime() } },
+      { datetime: { $lte: monthEnd.getTime() } },
+    )
+  }
+
+  if (type) {
+    const categoryIds = await getCategoryIds({ query: { type } }, models)
+
+    if (categoryIds.length > 0) {
+      whereClause.$and.push({ category: { $in: categoryIds } })
+    } else {
+      // 如果没有找到该类型的分类，直接返回空
+      return { totalIncome: 0, totalExpense: 0 }
     }
+  }
+
+  // 如果没有有效过滤条件，则移除 $and
+  if (whereClause.$and.length === 0) {
+    delete whereClause.$and
   }
 
   const _ = db.command
@@ -113,9 +129,9 @@ async function getMinDate(models, where = {}) {
  * @param {object} models - 数据模型实例
  */
 async function getBills(event, models) {
-  const { month, startDate: startDateStr } = event.query || {}
+  const { month, type, startDate: startDateStr } = event.query || {}
 
-  let where = {}
+  const where = { $and: [] }
   let currentDate
 
   if (month) {
@@ -123,12 +139,10 @@ async function getBills(event, models) {
     const monthStart = new Date(year, monthNum - 1, 1)
     const monthEnd = new Date(year, monthNum, 0)
     monthEnd.setHours(23, 59, 59, 999)
-    where = {
-      $and: [
-        { datetime: { $gte: monthStart.getTime() } },
-        { datetime: { $lte: monthEnd.getTime() } },
-      ],
-    }
+    where.$and.push(
+      { datetime: { $gte: monthStart.getTime() } },
+      { datetime: { $lte: monthEnd.getTime() } },
+    )
 
     // 如果是当月，从今天开始，否则从月底开始
     const today = new Date()
@@ -139,6 +153,21 @@ async function getBills(event, models) {
     }
   } else {
     currentDate = startDateStr ? new Date(startDateStr) : new Date()
+  }
+
+  if (type) {
+    const categoryIds = await getCategoryIds({ query: { type } }, models)
+
+    if (categoryIds.length > 0) {
+      where.$and.push({ category: { $in: categoryIds } })
+    } else {
+      // 如果没有找到该类型的分类，直接返回空结果
+      return { data: [], nextStartDate: null }
+    }
+  }
+
+  if (where.$and.length === 0) {
+    delete where.$and
   }
 
   const minDate = await getMinDate(models, where)
@@ -176,7 +205,11 @@ async function getBills(event, models) {
     }
 
     const weeklyWhereClause = {
-      $and: [{ datetime: { $gte: periodStart.getTime() } }, { datetime: { $lte: periodEnd.getTime() } }],
+      $and: [
+        ...(where.$and || []),
+        { datetime: { $gte: periodStart.getTime() } },
+        { datetime: { $lte: periodEnd.getTime() } },
+      ],
     }
 
     const {

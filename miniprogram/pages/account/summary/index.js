@@ -36,6 +36,10 @@ defineComponent({
       monthValue.value = e.detail
     }
 
+   const handleTypeChange = (e) => {
+     typeValue.value = e.detail
+   }
+
     return {
       typeOptions,
       monthOptions,
@@ -44,6 +48,7 @@ defineComponent({
       totalExpense,
       totalIncome,
       handleDateChange,
+      handleTypeChange,
     }
   },
 })

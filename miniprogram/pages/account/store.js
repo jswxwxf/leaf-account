@@ -69,6 +69,7 @@ export default function store() {
     if (!hasMore.value || loading.value) return
     const query = {
       month: monthValue.value,
+      type: typeValue.value,
       startDate: nextStartDate.value,
     }
     await fetchBills(query, true)
@@ -83,17 +84,20 @@ export default function store() {
 
   // 刷新数据
   function loadData() {
+    const query = {
+      month: monthValue.value,
+      type: typeValue.value,
+    }
     // 当选择了“全部”时，日期选择器传来的值为 ''
     // 所以只有 month 不为空时才获取汇总信息
-    if (monthValue.value) {
-      // 正常获取汇总信息
-      fetchBillsSummary({ month: monthValue.value })
+    if (query.month) {
+      fetchBillsSummary(query)
     }
-    resetAndFetchBills({ month: monthValue.value })
+    resetAndFetchBills(query)
   }
 
   // 监听筛选条件变化，自动重新获取数据
-  watch(monthValue, () => {
+  watch([monthValue, typeValue], () => {
     loadData()
   })
 
@@ -106,20 +110,37 @@ export default function store() {
   })
 
   function updateBills(bills) {
-    let hasNewBills = false
+    let needsReSort = false
+
     bills.forEach((newBill) => {
+      const billMonth = DateTime.fromMillis(newBill.datetime).toFormat('yyyy-MM')
+      // 后端返回的 category.type 是数值型，这里需要统一
+      const billType = newBill.category.type.toString()
+
+      const isMonthMatch = !monthValue.value || monthValue.value === billMonth
+      const isTypeMatch = !typeValue.value || typeValue.value === billType
+      const isMatch = isMonthMatch && isTypeMatch
+
       const index = rawBills.value.findIndex((b) => b._id === newBill._id)
+
       if (index > -1) {
-        // 更新
-        rawBills.value.splice(index, 1, newBill)
-      } else {
-        // 新增
+        // 账单已存在于列表中
+        if (isMatch) {
+          // 更新后仍然符合条件，直接替换
+          rawBills.value.splice(index, 1, newBill)
+        } else {
+          // 更新后不再符合条件，从列表中移除
+          rawBills.value.splice(index, 1)
+        }
+      } else if (isMatch) {
+        // 账单是新增的，且符合当前筛选条件
         rawBills.value.push(newBill)
-        hasNewBills = true
+        needsReSort = true // 新增了账单，需要重新排序
       }
     })
-    // 如果有新增账单，则进行排序
-    if (hasNewBills) {
+
+    // 如果有新增操作，则对整个数组进行排序
+    if (needsReSort) {
       rawBills.value = orderBy(rawBills.value, ['datetime'], ['desc'])
     }
   }

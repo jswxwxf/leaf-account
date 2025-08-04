@@ -19,7 +19,7 @@ const {
   getBillsByIds,
   getBillsSummary,
 } = require('./service/bill.js')
-const { getCategories, addCategory } = require('./service/category.js')
+const { getCategories, addCategory, getCategoryIdsByType } = require('./service/category.js')
 const { getTags, addTags } = require('./service/tag.js')
 
 exports.main = (event, context) => {
@@ -48,7 +48,7 @@ exports.main = (event, context) => {
 
   app.router('/get/bills/summary', async (ctx) => {
     try {
-      const result = await getBillsSummary(event)
+      const result = await getBillsSummary(event, models)
       ctx.body = { code: 200, success: true, message: '获取成功', data: result }
     } catch (e) {
       console.error('/get/bills/summary error:', e)
