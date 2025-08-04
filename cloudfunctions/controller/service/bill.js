@@ -154,22 +154,33 @@ async function getBills(event, models) {
   let hasReachedEnd = false
 
   while (accumulatedBills.length < MIN_RECORDS && loopCount < MAX_LOOP) {
-    const dayStart = new Date(currentDate)
-    dayStart.setHours(0, 0, 0, 0)
-    const dayEnd = new Date(currentDate)
-    dayEnd.setHours(23, 59, 59, 999)
+    const periodEnd = new Date(currentDate)
+    periodEnd.setHours(23, 59, 59, 999)
 
-    if (dayStart.getTime() < minDate.getTime()) {
+    // 如果当前搜索周期的结束时间已经早于最早的记录时间，说明已经到底了
+    if (periodEnd.getTime() < minDate.getTime()) {
       hasReachedEnd = true
       break
     }
 
-    const dailyWhereClause = {
-      $and: [{ datetime: { $gte: dayStart.getTime() } }, { datetime: { $lte: dayEnd.getTime() } }],
+    const periodStart = new Date(currentDate)
+    periodStart.setDate(periodStart.getDate() - 6) // 设置7天的时间窗口
+    periodStart.setHours(0, 0, 0, 0)
+
+    // 如果计算出的周期开始时间早于最早记录时间，则调整为最早记录时间，并标记这是最后一个周期
+    if (periodStart.getTime() < minDate.getTime()) {
+      periodStart.setTime(minDate.getTime())
+      // 确保从一天的开始计算
+      periodStart.setHours(0, 0, 0, 0)
+      hasReachedEnd = true
+    }
+
+    const weeklyWhereClause = {
+      $and: [{ datetime: { $gte: periodStart.getTime() } }, { datetime: { $lte: periodEnd.getTime() } }],
     }
 
     const {
-      data: { records: dailyBills },
+      data: { records: weeklyBills },
     } = await models.bill.list({
       select: {
         _id: true,
@@ -179,16 +190,22 @@ async function getBills(event, models) {
         category: { _id: true, name: true, type: true },
         tags: { _id: true, name: true, type: true },
       },
-      filter: { where: dailyWhereClause },
+      filter: { where: weeklyWhereClause },
       orderBy: [{ datetime: 'desc' }],
-      pageSize: 1000,
+      pageSize: 1000, // 假设一周内账单不会超过1000条
     })
 
-    if (dailyBills && dailyBills.length > 0) {
-      accumulatedBills = accumulatedBills.concat(dailyBills)
+    if (weeklyBills && weeklyBills.length > 0) {
+      accumulatedBills = accumulatedBills.concat(weeklyBills)
     }
 
-    currentDate.setDate(currentDate.getDate() - 1)
+    // 如果已经到达包含最早记录的最后一个周期，则退出循环
+    if (hasReachedEnd) {
+      break
+    }
+
+    // 准备下一个7天周期的迭代
+    currentDate.setDate(currentDate.getDate() - 7)
     loopCount++
   }
 
