@@ -1,7 +1,7 @@
 import { ref, computed, onShow, watch } from '@vue-mini/core'
 import { sumBy, orderBy } from 'lodash'
 import { DateTime } from 'luxon'
-import { getBillsByMonth } from '@/api/bill.js'
+import { getBillsByMonth, getBillsSummaryByMonth } from '@/api/bill.js'
 import { groupBillsByDate } from '@/service/bill-service.js'
 
 export default function store() {
@@ -20,15 +20,8 @@ export default function store() {
   const dateValue = ref(DateTime.now().endOf('month').toFormat('yyyy-MM-dd'))
 
   // 总计
-  const totalExpense = computed(() => {
-    const total = sumBy(rawBills.value, (bill) => (bill.amount < 0 ? Math.abs(bill.amount) : 0))
-    return (total || 0).toFixed(2)
-  })
-
-  const totalIncome = computed(() => {
-    const total = sumBy(rawBills.value, (bill) => (bill.amount > 0 ? bill.amount : 0))
-    return (total || 0).toFixed(2)
-  })
+  const totalExpense = ref(0)
+  const totalIncome = ref(0)
 
   // 获取账单数据
   async function fetchBills(query = {}, isLoadMore = false) {
@@ -57,6 +50,21 @@ export default function store() {
     }
   }
 
+  async function fetchBillsSummary(query = {}) {
+    try {
+      const res = await getBillsSummaryByMonth(query)
+      if (res && res.data) {
+        totalIncome.value = res.data.totalIncome || 0
+        totalExpense.value = res.data.totalExpense || 0
+      }
+    } catch (e) {
+      // 静默失败
+      console.error('fetchBillsSummary error:', e)
+    } finally {
+      loading.value = false
+    }
+  }
+
   // 加载更多
   async function loadMore() {
     if (!hasMore.value || loading.value) return
@@ -71,17 +79,23 @@ export default function store() {
     await fetchBills(query, false)
   }
 
+  // 刷新数据
+  function loadData(query = {}) {
+    fetchBillsSummary(query)
+    resetAndFetchBills(query)
+  }
+
   // 监听筛选条件变化，自动重新获取数据
   watch(dateValue, (newDate) => {
-    resetAndFetchBills({ startDate: newDate })
+    loadData({ startDate: newDate })
   })
 
   // 初始化时获取数据
-  resetAndFetchBills({ startDate: dateValue.value })
+  loadData({ startDate: dateValue.value })
 
   // 页面显示时刷新数据
   onShow(() => {
-    resetAndFetchBills({ startDate: dateValue.value })
+    loadData({ startDate: dateValue.value })
   })
 
   function updateBills(bills) {
@@ -104,8 +118,8 @@ export default function store() {
   }
 
   function removeBills(bills) {
-    const idsToRemove = new Set(bills.map(b => b._id))
-    rawBills.value = rawBills.value.filter(b => !idsToRemove.has(b._id))
+    const idsToRemove = new Set(bills.map((b) => b._id))
+    rawBills.value = rawBills.value.filter((b) => !idsToRemove.has(b._id))
   }
 
   return {

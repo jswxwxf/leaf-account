@@ -58,3 +58,15 @@ export function deleteBill(id) {
   })
 }
 
+/**
+ * 根据月份获取账单总计
+ * @param {object} query - 查询参数
+ * @returns {Promise<any>}
+ */
+export function getBillsSummaryByMonth(query = {}) {
+  return get('controller', {
+    $url: '/get/bills/summary/bymonth',
+    query,
+  })
+}
+

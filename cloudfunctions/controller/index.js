@@ -11,7 +11,14 @@ const client = init(cloud)
 const models = client.models
 const db = cloud.database()
 
-const { saveBill, saveBills, getBillsByMonth, deleteBill, getBillsByIds } = require('./service/bill.js')
+const {
+  saveBill,
+  saveBills,
+  getBillsByMonth,
+  deleteBill,
+  getBillsByIds,
+  getBillsSummaryByMonth,
+} = require('./service/bill.js')
 const { getCategories, addCategory } = require('./service/category.js')
 const { getTags, addTags } = require('./service/tag.js')
 
@@ -35,6 +42,16 @@ exports.main = (event, context) => {
       ctx.body = { code: 200, success: true, message: '获取成功', ...result }
     } catch (e) {
       console.error('/get/bills/bymonth error:', e)
+      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+    }
+  })
+
+  app.router('/get/bills/summary/bymonth', async (ctx) => {
+    try {
+      const result = await getBillsSummaryByMonth(event)
+      ctx.body = { code: 200, success: true, message: '获取成功', data: result }
+    } catch (e) {
+      console.error('/get/bills/summary/bymonth error:', e)
       ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
     }
   })

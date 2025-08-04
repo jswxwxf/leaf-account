@@ -1,3 +1,9 @@
+const cloud = require('wx-server-sdk')
+cloud.init({
+  env: cloud.DYNAMIC_CURRENT_ENV,
+})
+const db = cloud.database()
+
 /**
  * 保存账单（创建或更新）。
  * 利用数据模型自动处理 category 和 tags 的关联。
@@ -45,6 +51,45 @@ async function saveBill(event, models) {
 }
 
 /**
+ * 根据月份获取账单总计
+ * @param {object} event - 云函数的原始 event 对象
+ */
+async function getBillsSummaryByMonth(event) {
+  const { startDate: dateStr } = event.query || {}
+
+  const queryDate = dateStr ? new Date(dateStr) : new Date()
+  const year = queryDate.getFullYear()
+  const month = queryDate.getMonth()
+
+  const monthStart = new Date(year, month, 1)
+  const monthEnd = new Date(year, month + 1, 0)
+  monthEnd.setHours(23, 59, 59, 999)
+
+  const monthWhereClause = {
+    $and: [
+      { datetime: { $gte: monthStart.getTime() } },
+      { datetime: { $lte: monthEnd.getTime() } },
+    ],
+  }
+
+  const _ = db.command
+  const $ = _.aggregate
+
+  const aggregateResult = await db
+    .collection('bill')
+    .aggregate()
+    .match(monthWhereClause)
+    .group({
+      _id: null,
+      totalIncome: $.sum($.cond([$.gt(['$amount', 0]), '$amount', 0])),
+      totalExpense: $.sum($.cond([$.lte(['$amount', 0]), '$amount', 0])),
+    })
+    .end()
+
+  return aggregateResult.list[0] || { totalIncome: 0, totalExpense: 0 }
+}
+
+/**
  * 获取账单列表
  * @param {object} event - 云函数的原始 event 对象
  * @param {object} models - 数据模型实例
@@ -77,7 +122,10 @@ async function getBillsByMonth(event, models) {
   monthEnd.setHours(23, 59, 59, 999)
 
   const monthWhereClause = {
-    $and: [{ datetime: { $gte: monthStart.getTime() } }, { datetime: { $lte: monthEnd.getTime() } }],
+    $and: [
+      { datetime: { $gte: monthStart.getTime() } },
+      { datetime: { $lte: monthEnd.getTime() } },
+    ],
   }
 
   const {
@@ -132,7 +180,8 @@ async function getBillsByMonth(event, models) {
     loopCount++
   }
 
-  const allDataLoaded = accumulatedBills.length >= totalBills || currentDate.getMonth() !== startMonth
+  const allDataLoaded =
+    accumulatedBills.length >= totalBills || currentDate.getMonth() !== startMonth
 
   return {
     data: accumulatedBills,
@@ -236,6 +285,7 @@ async function getBillsByIds(event, models) {
 module.exports = {
   saveBill,
   saveBills,
+  getBillsSummaryByMonth,
   getBillsByMonth,
   getBillsByIds,
   deleteBill,
