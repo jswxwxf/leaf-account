@@ -208,10 +208,25 @@ function getDayOfWeek(timestamp) {
   return weekdays[date.getDay()]
 }
 
+/**
+ * 判断一个日期是否为周末 (周六或周日)
+ * @param {number} timestamp - 必须是时间戳数字
+ * @returns {boolean} - 如果是周末则返回 true, 否则返回 false
+ */
+function isWeekend(timestamp) {
+  if (!timestamp) return false
+  var date = getDate(parseInt(timestamp, 10))
+  if (isNaN(date.getTime())) return false
+
+  var day = date.getDay()
+  return day === 0 || day === 6 // 0 是周日, 6 是周六
+}
+
 module.exports = {
   stringify: stringify,
   formatMoney: formatMoney,
   parseMoney: parseMoney,
   formatDateTime: formatDateTime,
   getDayOfWeek: getDayOfWeek,
+  isWeekend: isWeekend,
 }
