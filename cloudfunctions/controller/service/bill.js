@@ -95,6 +95,105 @@ async function saveBill(event, models) {
 }
 
 /**
+ * 批量保存账单。
+ * @param {object} event - 云函数的原始 event 对象
+ * @param {object} models - 数据模型实例
+ */
+async function saveBills(event, models) {
+  const { bills } = event.body
+  const { OPENID } = cloud.getWXContext()
+
+  if (!Array.isArray(bills) || bills.length === 0) {
+    throw new Error('请求中缺少 bills 数组')
+  }
+
+  const billsToSave = bills.map((bill) => {
+    const billToSave = { ...bill }
+    if (billToSave.category?.type === '20' && billToSave.amount > 0) {
+      billToSave.amount = -billToSave.amount
+    }
+    delete billToSave._id
+    billToSave.category = billToSave.category?._id
+    return billToSave
+  })
+
+  const balanceIncrement = billsToSave.reduce((sum, bill) => sum + bill.amount, 0)
+  const incomeIncrement = billsToSave.reduce(
+    (sum, bill) => sum + (bill.amount > 0 ? bill.amount : 0),
+    0,
+  )
+  const expenseIncrement = billsToSave.reduce(
+    (sum, bill) => sum + (bill.amount < 0 ? bill.amount : 0),
+    0,
+  )
+
+  const transaction = await db.startTransaction()
+  try {
+    // 1. 更新账户余额
+    if (balanceIncrement !== 0) {
+      await updateAccount(
+        { balanceIncrement, incomeIncrement, expenseIncrement },
+        models,
+        transaction,
+      )
+    }
+
+    // 2. 批量创建账单
+    const addPromises = billsToSave.map((bill) =>
+      transaction.collection('bill').add({ data: bill }),
+    )
+    const addResults = await Promise.all(addPromises)
+    const newBillIds = addResults.map((res) => res._id)
+
+    if (newBillIds.some((id) => !id)) {
+      throw new Error('部分账单创建失败')
+    }
+
+    // 3. 提交事务
+    await transaction.commit()
+
+    // 4. 获取新创建的账单详情
+    const newBills = await getBillsByIds({ query: { ids: newBillIds } }, models)
+    return newBills
+  } catch (e) {
+    await transaction.rollback()
+    throw new Error(`批量保存账单失败: ${e.message}`)
+  }
+}
+
+/**
+ * 根据 ID 列表获取账单详情。
+ * @param {string[]} ids - 账单 ID 数组
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<object[]>} - 完整的账单对象数组
+ */
+async function getBillsByIds(event, models) {
+  const { ids } = event.query
+  if (!ids || ids.length === 0) {
+    return []
+  }
+
+  const {
+    data: { records: bills },
+  } = await models.bill.list({
+    select: {
+      _id: true,
+      amount: true,
+      datetime: true,
+      note: true,
+      category: { _id: true, name: true, type: true },
+      tags: { _id: true, name: true, type: true },
+    },
+    filter: {
+      where: {
+        _id: { $in: ids },
+      },
+    },
+  })
+  return bills
+}
+
+/**
  * 根据月份获取账单总计
  * @param {object} event - 云函数的原始 event 对象
  */
@@ -340,105 +439,6 @@ async function deleteBill(event, models) {
     await transaction.rollback()
     throw new Error(`删除账单失败: ${e.message}`)
   }
-}
-
-/**
- * 批量保存账单。
- * @param {object} event - 云函数的原始 event 对象
- * @param {object} models - 数据模型实例
- */
-async function saveBills(event, models) {
-  const { bills } = event.body
-  const { OPENID } = cloud.getWXContext()
-
-  if (!Array.isArray(bills) || bills.length === 0) {
-    throw new Error('请求中缺少 bills 数组')
-  }
-
-  const billsToSave = bills.map((bill) => {
-    const billToSave = { ...bill }
-    if (billToSave.category?.type === '20' && billToSave.amount > 0) {
-      billToSave.amount = -billToSave.amount
-    }
-    delete billToSave._id
-    billToSave.category = billToSave.category?._id
-    return billToSave
-  })
-
-  const balanceIncrement = billsToSave.reduce((sum, bill) => sum + bill.amount, 0)
-  const incomeIncrement = billsToSave.reduce(
-    (sum, bill) => sum + (bill.amount > 0 ? bill.amount : 0),
-    0,
-  )
-  const expenseIncrement = billsToSave.reduce(
-    (sum, bill) => sum + (bill.amount < 0 ? bill.amount : 0),
-    0,
-  )
-
-  const transaction = await db.startTransaction()
-  try {
-    // 1. 更新账户余额
-    if (balanceIncrement !== 0) {
-      await updateAccount(
-        { balanceIncrement, incomeIncrement, expenseIncrement },
-        models,
-        transaction,
-      )
-    }
-
-    // 2. 批量创建账单
-    const addPromises = billsToSave.map((bill) =>
-      transaction.collection('bill').add({ data: bill }),
-    )
-    const addResults = await Promise.all(addPromises)
-    const newBillIds = addResults.map((res) => res._id)
-
-    if (newBillIds.some((id) => !id)) {
-      throw new Error('部分账单创建失败')
-    }
-
-    // 3. 提交事务
-    await transaction.commit()
-
-    // 4. 获取新创建的账单详情
-    const newBills = await getBillsByIds({ query: { ids: newBillIds } }, models)
-    return newBills
-  } catch (e) {
-    await transaction.rollback()
-    throw new Error(`批量保存账单失败: ${e.message}`)
-  }
-}
-
-/**
- * 根据 ID 列表获取账单详情。
- * @param {string[]} ids - 账单 ID 数组
- * @param {object} models - 数据模型实例
- * @returns {Promise<object[]>} - 完整的账单对象数组
- */
-async function getBillsByIds(event, models) {
-  const { ids } = event.query
-  if (!ids || ids.length === 0) {
-    return []
-  }
-
-  const {
-    data: { records: bills },
-  } = await models.bill.list({
-    select: {
-      _id: true,
-      amount: true,
-      datetime: true,
-      note: true,
-      category: { _id: true, name: true, type: true },
-      tags: { _id: true, name: true, type: true },
-    },
-    filter: {
-      where: {
-        _id: { $in: ids },
-      },
-    },
-  })
-  return bills
 }
 
 module.exports = {
