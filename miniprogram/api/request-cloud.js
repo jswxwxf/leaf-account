@@ -68,7 +68,7 @@ async function request(options = {}) {
  * @returns {Promise} 请求结果
  */
 export function get(name, data = {}, options = {}) {
-  const config = { name, data }
+  const config = { name, data, method: 'get' }
   return dedupRequest(config, () => request({ ...config, ...options }), options)
 }
 
@@ -83,6 +83,7 @@ export function post(name, data = {}, options = {}) {
   return request({
     name,
     data,
+    method: 'post',
     ...options,
   })
 }

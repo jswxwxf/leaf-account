@@ -1,23 +1,24 @@
 const cloud = require('wx-server-sdk')
 const { getCategoryIds } = require('./category.js')
+const { updateAccount } = require('./account.js')
 
-cloud.init({
-  env: cloud.DYNAMIC_CURRENT_ENV,
-})
 const db = cloud.database()
+const _ = db.command
 
 /**
- * 保存账单（创建或更新）。
- * 利用数据模型自动处理 category 和 tags 的关联。
+ * 保存账单（创建或更新），并同步更新账户余额。
  * @param {object} event - 云函数的原始 event 对象
  * @param {object} models - 数据模型实例
  */
 async function saveBill(event, models) {
   const { bill } = event.body
+  const { OPENID } = cloud.getWXContext()
+
   if (!bill) {
     throw new Error('请求中缺少 bill 对象')
   }
 
+  const originalBill = { ...bill } // 保留原始账单对象用于返回
   const billToSave = { ...bill }
 
   // 如果是支出，确保 amount 是负数
@@ -25,30 +26,71 @@ async function saveBill(event, models) {
     billToSave.amount = -billToSave.amount
   }
 
-  if (billToSave._id) {
-    // 更新逻辑
-    const billId = billToSave._id
-    delete billToSave._id
-    await models.bill.update({
-      data: billToSave,
-      filter: {
-        where: {
-          _id: {
-            $eq: billId, // 推荐传入_id数据标识进行操作
-          },
-        },
-      },
-    })
-    // 更新成功后，返回完整的账单对象
-    return { ...billToSave, _id: billId }
-  } else {
-    // 新增逻辑
-    const createResult = await models.bill.create({
-      data: billToSave,
-    })
-    const { id } = createResult.data
-    // 创建成功后，返回带有新 _id 的完整账单对象
-    return { ...billToSave, _id: id }
+  billToSave.category = billToSave.category?._id
+
+  // 启动数据库事务
+  const transaction = await db.startTransaction()
+  try {
+    let savedBill
+
+    if (billToSave._id) {
+      // --- 更新逻辑 ---
+      const billId = billToSave._id
+      delete billToSave._id
+
+      // 1. 获取旧账单信息以计算差额
+      const oldBillRes = await transaction.collection('bill').doc(billId).get()
+      if (!oldBillRes.data) {
+        throw new Error(`找不到 ID 为 ${billId} 的账单`)
+      }
+      const oldBill = oldBillRes.data
+      const newBill = billToSave
+
+      const balanceIncrement = newBill.amount - oldBill.amount
+      const incomeIncrement =
+        (newBill.amount > 0 ? newBill.amount : 0) - (oldBill.amount > 0 ? oldBill.amount : 0)
+      const expenseIncrement =
+        (newBill.amount < 0 ? newBill.amount : 0) - (oldBill.amount < 0 ? oldBill.amount : 0)
+
+      // 2. 更新账户余额
+      await updateAccount(
+        { balanceIncrement, incomeIncrement, expenseIncrement },
+        models,
+        transaction,
+      )
+
+      // 3. 更新账单
+      await transaction.collection('bill').doc(billId).update({ data: newBill })
+      savedBill = { ...originalBill, _id: billId }
+    } else {
+      // --- 新增逻辑 ---
+      const balanceIncrement = billToSave.amount
+      const incomeIncrement = balanceIncrement > 0 ? balanceIncrement : 0
+      const expenseIncrement = balanceIncrement < 0 ? balanceIncrement : 0
+
+      // 1. 更新账户余额
+      await updateAccount(
+        { balanceIncrement, incomeIncrement, expenseIncrement },
+        models,
+        transaction,
+      )
+
+      // 2. 创建新账单
+      const createResult = await transaction.collection('bill').add({ data: billToSave })
+      if (!createResult._id) {
+        throw new Error('创建新账单失败')
+      }
+      savedBill = { ...originalBill, _id: createResult._id }
+    }
+
+    // 提交事务
+    await transaction.commit()
+    return savedBill
+  } catch (e) {
+    // 回滚事务
+    await transaction.rollback()
+    // 抛出错误以便上层捕获
+    throw new Error(`保存账单失败: ${e.message}`)
   }
 }
 
@@ -88,7 +130,6 @@ async function getBillsSummary(event, models) {
     delete whereClause.$and
   }
 
-  const _ = db.command
   const $ = _.aggregate
 
   const aggregateResult = await db
@@ -206,6 +247,7 @@ async function getBills(event, models) {
 
     const weeklyWhereClause = {
       $and: [
+        // 使用展开运算符合并外部查询条件
         ...(where.$and || []),
         { datetime: { $gte: periodStart.getTime() } },
         { datetime: { $lte: periodEnd.getTime() } },
@@ -249,30 +291,55 @@ async function getBills(event, models) {
 }
 
 /**
- * 删除账单。
+ * 删除账单，并同步更新账户余额。
  * @param {object} event - 云函数的原始 event 对象
  * @param {object} models - 数据模型实例
  */
 async function deleteBill(event, models) {
   const { id } = event
+  const { OPENID } = cloud.getWXContext()
+
   if (!id) {
     throw new Error('请求中缺少 id 参数')
   }
 
-  const result = await models.bill.delete({
-    filter: {
-      where: {
-        _id: {
-          $eq: id,
-        },
-      },
-    },
-  })
+  const transaction = await db.startTransaction()
+  try {
+    // 1. 获取要删除的账单信息
+    const billRes = await transaction.collection('bill').doc(id).get()
+    if (!billRes.data) {
+      // 如果账单不存在，可能已经被删除，直接提交事务并认为操作成功
+      await transaction.commit()
+      return true
+    }
+    const billToDelete = billRes.data
+    const amountToDelete = billToDelete.amount
 
-  if (result.data.count > 0) {
+    // 2. 计算反向增量
+    const balanceIncrement = -amountToDelete
+    const incomeIncrement = amountToDelete > 0 ? -amountToDelete : 0
+    const expenseIncrement = amountToDelete < 0 ? -amountToDelete : 0
+
+    // 3. 反向更新账户余额
+    await updateAccount(
+      { balanceIncrement, incomeIncrement, expenseIncrement },
+      models,
+      transaction,
+    )
+
+    // 4. 删除账单
+    const deleteResult = await transaction.collection('bill').doc(id).remove()
+    if (deleteResult.stats.removed === 0) {
+      throw new Error('删除账单失败')
+    }
+
+    // 提交事务
+    await transaction.commit()
     return true
+  } catch (e) {
+    await transaction.rollback()
+    throw new Error(`删除账单失败: ${e.message}`)
   }
-  return false
 }
 
 /**
@@ -282,6 +349,8 @@ async function deleteBill(event, models) {
  */
 async function saveBills(event, models) {
   const { bills } = event.body
+  const { OPENID } = cloud.getWXContext()
+
   if (!Array.isArray(bills) || bills.length === 0) {
     throw new Error('请求中缺少 bills 数组')
   }
@@ -292,20 +361,52 @@ async function saveBills(event, models) {
       billToSave.amount = -billToSave.amount
     }
     delete billToSave._id
+    billToSave.category = billToSave.category?._id
     return billToSave
   })
 
-  const createResult = await models.bill.createMany({
-    data: billsToSave,
-  })
+  const balanceIncrement = billsToSave.reduce((sum, bill) => sum + bill.amount, 0)
+  const incomeIncrement = billsToSave.reduce(
+    (sum, bill) => sum + (bill.amount > 0 ? bill.amount : 0),
+    0,
+  )
+  const expenseIncrement = billsToSave.reduce(
+    (sum, bill) => sum + (bill.amount < 0 ? bill.amount : 0),
+    0,
+  )
 
-  const newBillIds = createResult.data.idList
-  if (!newBillIds || newBillIds.length === 0) {
-    return []
+  const transaction = await db.startTransaction()
+  try {
+    // 1. 更新账户余额
+    if (balanceIncrement !== 0) {
+      await updateAccount(
+        { balanceIncrement, incomeIncrement, expenseIncrement },
+        models,
+        transaction,
+      )
+    }
+
+    // 2. 批量创建账单
+    const addPromises = billsToSave.map((bill) =>
+      transaction.collection('bill').add({ data: bill }),
+    )
+    const addResults = await Promise.all(addPromises)
+    const newBillIds = addResults.map((res) => res._id)
+
+    if (newBillIds.some((id) => !id)) {
+      throw new Error('部分账单创建失败')
+    }
+
+    // 3. 提交事务
+    await transaction.commit()
+
+    // 4. 获取新创建的账单详情
+    const newBills = await getBillsByIds({ query: { ids: newBillIds } }, models)
+    return newBills
+  } catch (e) {
+    await transaction.rollback()
+    throw new Error(`批量保存账单失败: ${e.message}`)
   }
-
-  const newBills = await getBillsByIds({ query: { ids: newBillIds } }, models)
-  return newBills
 }
 
 /**
