@@ -14,6 +14,10 @@ async function saveBill(event, models) {
   const { bill } = event.body
   const { OPENID } = cloud.getWXContext()
 
+  if (!OPENID) {
+    throw new Error('无法获取用户身份')
+  }
+
   if (!bill) {
     throw new Error('请求中缺少 bill 对象')
   }
@@ -21,8 +25,10 @@ async function saveBill(event, models) {
   const originalBill = { ...bill } // 保留原始账单对象用于返回
   const billToSave = { ...bill }
 
-  // 如果是支出，确保 amount 是负数
-  if (billToSave.category?.type === '20' && billToSave.amount > 0) {
+  // 确保金额正负与类别匹配
+  if (billToSave.category?.type === '10' && billToSave.amount < 0) {
+    billToSave.amount = -billToSave.amount
+  } else if (billToSave.category?.type === '20' && billToSave.amount > 0) {
     billToSave.amount = -billToSave.amount
   }
 
@@ -44,6 +50,11 @@ async function saveBill(event, models) {
         throw new Error(`找不到 ID 为 ${billId} 的账单`)
       }
       const oldBill = oldBillRes.data
+
+      // 权限校验：确保用户只能修改自己的账单
+      if (oldBill._openid && oldBill._openid !== OPENID) {
+        throw new Error(`没有权限修改账单 ${billId}`)
+      }
       const newBill = billToSave
 
       const balanceIncrement = newBill.amount - oldBill.amount
@@ -76,7 +87,9 @@ async function saveBill(event, models) {
       )
 
       // 2. 创建新账单
-      const createResult = await transaction.collection('bill').add({ data: billToSave })
+      const createResult = await transaction
+        .collection('bill')
+        .add({ data: { ...billToSave, _openid: OPENID } })
       if (!createResult._id) {
         throw new Error('创建新账单失败')
       }
@@ -103,13 +116,20 @@ async function saveBills(event, models) {
   const { bills } = event.body
   const { OPENID } = cloud.getWXContext()
 
+  if (!OPENID) {
+    throw new Error('无法获取用户身份')
+  }
+
   if (!Array.isArray(bills) || bills.length === 0) {
     throw new Error('请求中缺少 bills 数组')
   }
 
   const billsToSave = bills.map((bill) => {
     const billToSave = { ...bill }
-    if (billToSave.category?.type === '20' && billToSave.amount > 0) {
+    // 确保金额正负与类别匹配
+    if (billToSave.category?.type === '10' && billToSave.amount < 0) {
+      billToSave.amount = -billToSave.amount
+    } else if (billToSave.category?.type === '20' && billToSave.amount > 0) {
       billToSave.amount = -billToSave.amount
     }
     delete billToSave._id
@@ -140,7 +160,7 @@ async function saveBills(event, models) {
 
     // 2. 批量创建账单
     const addPromises = billsToSave.map((bill) =>
-      transaction.collection('bill').add({ data: bill }),
+      transaction.collection('bill').add({ data: { ...bill, _openid: OPENID } }),
     )
     const addResults = await Promise.all(addPromises)
     const newBillIds = addResults.map((res) => res._id)
@@ -169,6 +189,8 @@ async function saveBills(event, models) {
  */
 async function getBillsByIds(event, models) {
   const { ids } = event.query
+  const { OPENID } = cloud.getWXContext()
+
   if (!ids || ids.length === 0) {
     return []
   }
@@ -186,7 +208,15 @@ async function getBillsByIds(event, models) {
     },
     filter: {
       where: {
-        _id: { $in: ids },
+        $and: [
+          { _id: { $in: ids } },
+          {
+            $or: [
+              { _openid: { $eq: OPENID } },
+              { _openid: { $empty: true } },
+            ],
+          },
+        ],
       },
     },
   })
@@ -199,7 +229,12 @@ async function getBillsByIds(event, models) {
  */
 async function getBillsSummary(event, models) {
   const { month, type } = event.query || {}
-  const whereClause = { $and: [] }
+  const { OPENID } = cloud.getWXContext()
+
+  // 权限：只能获取自己的或公共的
+  const whereClause = {
+    $and: [{ $or: [{ _openid: OPENID }, { _openid: _.exists(false) }] }],
+  }
 
   if (month) {
     const [year, monthNum] = month.split('-').map(Number)
@@ -270,8 +305,19 @@ async function getMinDate(models, where = {}) {
  */
 async function getBills(event, models) {
   const { month, type, startDate: startDateStr } = event.query || {}
+  const { OPENID } = cloud.getWXContext()
 
-  const where = { $and: [] }
+  // 权限：只能获取自己的或公共的
+  const where = {
+    $and: [
+      {
+        $or: [
+          { _openid: { $eq: OPENID } },
+          { _openid: { $empty: true } },
+        ],
+      },
+    ],
+  }
   let currentDate
 
   if (month) {
@@ -401,6 +447,9 @@ async function deleteBill(event, models) {
   if (!id) {
     throw new Error('请求中缺少 id 参数')
   }
+  if (!OPENID) {
+    throw new Error('无法获取用户身份')
+  }
 
   const transaction = await db.startTransaction()
   try {
@@ -412,6 +461,13 @@ async function deleteBill(event, models) {
       return true
     }
     const billToDelete = billRes.data
+
+    // 权限校验：确保用户只能删除自己的账单
+    if (billToDelete._openid && billToDelete._openid !== OPENID) {
+      // 禁止删除，但为了不给恶意用户提示，静默处理
+      await transaction.commit() // 提交空事务
+      return false // 返回失败
+    }
     const amountToDelete = billToDelete.amount
 
     // 2. 计算反向增量

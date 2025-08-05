@@ -15,17 +15,20 @@ const _ = db.command
  */
 async function updateAccount(event, models, dbOrTransaction) {
   const { balanceIncrement, incomeIncrement, expenseIncrement } = event
-  const { OPENID: userId } = cloud.getWXContext()
+  // _openid 会由 wx-server-sdk 自动注入，无需手动获取
+  const { OPENID } = cloud.getWXContext()
   const dbInstance = dbOrTransaction || db
 
-  if (!userId) {
-    throw new Error('必须提供 userId 以更新账户')
+  if (!OPENID) {
+    throw new Error('必须提供 OPENID 以更新账户')
   }
 
   const account = dbInstance.collection('account')
 
   // 1. 查询账户是否存在
-  const { data: accounts } = await account.where({ userId }).limit(1).get()
+  // 注意：云函数环境下的数据库操作会自动带上调用者的 openid，
+  // 但为了逻辑清晰和在事务中正确操作，这里明确使用 where 子句。
+  const { data: accounts } = await account.where({ _openid: OPENID }).limit(1).get()
 
   let result
   if (accounts && accounts.length > 0) {
@@ -37,15 +40,17 @@ async function updateAccount(event, models, dbOrTransaction) {
 
     if (Object.keys(updateData).length === 0) return // 如果没有要更新的，直接返回
 
-    result = await account.doc(accounts[0]._id).update({ data: updateData })
+    result = await account.where({ _openid: OPENID }).update({ data: updateData })
     if (result.stats.updated === 0) {
+      // 理论上不会发生，因为我们已经查询过
       throw new Error('更新用户账户失败')
     }
   } else {
     // 3. 如果不存在，则创建
+    // 在云函数中使用 db.add() 时，必须手动添补 _openid
     result = await account.add({
       data: {
-        userId: userId,
+        _openid: OPENID,
         name: 'default',
         balance: balanceIncrement || 0,
         totalIncome: incomeIncrement || 0,
@@ -68,6 +73,15 @@ async function updateAccount(event, models, dbOrTransaction) {
 async function getAccount(event, models, { withId = false } = {}) {
   const { OPENID } = cloud.getWXContext()
 
+  if (!OPENID) {
+    return {
+      name: 'default',
+      balance: 0,
+      totalIncome: 0,
+      totalExpense: 0,
+    }
+  }
+
   const accountRes = await models.account.list({
     select: {
       name: true,
@@ -77,7 +91,7 @@ async function getAccount(event, models, { withId = false } = {}) {
     },
     filter: {
       where: {
-        userId: { $eq: OPENID },
+        _openid: { $eq: OPENID },
       },
     },
     page: 1,
@@ -94,7 +108,6 @@ async function getAccount(event, models, { withId = false } = {}) {
 
   // 如果用户还没有账户记录，返回一个默认的初始状态
   return {
-    // 默认对象不包含 userId
     name: 'default',
     balance: 0,
     totalIncome: 0,

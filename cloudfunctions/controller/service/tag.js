@@ -1,10 +1,21 @@
+const cloud = require('wx-server-sdk')
+const db = cloud.database()
+const _ = db.command
+
 /**
  * 获取所有标签
  * @param {object} models - 数据模型实例
  */
 async function getTags(event, models) {
+  const { OPENID } = cloud.getWXContext()
+  // 权限：只能获取自己的或公共的
+  const where = {
+    $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }],
+  }
+
   // 默认最多获取 100 条，对于标签来说足够了
   const { data } = await models.tag.list({
+    filter: { where },
     limit: 100,
   })
   return data.records
@@ -17,10 +28,16 @@ async function getTags(event, models) {
  */
 async function addTags(event, models) {
   const { tags } = event
+  const { OPENID } = cloud.getWXContext()
+
+  if (!OPENID) {
+    throw new Error('无法获取用户身份')
+  }
+
   if (!tags || !Array.isArray(tags) || tags.length === 0) {
     throw new Error('缺少标签数据')
   }
-  // 使用 models.tag.createMany 进行批量创建
+  // _openid 会被自动填充
   const result = await models.tag.createMany({
     data: tags,
   })

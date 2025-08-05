@@ -6,7 +6,15 @@ import { upsertBill, deleteBill, saveBills } from '@/api/bill.js'
 import store, { storeKey } from './store'
 
 function useBillPopup(state, billPopupRef) {
-  const { typeValue, monthValue, totalIncome, totalExpense, totalBalance, updateBills } = state
+  const {
+    typeValue,
+    monthValue,
+    totalIncome,
+    totalExpense,
+    totalBalance,
+    updateBills,
+    updateAccountSummary,
+  } = state
 
   const billPopped = ref(false)
 
@@ -28,9 +36,7 @@ function useBillPopup(state, billPopupRef) {
         type: typeValue.value,
       })
       updateBills([res.data])
-      totalIncome.value = res.summary?.totalIncome ?? res.account?.totalIncome
-      totalExpense.value = res.summary?.totalExpense ?? res.account?.totalExpense
-      totalBalance.value = res.account?.balance
+      updateAccountSummary(res)
     }
   }
 
@@ -51,6 +57,7 @@ defineComponent({
       totalBalance,
       removeBills,
       updateBills,
+      updateAccountSummary,
     } = state
     provide(storeKey, state)
 
@@ -100,8 +107,7 @@ defineComponent({
         confirmButtonText: '删除',
       })
       const res = await deleteBill(bill._id, { month: monthValue.value, type: typeValue.value })
-      totalIncome.value = res.summary?.totalIncome ?? res.account?.totalIncome
-      totalExpense.value = res.summary?.totalExpense ?? res.account?.totalExpense
+      updateAccountSummary(res)
       removeBills([bill]) // 从 store 中移除
       Toast.success('删除成功')
     }
@@ -120,9 +126,7 @@ defineComponent({
       }
 
       const res = await saveBills(bills, { month: monthValue.value, type: typeValue.value })
-      totalIncome.value = res.summary?.totalIncome ?? res.account?.totalIncome
-      totalExpense.value = res.summary?.totalExpense ?? res.account?.totalExpense
-      totalBalance.value = res.account?.balance
+      updateAccountSummary(res)
       updateBills(res.data)
     }
 

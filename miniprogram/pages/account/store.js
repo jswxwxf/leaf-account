@@ -37,9 +37,7 @@ export default function store() {
         return
       }
 
-      totalIncome.value = res.summary?.totalIncome ?? res.account?.totalIncome
-      totalExpense.value = res.summary?.totalExpense ?? res.account?.totalExpense
-      totalBalance.value = res.account?.balance
+      updateAccountSummary(res)
 
       if (isLoadMore) {
         rawBills.value.push(...res.data)
@@ -100,19 +98,24 @@ export default function store() {
     loadData()
   })
 
-  function updateAccountSummary(account) {
-    if (account) {
-      // 优先使用 summary 字段
-      const summary = account.summary || account
-      totalIncome.value = summary.totalIncome
-      totalExpense.value = summary.totalExpense
-    }
+  function updateAccountSummary(res) {
+    totalIncome.value = res.summary?.totalIncome ?? res.account?.totalIncome
+    totalExpense.value = res.summary?.totalExpense ?? res.account?.totalExpense
+    totalBalance.value = res.account?.balance
   }
 
   function updateBills(bills) {
     let needsReSort = false
 
-    bills.forEach((newBill) => {
+    bills.forEach((bill) => {
+      const newBill = { ...bill }
+      // 纠正金额正负号，确保其与类别匹配，以供UI正确渲染
+      if (newBill.category.type === '10' && newBill.amount < 0) {
+        newBill.amount = -newBill.amount
+      } else if (newBill.category.type === '20' && newBill.amount > 0) {
+        newBill.amount = -newBill.amount
+      }
+
       const billMonth = DateTime.fromMillis(newBill.datetime).toFormat('yyyy-MM')
       const billType = newBill.category.type.toString()
 
