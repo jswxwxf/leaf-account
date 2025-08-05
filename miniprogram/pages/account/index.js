@@ -6,6 +6,8 @@ import { upsertBill, deleteBill, saveBills } from '@/api/bill.js'
 import store, { storeKey } from './store'
 
 function useBillPopup(state, billPopupRef) {
+  const { typeValue, monthValue, totalIncome, totalExpense, totalBalance, updateBills } = state
+
   const billPopped = ref(false)
 
   const processBill = async (initialBill) => {
@@ -21,10 +23,14 @@ function useBillPopup(state, billPopupRef) {
     }
 
     if (billToUpsert) {
-      const res = await upsertBill(billToUpsert)
-      if (res.data) {
-        state.updateBills([res.data])
-      }
+      const res = await upsertBill(billToUpsert, {
+        month: monthValue.value,
+        type: typeValue.value,
+      })
+      updateBills([res.data])
+      totalIncome.value = res.summary?.totalIncome ?? res.account?.totalIncome
+      totalExpense.value = res.summary?.totalExpense ?? res.account?.totalExpense
+      totalBalance.value = res.account?.balance
     }
   }
 
@@ -37,6 +43,15 @@ function useBillPopup(state, billPopupRef) {
 defineComponent({
   setup(props, { selectComponent }) {
     const state = store()
+    const {
+      typeValue,
+      monthValue,
+      totalIncome,
+      totalExpense,
+      totalBalance,
+      removeBills,
+      updateBills,
+    } = state
     provide(storeKey, state)
 
     const billPopup = ref(null)
@@ -51,7 +66,7 @@ defineComponent({
 
     const scrollTop = ref(0)
     // 监听月份变化，自动滚动到顶部
-    watch(state.monthValue, () => {
+    watch(monthValue, () => {
       // 通过先设置为一个极小值再设置为0，确保能触发滚动
       scrollTop.value = 0.1
       scrollTop.value = 0
@@ -84,8 +99,10 @@ defineComponent({
         message: `确定要删除这笔 "${bill.category.name}" 的账单吗？`,
         confirmButtonText: '删除',
       })
-      await deleteBill(bill._id)
-      state.removeBills([bill]) // 从 store 中移除
+      const res = await deleteBill(bill._id, { month: monthValue.value, type: typeValue.value })
+      totalIncome.value = res.summary?.totalIncome ?? res.account?.totalIncome
+      totalExpense.value = res.summary?.totalExpense ?? res.account?.totalExpense
+      removeBills([bill]) // 从 store 中移除
       Toast.success('删除成功')
     }
 
@@ -102,10 +119,11 @@ defineComponent({
         billPopped.value = false
       }
 
-      const res = await saveBills(bills)
-      if (res.data) {
-        state.updateBills(res.data)
-      }
+      const res = await saveBills(bills, { month: monthValue.value, type: typeValue.value })
+      totalIncome.value = res.summary?.totalIncome ?? res.account?.totalIncome
+      totalExpense.value = res.summary?.totalExpense ?? res.account?.totalExpense
+      totalBalance.value = res.account?.balance
+      updateBills(res.data)
     }
 
     const handleActionSelect = (e) => {

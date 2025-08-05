@@ -10,7 +10,7 @@ defineComponent({
     },
   },
   setup() {
-    const { typeValue, monthValue, totalExpense, totalIncome } = inject(storeKey)
+    const { typeValue, monthValue, totalExpense, totalIncome, totalBalance } = inject(storeKey)
 
     const typeOptions = ref([
       { text: '全部', value: '' },
@@ -36,9 +36,9 @@ defineComponent({
       monthValue.value = e.detail
     }
 
-   const handleTypeChange = (e) => {
-     typeValue.value = e.detail
-   }
+    const handleTypeChange = (e) => {
+      typeValue.value = e.detail
+    }
 
     return {
       typeOptions,
@@ -47,6 +47,7 @@ defineComponent({
       monthValue,
       totalExpense,
       totalIncome,
+      totalBalance,
       handleDateChange,
       handleTypeChange,
     }

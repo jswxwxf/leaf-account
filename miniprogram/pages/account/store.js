@@ -1,7 +1,7 @@
 import { ref, computed, onShow, watch } from '@vue-mini/core'
 import { sumBy, orderBy } from 'lodash'
 import { DateTime } from 'luxon'
-import { getBillsSummary, getBills } from '@/api/bill.js'
+import { getBills } from '@/api/bill.js'
 import { groupBillsByDate } from '@/service/bill-service.js'
 
 export default function store() {
@@ -20,8 +20,9 @@ export default function store() {
   const monthValue = ref(DateTime.now().endOf('month').toFormat('yyyy-MM'))
 
   // 总计
-  const totalExpense = ref(0)
   const totalIncome = ref(0)
+  const totalExpense = ref(0)
+  const totalBalance = ref(0)
 
   // 获取账单数据
   async function fetchBills(query = {}, isLoadMore = false) {
@@ -36,6 +37,10 @@ export default function store() {
         return
       }
 
+      totalIncome.value = res.summary?.totalIncome ?? res.account?.totalIncome
+      totalExpense.value = res.summary?.totalExpense ?? res.account?.totalExpense
+      totalBalance.value = res.account?.balance
+
       if (isLoadMore) {
         rawBills.value.push(...res.data)
       } else {
@@ -44,21 +49,6 @@ export default function store() {
 
       nextStartDate.value = res.nextStartDate
       hasMore.value = !!res.nextStartDate
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function fetchBillsSummary(query = {}) {
-    try {
-      const res = await getBillsSummary(query)
-      if (res && res.data) {
-        totalIncome.value = res.data.totalIncome || 0
-        totalExpense.value = res.data.totalExpense || 0
-      }
-    } catch (e) {
-      // 静默失败
-      console.error('fetchBillsSummary error:', e)
     } finally {
       loading.value = false
     }
@@ -90,8 +80,9 @@ export default function store() {
     }
     // 当选择了“全部”时，日期选择器传来的值为 ''
     // 所以只有 month 不为空时才获取汇总信息
-    if (query.month) {
-      fetchBillsSummary(query)
+    if (!query.month) {
+      totalIncome.value = 0
+      totalExpense.value = 0
     }
     resetAndFetchBills(query)
   }
@@ -109,12 +100,20 @@ export default function store() {
     loadData()
   })
 
+  function updateAccountSummary(account) {
+    if (account) {
+      // 优先使用 summary 字段
+      const summary = account.summary || account
+      totalIncome.value = summary.totalIncome
+      totalExpense.value = summary.totalExpense
+    }
+  }
+
   function updateBills(bills) {
     let needsReSort = false
 
     bills.forEach((newBill) => {
       const billMonth = DateTime.fromMillis(newBill.datetime).toFormat('yyyy-MM')
-      // 后端返回的 category.type 是数值型，这里需要统一
       const billType = newBill.category.type.toString()
 
       const isMonthMatch = !monthValue.value || monthValue.value === billMonth
@@ -124,22 +123,17 @@ export default function store() {
       const index = rawBills.value.findIndex((b) => b._id === newBill._id)
 
       if (index > -1) {
-        // 账单已存在于列表中
         if (isMatch) {
-          // 更新后仍然符合条件，直接替换
           rawBills.value.splice(index, 1, newBill)
         } else {
-          // 更新后不再符合条件，从列表中移除
           rawBills.value.splice(index, 1)
         }
       } else if (isMatch) {
-        // 账单是新增的，且符合当前筛选条件
         rawBills.value.push(newBill)
-        needsReSort = true // 新增了账单，需要重新排序
+        needsReSort = true
       }
     })
 
-    // 如果有新增操作，则对整个数组进行排序
     if (needsReSort) {
       rawBills.value = orderBy(rawBills.value, ['datetime'], ['desc'])
     }
@@ -151,6 +145,7 @@ export default function store() {
   }
 
   return {
+    updateAccountSummary,
     updateBills,
     removeBills,
     dailyBills,
@@ -158,6 +153,7 @@ export default function store() {
     monthValue,
     totalExpense,
     totalIncome,
+    totalBalance,
     loading,
     hasMore,
     loadMore,

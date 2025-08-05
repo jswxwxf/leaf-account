@@ -1,6 +1,7 @@
 const cloud = require('wx-server-sdk')
-const TcbRouter = require('tcb-router')
 const { init } = require('@cloudbase/wx-cloud-client-sdk')
+const TcbRouter = require('tcb-router')
+const { flowRight } = require('lodash')
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV,
@@ -26,97 +27,112 @@ const { getTags, addTags } = require('./service/tag.js')
 exports.main = (event, context) => {
   const app = new TcbRouter({ event })
 
+  // --- 辅助函数：附加账户信息 ---
+  const withAccount = (handler) => async (ctx) => {
+    await handler(ctx)
+    if (ctx.body && ctx.body.success) {
+      const account = await getAccount(event, models)
+      ctx.body.account = account
+    }
+  }
+
+  // --- 辅助函数：附加月度账单汇总 ---
+  const withSummary = (handler) => async (ctx) => {
+    await handler(ctx)
+    if (ctx.body && ctx.body.success) {
+      const month = event.query?.month
+      if (month) {
+        const summary = await getBillsSummary(
+          { ...event, query: { ...event.query, month } },
+          models,
+        )
+        ctx.body.summary = {
+          totalIncome: summary.totalIncome || 0,
+          totalExpense: Math.abs(summary.totalExpense || 0),
+        }
+      }
+    }
+  }
+
   /**
    * @desc 新增或更新账单
    */
-  app.router('/upsert/bill', async (ctx) => {
-    try {
-      const data = await saveBill(event, models)
-      const account = await getAccount(event, models)
-      ctx.body = { code: 200, success: true, message: '保存成功', data, account }
-    } catch (e) {
-      console.error('/upsert/bill error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-    }
-  })
+  app.router(
+    '/upsert/bill',
+    flowRight(
+      withAccount,
+      withSummary,
+    )(async (ctx) => {
+      try {
+        const data = await saveBill(event, models)
+        ctx.body = { code: 200, success: true, message: '保存成功', data }
+      } catch (e) {
+        console.error('/upsert/bill error:', e)
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
+    }),
+  )
 
   /**
    * @desc 获取账单列表
-   * @param {object} query - 查询参数
-   * @param {string} [query.month] - 月份，格式 'YYYY-MM'
-   * @param {string} [query.type] - 账单类型，'10' 为收入，'20' 为支出
-   * @param {string} [query.startDate] - 开始日期，格式 'YYYY-MM-DD'
-   * @returns {object} data - 账单列表
-   * @returns {string|null} nextStartDate - 下一次请求的开始日期
-   * @returns {object} account - 当前账户信息
    */
-  app.router('/get/bills', async (ctx) => {
-    try {
-      const result = await getBills(event, models)
-      const account = await getAccount(event, models)
-      ctx.body = { code: 200, success: true, message: '获取成功', ...result, account }
-    } catch (e) {
-      console.error('/get/bills error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-    }
-  })
-
-  /**
-   * @desc 获取账单汇总
-   * @param {object} query - 查询参数
-   * @param {string} [query.month] - 月份，格式 'YYYY-MM'
-   * @param {string} [query.type] - 账单类型，'10' 为收入，'20' 为支出
-   * @returns {object} data - 汇总数据 { totalIncome, totalExpense }
-   * @returns {object} account - 当前账户信息
-   */
-  app.router('/get/bills/summary', async (ctx) => {
-    try {
-      const result = await getBillsSummary(event, models)
-      const account = await getAccount(event, models)
-      ctx.body = { code: 200, success: true, message: '获取成功', data: result, account }
-    } catch (e) {
-      console.error('/get/bills/summary error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-    }
-  })
+  app.router(
+    '/get/bills',
+    flowRight(
+      withAccount,
+      withSummary,
+    )(async (ctx) => {
+      try {
+        const result = await getBills(event, models)
+        ctx.body = { code: 200, success: true, message: '获取成功', ...result }
+      } catch (e) {
+        console.error('/get/bills error:', e)
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
+    }),
+  )
 
   /**
    * @desc 批量保存账单
-   * @param {object} body - 请求体
-   * @param {object[]} body.bills - 账单对象数组
-   * @returns {object[]} data - 成功保存的账单数组
-   * @returns {object} account - 当前账户信息
    */
-  app.router('/batch/bills', async (ctx) => {
-    try {
-      const data = await saveBills(event, models)
-      const account = await getAccount(event, models)
-      ctx.body = { code: 200, success: true, message: '批量保存成功', data, account }
-    } catch (e) {
-      console.error('/batch/bills error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-    }
-  })
+  app.router(
+    '/batch/bills',
+    flowRight(
+      withAccount,
+      withSummary,
+    )(async (ctx) => {
+      try {
+        const data = await saveBills(event, models)
+        ctx.body = { code: 200, success: true, message: '批量保存成功', data }
+      } catch (e) {
+        console.error('/batch/bills error:', e)
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
+    }),
+  )
 
   /**
    * @desc 删除账单
-   * @param {string} id - 要删除的账单ID
-   * @returns {object} account - 当前账户信息
    */
-  app.router('/delete/bill', async (ctx) => {
-    try {
-      const isSuccess = await deleteBill(event, models)
-      if (isSuccess) {
-        const account = await getAccount(event, models)
-        ctx.body = { code: 200, success: true, message: '删除成功', account }
-      } else {
-        ctx.body = { code: 404, success: false, message: '未找到要删除的记录' }
+  app.router(
+    '/delete/bill',
+    flowRight(
+      withAccount,
+      withSummary,
+    )(async (ctx) => {
+      try {
+        const isSuccess = await deleteBill(event, models)
+        if (isSuccess) {
+          ctx.body = { code: 200, success: true, message: '删除成功' }
+        } else {
+          ctx.body = { code: 404, success: false, message: '未找到要删除的记录' }
+        }
+      } catch (e) {
+        console.error('/delete/bill error:', e)
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
       }
-    } catch (e) {
-      console.error('/delete/bill error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-    }
-  })
+    }),
+  )
 
   /**
    * @desc 获取账本信息
