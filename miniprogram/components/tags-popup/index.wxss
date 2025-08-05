@@ -8,6 +8,28 @@
 .tag-button {
   padding: 0 !important;
   border: none !important;
+  width: 100%;
+  height: 100%;
+}
+
+.tag-wrapper {
+  position: relative;
+  /* van-button 自身有圆角，这里不需要 overflow:hidden 和圆角，否则会裁剪角标 */
+}
+
+/* 右上角角标-三角形 */
+.selected-corner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  /* 控制三角形的大小 */
+  border-width: 0 15px 15px 0;
+  /* 只给右上角边框设置颜色，其他透明 */
+  border-color: transparent #3b82f6 transparent transparent; /* blue-500 */
+  pointer-events: none;
 }
 
 .tag-color {

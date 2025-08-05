@@ -15,7 +15,6 @@ const _ = db.command
  */
 async function updateAccount(event, models, dbOrTransaction) {
   const { balanceIncrement, incomeIncrement, expenseIncrement } = event
-  // _openid 会由 wx-server-sdk 自动注入，无需手动获取
   const { OPENID } = cloud.getWXContext()
   const dbInstance = dbOrTransaction || db
 

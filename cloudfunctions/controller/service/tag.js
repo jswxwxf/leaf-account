@@ -16,6 +16,7 @@ async function getTags(event, models) {
   // 默认最多获取 100 条，对于标签来说足够了
   const { data } = await models.tag.list({
     filter: { where },
+    orderBy: [{ type: 'asc' }],
     limit: 100,
   })
   return data.records
@@ -37,9 +38,9 @@ async function addTags(event, models) {
   if (!tags || !Array.isArray(tags) || tags.length === 0) {
     throw new Error('缺少标签数据')
   }
-  // _openid 会被自动填充
+  const tagsToSave = tags.map((tag) => ({ ...tag, _openid: OPENID }))
   const result = await models.tag.createMany({
-    data: tags,
+    data: tagsToSave,
   })
 
   // 根据 createMany 的返回，用 idList 重新查询以获取完整数据

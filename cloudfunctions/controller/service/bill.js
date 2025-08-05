@@ -211,10 +211,7 @@ async function getBillsByIds(event, models) {
         $and: [
           { _id: { $in: ids } },
           {
-            $or: [
-              { _openid: { $eq: OPENID } },
-              { _openid: { $empty: true } },
-            ],
+            $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }],
           },
         ],
       },
@@ -311,10 +308,7 @@ async function getBills(event, models) {
   const where = {
     $and: [
       {
-        $or: [
-          { _openid: { $eq: OPENID } },
-          { _openid: { $empty: true } },
-        ],
+        $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }],
       },
     ],
   }
@@ -362,10 +356,11 @@ async function getBills(event, models) {
     return { data: [], nextStartDate: null }
   }
 
-  let accumulatedBills = []
   const MIN_RECORDS = 20
-  let loopCount = 0
+  const FETCH_WINDOW_DAYS = 7
   const MAX_LOOP = 30 // 设置一个合理的循环上限以避免意外的死循环
+  let accumulatedBills = []
+  let loopCount = 0
   let hasReachedEnd = false
 
   while (accumulatedBills.length < MIN_RECORDS && loopCount < MAX_LOOP) {
@@ -379,7 +374,7 @@ async function getBills(event, models) {
     }
 
     const periodStart = new Date(currentDate)
-    periodStart.setDate(periodStart.getDate() - 6) // 设置7天的时间窗口
+    periodStart.setDate(periodStart.getDate() - (FETCH_WINDOW_DAYS - 1)) // 设置 FETCH_WINDOW_DAYS 天的时间窗口
     periodStart.setHours(0, 0, 0, 0)
 
     // 如果计算出的周期开始时间早于最早记录时间，则调整为最早记录时间，并标记这是最后一个周期
@@ -424,8 +419,8 @@ async function getBills(event, models) {
       break
     }
 
-    // 准备下一个7天周期的迭代
-    currentDate.setDate(currentDate.getDate() - 7)
+    // 准备下一个 FETCH_WINDOW_DAYS 天周期的迭代
+    currentDate.setDate(currentDate.getDate() - FETCH_WINDOW_DAYS)
     loopCount++
   }
 

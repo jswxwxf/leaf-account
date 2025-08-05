@@ -76,12 +76,6 @@ export default function store() {
       month: monthValue.value,
       type: typeValue.value,
     }
-    // 当选择了“全部”时，日期选择器传来的值为 ''
-    // 所以只有 month 不为空时才获取汇总信息
-    if (!query.month) {
-      totalIncome.value = 0
-      totalExpense.value = 0
-    }
     resetAndFetchBills(query)
   }
 

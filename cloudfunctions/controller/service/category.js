@@ -26,6 +26,7 @@ async function getCategories(event, models) {
 
   const { data } = await models.category.list({
     filter: { where: finalWhere },
+    orderBy: [{ type: 'desc' }],
     pageSize: 1000,
   })
   return data.records
@@ -47,9 +48,8 @@ async function addCategory(event, models) {
   if (!category || !category.name) {
     throw new Error('缺少分类名称')
   }
-  // _openid 会被自动填充
   const result = await models.category.create({
-    data: category,
+    data: { ...category, _openid: OPENID },
   })
   const { id } = result.data
   return { _id: id, ...category }

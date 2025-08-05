@@ -22,16 +22,21 @@ module.exports = {
 
     <!-- 标签列表 -->
     <view wx:if="{{tags.length > 0}}" class="grid grid-cols-5 gap-3 mb-4 tag-list">
-      <van-button
+      <view
         wx:for="{{ tags }}"
         wx:key="_id"
-        plain="{{ !tools.isSelected(item, selectedTags) }}"
-        custom-class="flex items-center justify-center p-2 text-sm w-full tag-button {{ tools.isSelected(item, selectedTags) ? 'ring-2 ring-blue-500' : '' }}"
+        class="tag-wrapper"
         @tap="handleSelect"
         data-item="{{ item }}"
       >
-        <bill-tag type="{{item.type}}">{{ item.name }}</bill-tag>
-      </van-button>
+        <van-button
+          plain="{{ !tools.isSelected(item, selectedTags) }}"
+          custom-class="flex items-center justify-center p-2 text-sm w-full tag-button"
+        >
+          <bill-tag type="{{item.type}}">{{ item.name }}</bill-tag>
+        </van-button>
+        <view wx:if="{{ tools.isSelected(item, selectedTags) }}" class="selected-corner" />
+      </view>
     </view>
     <view wx:else class="text-center text-gray-500 pb-6">
       暂无标签，请在下方添加
