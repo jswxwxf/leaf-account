@@ -16,13 +16,13 @@
     "list": [
       {
         "pagePath": "pages/account/index",
-        "text": "记账",
+        "text": "帐本",
         "iconPath": "assets/images/ep-notebook.png",
         "selectedIconPath": "assets/images/ep-notebook-selected.png"
       },
       {
         "pagePath": "pages/stats/index",
-        "text": "统计",
+        "text": "查询",
         "iconPath": "assets/images/ep-pie-chart.png",
         "selectedIconPath": "assets/images/ep-pie-chart-selected.png"
       },
