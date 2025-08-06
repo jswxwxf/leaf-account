@@ -1,0 +1,87 @@
+/* pages/selection/selection.wxss */
+
+.dropdown {
+  display: flex;
+  align-items: center;
+}
+
+/* 下拉菜单容器 */
+.dropdown-container {
+  margin: 20rpx;
+  width: 330rpx; /* 宽度可调 */
+  position: relative;
+  font-size: 28rpx;
+  color: #333; /* 文字颜色 */
+}
+
+/* 头部样式 */
+.dropdown-header {
+  padding: 20rpx 24rpx;
+  background: #f8f8f8; /* 头部背景色 */
+  border-radius: 8rpx; /* 圆角 */
+  border: 1rpx solid #ddd; /* 边框 */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 修改下拉列表动画部分 */
+.dropdown-list {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 8rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  /* 更平滑的缓动函数 */
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 展开状态 */
+.dropdown-list.open {
+  max-height: 80vh;
+  opacity: 1;
+}
+
+/* 新增收起状态 */
+.dropdown-list.close {
+  max-height: 0;
+  opacity: 0;
+  /* 更快的收起速度 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 下拉选项 */
+.dropdown-item {
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid #eee; /* 分割线 */
+  transition: background 0.2s;
+}
+
+/* 选中项高亮 */
+.dropdown-item.selected {
+  background: #f0f0f0; /* 浅灰色背景 */
+  font-weight: 500;
+}
+
+/* 删除图标 */
+.warning {
+  color: LightCoral;
+}
+
+/* 箭头图标 */
+.arrow {
+  margin-left: 10rpx;
+  font-size: 24rpx;
+  transition: transform 0.5s ease;
+  color: #666;
+}
+
+/* 箭头旋转动画 */
+.arrow.rotate {
+  transform: rotate(180deg);
+}

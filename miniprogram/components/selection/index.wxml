@@ -1,0 +1,23 @@
+<view class="dropdown">
+  <!-- 下拉菜单容器 -->
+  <view class="dropdown-container">
+    <!-- 下拉头部（显示选中项） -->
+    <view class="dropdown-header" @tap="toggleDropdown">
+      <text class="selected-text">{{selectedItem || placeholder}}</text>
+
+      <view class="dropdown">
+        <!-- 删除图标（有值时才显示） -->
+        <view wx:if="{{selectedItem}}" class="warning" @tap.catch="handleDelete">⊗</view>
+        <!-- 箭头图标（带旋转动画） -->
+        <view class="arrow {{isDropdownOpen ? 'rotate' : ''}}">▼</view>
+      </view>
+    </view>
+
+    <!-- 下拉列表（含过渡动画） -->
+    <view class="dropdown-list {{isDropdownOpen ? 'open' : 'close'}}">
+      <view wx:for="{{dropdownItems}}" wx:key="index" class="dropdown-item {{item === selectedItem ? 'selected' : ''}}" @tap="selectItem" data-item="{{item}}">
+        {{item}}
+      </view>
+    </view>
+  </view>
+</view>
