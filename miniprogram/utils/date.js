@@ -1,34 +1,43 @@
-import { DateTime } from 'luxon'
+import dayjs from '@/vendor/dayjs/esm/index.js'
+import '@/vendor/dayjs/locale/zh-cn.js'
+import isToday from '@/vendor/dayjs/plugin/isToday.js'
+import isYesterday from '@/vendor/dayjs/plugin/isYesterday.js'
+
+dayjs.locale('zh-cn')
+dayjs.extend(isToday)
+dayjs.extend(isYesterday)
 
 /**
- * 获取日期是星期几 (使用 Luxon)
+ * 获取日期是星期几
  * @param {string} dateString - 日期字符串 (YYYY-MM-DD)
  * @returns {string}
  */
 export function getDayOfWeek(dateString) {
-  const date = DateTime.fromISO(dateString)
-  const today = DateTime.now()
-
-  if (date.hasSame(today, 'day')) {
+  const date = dayjs(dateString)
+  if (date.isToday()) {
     return '今天'
   }
-  if (date.hasSame(today.minus({ days: 1 }), 'day')) {
+  if (date.isYesterday()) {
     return '昨天'
   }
-  // Luxon's toFormat('cccc') will produce '星期一', '星期二', etc. with the right locale.
-  return date.setLocale('zh-cn').toFormat('cccc')
+  return date.format('dddd')
 }
 
 /**
  * 格式化日期
- * @param {Date | number} date - 日期对象或时间戳
- * @param {string} fmt - 格式字符串，例如 'YYYY-MM-DD hh:mm:ss'
+ * @param {Date | number | string} date - 日期对象、时间戳或字符串
+ * @param {string} fmt - 格式字符串，例如 'YYYY-MM-DD HH:mm:ss'
  * @returns {string}
  */
 export function formatDate(date, fmt) {
   if (!date) return ''
-  return DateTime.fromJSDate(new Date(date)).toFormat(fmt)
+  return dayjs(date).format(fmt)
 }
 
-// 导出 DateTime 实例，方便在其他地方统一使用
-export { DateTime }
+/**
+ * 获取当前月份的字符串，格式为 'YYYY-MM'
+ * @returns {string}
+ */
+export function getCurrentMonth() {
+  return dayjs().format('YYYY-MM')
+}

@@ -1,5 +1,5 @@
 import { groupBy, sumBy, map, orderBy } from 'lodash'
-import { DateTime, getDayOfWeek } from '@/utils/date.js'
+import { getDayOfWeek, formatDate } from '@/utils/date.js'
 
 /**
  * 生成一个新的账单对象的初始值
@@ -23,8 +23,8 @@ export function newBill() {
 export function groupBillsByDate(bills) {
   if (!bills || bills.length === 0) return []
 
-  // 使用 toISODate() 仅根据日期进行分组，忽略时间
-  const grouped = groupBy(bills, (bill) => DateTime.fromMillis(bill.datetime).toISODate())
+  // 使用 YYYY-MM-DD 格式仅根据日期进行分组，忽略时间
+  const grouped = groupBy(bills, (bill) => formatDate(bill.datetime, 'YYYY-MM-DD'))
 
   const mapped = map(grouped, (dailyRawBills, date) => {
     const income = sumBy(dailyRawBills, (bill) => (bill.amount > 0 ? bill.amount : 0)) || 0

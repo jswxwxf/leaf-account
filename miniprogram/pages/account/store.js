@@ -1,8 +1,8 @@
 import { ref, computed, onShow, watch } from '@vue-mini/core'
 import { sumBy, orderBy } from 'lodash'
-import { DateTime } from 'luxon'
 import { getBills } from '@/api/bill.js'
 import { groupBillsByDate } from '@/service/bill-service.js'
+import { getCurrentMonth, formatDate } from '@/utils/date.js'
 
 export default function store() {
   // 原始账单列表
@@ -17,7 +17,7 @@ export default function store() {
 
   // 筛选器值
   const typeValue = ref('')
-  const monthValue = ref(DateTime.now().endOf('month').toFormat('yyyy-MM'))
+  const monthValue = ref(getCurrentMonth())
 
   // 总计
   const totalIncome = ref(0)
@@ -110,7 +110,7 @@ export default function store() {
         newBill.amount = -newBill.amount
       }
 
-      const billMonth = DateTime.fromMillis(newBill.datetime).toFormat('yyyy-MM')
+      const billMonth = formatDate(newBill.datetime, 'YYYY-MM')
       const billType = newBill.category.type.toString()
 
       const isMonthMatch = !monthValue.value || monthValue.value === billMonth

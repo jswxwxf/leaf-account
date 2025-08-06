@@ -1,6 +1,5 @@
 import { defineComponent, inject, ref } from '@vue-mini/core'
 import { storeKey } from '../store'
-import { DateTime } from '@/utils/date.js'
 
 defineComponent({
   properties: {
@@ -20,12 +19,14 @@ defineComponent({
 
     const generateMonthOptions = () => {
       const options = [{ text: '全部', value: '' }]
-      const current = DateTime.now()
+      const current = new Date()
       for (let i = 0; i < 120; i++) {
-        const date = current.minus({ months: i })
+        const date = new Date(current.getFullYear(), current.getMonth() - i, 1)
+        const year = date.getFullYear()
+        const month = (date.getMonth() + 1).toString().padStart(2, '0')
         options.push({
-          text: date.toFormat('yyyy年MM月'),
-          value: date.endOf('month').toFormat('yyyy-MM'),
+          text: `${year}年${month}月`,
+          value: `${year}-${month}`,
         })
       }
       return options
