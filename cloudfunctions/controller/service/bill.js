@@ -14,10 +14,6 @@ async function saveBill(event, models) {
   const { bill } = event.body
   const { OPENID } = cloud.getWXContext()
 
-  if (!OPENID) {
-    throw new Error('无法获取用户身份')
-  }
-
   if (!bill) {
     throw new Error('请求中缺少 bill 对象')
   }
@@ -115,10 +111,6 @@ async function saveBill(event, models) {
 async function saveBills(event, models) {
   const { bills } = event.body
   const { OPENID } = cloud.getWXContext()
-
-  if (!OPENID) {
-    throw new Error('无法获取用户身份')
-  }
 
   if (!Array.isArray(bills) || bills.length === 0) {
     throw new Error('请求中缺少 bills 数组')
@@ -441,9 +433,6 @@ async function deleteBill(event, models) {
 
   if (!id) {
     throw new Error('请求中缺少 id 参数')
-  }
-  if (!OPENID) {
-    throw new Error('无法获取用户身份')
   }
 
   const transaction = await db.startTransaction()

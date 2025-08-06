@@ -41,10 +41,6 @@ async function addCategory(event, models) {
   const { category } = event
   const { OPENID } = cloud.getWXContext()
 
-  if (!OPENID) {
-    throw new Error('无法获取用户身份')
-  }
-
   if (!category || !category.name) {
     throw new Error('缺少分类名称')
   }

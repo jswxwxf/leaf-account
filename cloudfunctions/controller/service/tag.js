@@ -31,10 +31,6 @@ async function addTags(event, models) {
   const { tags } = event
   const { OPENID } = cloud.getWXContext()
 
-  if (!OPENID) {
-    throw new Error('无法获取用户身份')
-  }
-
   if (!tags || !Array.isArray(tags) || tags.length === 0) {
     throw new Error('缺少标签数据')
   }

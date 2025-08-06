@@ -30,12 +30,12 @@ module.exports = {
         data-item="{{ item }}"
       >
         <van-button
-          plain="{{ !tools.isSelected(item, selectedTags) }}"
+          plain
           custom-class="flex items-center justify-center p-2 text-sm w-full tag-button"
         >
           <bill-tag type="{{item.type}}">{{ item.name }}</bill-tag>
         </van-button>
-        <view wx:if="{{ tools.isSelected(item, selectedTags) }}" class="selected-corner" />
+        <view class="selected-corner" hidden="{{ !tools.isSelected(item, selectedTags) }}" />
       </view>
     </view>
     <view wx:else class="text-center text-gray-500 pb-6">
