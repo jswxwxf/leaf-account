@@ -10,7 +10,7 @@
 >
   <view class="h-full w-full bg-white px-4 pt-2 flex flex-col max-h-screen">
     <!-- Main Content: Form -->
-    <van-cell-group border="{{ false }}" class="flex-1 overflow-y-auto">
+    <van-cell-group border="{{ false }}" custom-class="flex-1 overflow-y-auto bill-popup-cell-group">
       <calendar-field
         label="日期"
         value="{{ bill.datetime }}"
@@ -48,7 +48,7 @@
     <!-- Footer -->
     <view class="flex items-center py-4">
       <view class="flex-1">
-        <van-button type="primary" size="small" @tap="handleConfirm">确定</van-button>
+        <van-button type="primary" @tap="handleConfirm">确定</van-button>
       </view>
       <view class="flex-1 text-center text-sm text-gray-500"></view>
       <view class="flex-1 flex justify-end items-center space-x-6">

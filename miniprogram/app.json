@@ -2,8 +2,7 @@
   "pages": [
     "pages/account/index",
     "pages/stats/index",
-    "pages/setting/index",
-    "pages/store-sample/index"
+    "pages/setting/index"
   ],
   "window": {
     "backgroundColor": "#F6F6F6",

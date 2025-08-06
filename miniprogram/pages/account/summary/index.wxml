@@ -15,13 +15,13 @@
     />
   </van-dropdown-menu>
   <view class="flex justify-between items-center mt-4">
-    <view class="text-sm bg-black/30 px-3 py-1 rounded-lg van-ellipsis">
+    <view class="text-sm bg-black/30 px-3 py-1 van-ellipsis">
       支 {{monthValue === '' ? 'N/A' : '¥' + utils.formatMoney(-totalExpense) }}
     </view>
-    <view class="text-sm bg-black/30 px-3 py-1 rounded-lg van-ellipsis">
+    <view class="text-sm bg-black/30 px-3 py-1 van-ellipsis">
       收 {{monthValue === '' ? 'N/A' : '¥' + utils.formatMoney(totalIncome) }}
     </view>
-    <view class="text-sm bg-black/30 px-3 py-1 rounded-lg van-ellipsis">
+    <view class="text-sm bg-black/30 px-3 py-1 van-ellipsis">
       总余 ¥{{ utils.formatMoney(totalBalance) }}
     </view>
   </view>

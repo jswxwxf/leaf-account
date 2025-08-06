@@ -1,7 +1,7 @@
 import { createApp } from '@vue-mini/core'
 import { envList } from './envList'
 import '@/utils/lodash-fix.js'
-import '@/app.wxss'
+import '@/app.less'
 
 // app.js
 createApp({
