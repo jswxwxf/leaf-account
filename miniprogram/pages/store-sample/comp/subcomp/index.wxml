@@ -1,4 +1,0 @@
-<view class="container">
-  <view>{{state.count}}</view>
-  <van-button type="primary" @tap="handleTap">加1</van-button>
-</view>

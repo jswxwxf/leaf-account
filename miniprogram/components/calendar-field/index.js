@@ -25,7 +25,7 @@ defineComponent({
   setup(props, { triggerEvent }) {
     const formattedDate = computed(() => {
       if (!props.value) return ''
-      const format = props.type === 'short' ? 'MM月dd日' : 'yyyy-MM-dd'
+      const format = props.type === 'short' ? 'MM月DD日' : 'YYYY-MM-DD'
       return formatDate(props.value, format)
     })
 
