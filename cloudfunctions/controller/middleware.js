@@ -64,12 +64,12 @@ const withSummary = (models, event) => async (ctx, next) => {
  * @param {object} event - 云函数 event 对象
  * @param {object} models - CloudBase 数据模型
  */
-function registerMiddlewares(app, event, models) {
+function useMiddlewares(app, event, models) {
   app.use(requireLogin(event))
   app.use(withAccount(models, event))
   app.use(withSummary(models, event))
 }
 
 module.exports = {
-  registerMiddlewares,
+  useMiddlewares,
 }

@@ -11,7 +11,7 @@ const client = init(cloud)
 const models = client.models
 const db = cloud.database()
 
-const { registerMiddlewares } = require('./middleware.js')
+const { useMiddlewares } = require('./middleware.js')
 
 const {
   saveBill,
@@ -29,7 +29,7 @@ exports.main = (event, context) => {
   const app = new TcbRouter({ event })
 
   // 注册所有中间件
-  registerMiddlewares(app, event, models)
+  useMiddlewares(app, event, models)
 
   /**
    * @desc 新增或更新账单
