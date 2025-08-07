@@ -83,6 +83,7 @@ defineComponent({
 
     const billPopup = ref(null)
     const batchPopup = ref(null)
+    const imagePath = ref('')
 
     const { billPopped, processBill } = useBillPopup(state, billPopup)
     const { handleOcr } = useProcessPhoto()
@@ -133,6 +134,7 @@ defineComponent({
         bills = await batchPopup.value.show(initialBills)
       } finally {
         billPopped.value = false
+        imagePath.value = ''
       }
 
       if (bills && bills.length > 0) {
@@ -143,14 +145,13 @@ defineComponent({
     }
 
     const handlePhotoBills = async () => {
-      let imagePath
       try {
         const res = await wx.chooseMedia({
           count: 1,
           mediaType: ['image'],
           sourceType: ['album', 'camera'],
         })
-        imagePath = res.tempFiles[0].tempFilePath
+        imagePath.value = res.tempFiles[0].tempFilePath
       } catch (err) {
         // Handle cancellation
         if (err.errMsg && !err.errMsg.includes('cancel')) {
@@ -160,7 +161,7 @@ defineComponent({
         return // exit if no image selected
       }
 
-      const texts = await handleOcr(imagePath)
+      const texts = await handleOcr(imagePath.value)
       const bills = await analyzeBillsFromText(texts.join(' '))
       console.log('AI识别出的账单:', bills)
       if (bills && bills.length > 0) {
@@ -186,6 +187,7 @@ defineComponent({
       ...state,
       billPopped,
       scrollTop,
+      imagePath,
       handleAddBill,
       handleEditBill,
       handleDeleteBill,
