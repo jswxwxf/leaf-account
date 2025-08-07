@@ -9,7 +9,7 @@ export function useOcr(onOcrResult) {
       return
     }
 
-    wx.showLoading({ title: '云端识别中...' })
+    wx.showLoading({ title: 'AI解析中...' })
     ocrRunning = true
 
     try {

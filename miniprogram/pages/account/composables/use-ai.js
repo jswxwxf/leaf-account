@@ -33,7 +33,7 @@ export function useAi() {
     const prompt = getAiPrompt().replace('{raw_text}', rawText)
     console.log('AI分析请求:', prompt)
 
-    wx.showLoading({ title: 'AI分析中...' })
+    wx.showLoading({ title: 'AI解析中...' })
 
     try {
       const model = wx.cloud.extend.AI.createModel('hunyuan-exp')
