@@ -2,10 +2,12 @@ import dayjs from '@/vendor/dayjs/esm/index.js'
 import '@/vendor/dayjs/locale/zh-cn.js'
 import isToday from '@/vendor/dayjs/plugin/isToday.js'
 import isYesterday from '@/vendor/dayjs/plugin/isYesterday.js'
+import customParseFormat from '@/vendor/dayjs/plugin/customParseFormat.js'
 
 dayjs.locale('zh-cn')
 dayjs.extend(isToday)
 dayjs.extend(isYesterday)
+dayjs.extend(customParseFormat)
 
 /**
  * 获取日期是星期几
@@ -44,20 +46,31 @@ export function getCurrentMonth() {
 
 export function parseDate(dateString) {
   if (!dateString) return Date.now()
-  try {
-    // 尝试直接解析，如果已经是时间戳或标准格式
-    let date = new Date(dateString)
-    if (!isNaN(date.getTime())) {
-      return date.getTime()
-    }
-    // 尝试添加当前年份来解析 "MM-DD HH:mm" 等格式
-    date = new Date(`${new Date().getFullYear()}-${dateString}`)
-    if (!isNaN(date.getTime())) {
-      return date.getTime()
-    }
-    // 所有尝试失败后，返回当前时间
-    return Date.now()
-  } catch (e) {
-    return Date.now()
+
+  // 定义一个包含所有可能格式的数组。
+  // dayjs 会按顺序尝试解析，因此将最具体的格式放在前面。
+  // 对于不含年份的格式，dayjs 会自动使用当前年份。
+  const formats = [
+    'YYYY-MM-DD HH:mm:ss',
+    'YYYY-MM-DD HH:mm',
+    'YYYY-MM-DD',
+    'YYYY/MM/DD HH:mm:ss',
+    'YYYY/MM/DD HH:mm',
+    'YYYY/MM/DD',
+    'M月D日 HH:mm', // 直接处理 "8月6日 09:47"
+    'M月D日',      // 直接处理 "8月6日"
+    'M-D HH:mm',
+    'M-D',
+    'HH:mm',
+  ]
+
+  // 第三个参数 'zh-cn' 确保本地化正确，第四个参数 `true` 启用严格模式解析。
+  const d = dayjs(dateString, formats, 'zh-cn', true)
+
+  if (d.isValid()) {
+    return d.valueOf()
   }
+
+  // 如果所有格式都解析失败，则返回当前时间作为最终的保障。
+  return Date.now()
 }

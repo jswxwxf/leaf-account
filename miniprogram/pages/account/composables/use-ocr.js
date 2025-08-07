@@ -1,117 +1,73 @@
-import { onUnload } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
 
 export function useOcr(onOcrResult) {
-  let session = null
   let ocrRunning = false
 
-  const initVK = () => {
-    if (session) return
-
-    const ocrSession = wx.createVKSession({
-      track: {
-        OCR: {
-          mode: 2,
-        },
-      },
-      version: 'v1',
-    })
-
-    ocrSession.on('error', (err) => {
-      console.error('VKSession error:', err)
-      Toast.fail('OCR引擎出错')
-      ocrRunning = false
-      wx.hideLoading()
-    })
-
-    ocrSession.on('updateAnchors', (anchors) => {
-      wx.hideLoading()
-      ocrRunning = false
-      if (!anchors || anchors.length === 0) {
-        Toast('未识别到任何文字')
-        return
-      }
-
-      const texts = anchors.map((anchor) => anchor.text)
-      if (onOcrResult) {
-        onOcrResult(texts)
-      }
-    })
-
-    ocrSession.start((err) => {
-      if (err) {
-        console.error('OCR引擎启动失败', err)
-        return
-      }
-      console.log('VKSession started')
-      session = ocrSession
-    })
-  }
-
-  async function getImageData(imagePath) {
-    const imageInfo = await wx.getImageInfo({ src: imagePath })
-    const canvas = wx.createOffscreenCanvas({
-      type: '2d',
-      width: imageInfo.width,
-      height: imageInfo.height,
-    })
-    const context = canvas.getContext('2d')
-    const img = canvas.createImage()
-    await new Promise((resolve, reject) => {
-      img.onload = resolve
-      img.onerror = reject
-      img.src = imagePath
-    })
-    context.drawImage(img, 0, 0, imageInfo.width, imageInfo.height)
-    const imgData = context.getImageData(0, 0, imageInfo.width, imageInfo.height)
-    return {
-      buffer: imgData.data.buffer,
-      width: imageInfo.width,
-      height: imageInfo.height,
-    }
-  }
-
   const runNativeOCR = async (imagePath) => {
-    if (!session) {
-      Toast.fail('OCR引擎未就绪')
-      return
-    }
     if (ocrRunning) {
       Toast('正在识别中，请稍候...')
       return
     }
 
-    wx.showLoading({ title: '本机识别中...' })
+    wx.showLoading({ title: '云端识别中...' })
     ocrRunning = true
 
     try {
-      const { buffer, width, height } = await getImageData(imagePath)
-      session.runOCR({
-        frameBuffer: buffer,
-        width,
-        height,
+      const invokeRes = await wx.serviceMarket.invokeService({
+        service: 'wx79ac3de8be320b71',
+        api: 'OcrAllInOne',
+        data: {
+          // 用 CDN 方法标记要上传并转换成 HTTP URL 的文件
+          img_url: new wx.serviceMarket.CDN({
+            type: 'filePath',
+            filePath: imagePath,
+          }),
+          data_type: 3,
+          ocr_type: 8,
+        },
       })
+
+      console.log('invokeService success', invokeRes)
+      wx.hideLoading()
+      ocrRunning = false
+
+      const resultData = invokeRes.data
+
+      // 旧的实现返回一个简单的字符串数组
+      // 我们需要将新结果适配为该格式
+      // 假设 resultData.ocr_info 是一个包含 'text' 属性的对象数组
+      const texts =
+        resultData?.ocr_comm_res?.items
+          ?.map((item) => item.text)
+          .filter((line) => line && line.trim().length > 0) ?? []
+
+      if (texts.length === 0) {
+        Toast('未识别到任何文字')
+        return
+      }
+
+      if (onOcrResult) {
+        onOcrResult(texts)
+      }
     } catch (err) {
       wx.hideLoading()
       ocrRunning = false
-      console.error('runNativeOCR failed:', err)
-      wx.showToast({ title: '图片处理失败', icon: 'none' })
+      console.error('invokeService fail', err)
+      wx.showModal({
+        title: '识别失败',
+        content: JSON.stringify(err),
+      })
     }
   }
 
-  const stopVK = () => {
-    if (session) {
-      console.log('Stopping VKSession')
-      session.stop()
-      session = null
-    }
-  }
-
-  onUnload(stopVK)
+  // 这些函数不再需要，但为了兼容性而保留
+  // 以避免在调用组件中产生破坏性更改。它们什么都不做。
+  const initVK = () => {}
+  const stopVK = () => {}
 
   return {
-    initVK,
-    stopVK,
+    initVK, // 为 API 兼容性保留
+    stopVK, // 为 API 兼容性保留
     runNativeOCR,
   }
 }

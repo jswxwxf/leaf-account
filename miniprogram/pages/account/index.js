@@ -53,14 +53,7 @@ function useProcessPhoto() {
       _reject(err)
     }
   }
-  const { initVK, stopVK, runNativeOCR } = useOcr(handleOcrResult)
-
-  onReady(() => {
-    // 延迟初始化，避免影响首页加载
-    setTimeout(initVK, 300)
-  })
-
-  onUnload(stopVK)
+  const { runNativeOCR } = useOcr(handleOcrResult)
 
   function handleOcr(imagePath) {
     runNativeOCR(imagePath)
@@ -156,7 +149,6 @@ defineComponent({
         // Handle cancellation
         if (err.errMsg && !err.errMsg.includes('cancel')) {
           console.error('chooseMedia failed', err)
-          Toast.fail('选择图片失败')
         }
         return // exit if no image selected
       }
