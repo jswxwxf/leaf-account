@@ -63,8 +63,8 @@
           </view>
         </view>
         <view class="w-8 flex flex-col items-center gap-2 space-y-2">
-          <van-icon name="add-o" size="20px" @tap="handleAddRow" data-row-index="{{ rowIndex }}" />
-          <view class="i-ep-copy-document text-[1rem]"  @tap="handleCopyRow" data-row-index="{{ rowIndex }}" />
+          <van-icon name="add-o" size="20px" @tap="handleAddRow" data-row-index="{{ rowIndex }}" color="{{ list.length >= 20 ? '#c8c9cc' : '' }}" />
+          <view class="i-ep-copy-document text-[1rem] {{ list.length >= 20 ? 'text-gray-400' : '' }}"  @tap="handleCopyRow" data-row-index="{{ rowIndex }}" />
           <van-icon name="delete-o" size="20px" @tap="handleDeleteRow" data-row-index="{{ rowIndex }}" color="{{ list.length > 1 ? '' : '#c8c9cc' }}" />
         </view>
       </view>

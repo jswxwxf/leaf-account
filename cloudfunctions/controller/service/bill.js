@@ -19,7 +19,7 @@ async function saveBill(event, models) {
   }
 
   const originalBill = { ...bill } // 保留原始账单对象用于返回
-  const billToSave = { ...bill }
+  const billToSave = { ...bill, amount: parseFloat(bill.amount) || 0 }
 
   // 确保金额正负与类别匹配
   if (billToSave.category?.type === '10' && billToSave.amount < 0) {
@@ -116,61 +116,72 @@ async function saveBills(event, models) {
     throw new Error('请求中缺少 bills 数组')
   }
 
-  const billsToSave = bills.map((bill) => {
-    const billToSave = { ...bill }
-    // 确保金额正负与类别匹配
-    if (billToSave.category?.type === '10' && billToSave.amount < 0) {
-      billToSave.amount = -billToSave.amount
-    } else if (billToSave.category?.type === '20' && billToSave.amount > 0) {
-      billToSave.amount = -billToSave.amount
-    }
-    delete billToSave._id
-    billToSave.category = billToSave.category?._id
-    return billToSave
-  })
+  const BATCH_SIZE = 20 // 设置每批保存的数量
+  const allBillIds = []
 
-  const balanceIncrement = billsToSave.reduce((sum, bill) => sum + bill.amount, 0)
-  const incomeIncrement = billsToSave.reduce(
-    (sum, bill) => sum + (bill.amount > 0 ? bill.amount : 0),
-    0,
-  )
-  const expenseIncrement = billsToSave.reduce(
-    (sum, bill) => sum + (bill.amount < 0 ? bill.amount : 0),
-    0,
-  )
+  // 将账单分块
+  for (let i = 0; i < bills.length; i += BATCH_SIZE) {
+    const batch = bills.slice(i, i + BATCH_SIZE)
+    const billsToSave = batch.map((bill) => {
+      const billToSave = { ...bill, amount: parseFloat(bill.amount) || 0 }
+      // 确保金额正负与类别匹配
+      if (billToSave.category?.type === '10' && billToSave.amount < 0) {
+        billToSave.amount = -billToSave.amount
+      } else if (billToSave.category?.type === '20' && billToSave.amount > 0) {
+        billToSave.amount = -billToSave.amount
+      }
+      delete billToSave._id
+      billToSave.category = billToSave.category?._id
+      return billToSave
+    })
 
-  const transaction = await db.startTransaction()
-  try {
-    // 1. 更新账户余额
-    if (balanceIncrement !== 0) {
-      await updateAccount(
-        { balanceIncrement, incomeIncrement, expenseIncrement },
-        models,
-        transaction,
-      )
-    }
-
-    // 2. 批量创建账单
-    const addPromises = billsToSave.map((bill) =>
-      transaction.collection('bill').add({ data: { ...bill, _openid: OPENID } }),
+    const balanceIncrement = billsToSave.reduce((sum, bill) => sum + bill.amount, 0)
+    const incomeIncrement = billsToSave.reduce(
+      (sum, bill) => sum + (bill.amount > 0 ? bill.amount : 0),
+      0,
     )
-    const addResults = await Promise.all(addPromises)
-    const newBillIds = addResults.map((res) => res._id)
+    const expenseIncrement = billsToSave.reduce(
+      (sum, bill) => sum + (bill.amount < 0 ? bill.amount : 0),
+      0,
+    )
 
-    if (newBillIds.some((id) => !id)) {
-      throw new Error('部分账单创建失败')
+    const transaction = await db.startTransaction()
+    try {
+      // 1. 更新账户余额
+      if (balanceIncrement !== 0) {
+        await updateAccount(
+          { balanceIncrement, incomeIncrement, expenseIncrement },
+          models,
+          transaction,
+        )
+      }
+
+      // 2. 串行创建账单
+      const newBillIds = []
+      for (const bill of billsToSave) {
+        const result = await transaction
+          .collection('bill')
+          .add({ data: { ...bill, _openid: OPENID } })
+        newBillIds.push(result._id)
+      }
+
+      if (newBillIds.some((id) => !id)) {
+        throw new Error('部分账单创建失败')
+      }
+
+      allBillIds.push(...newBillIds)
+
+      // 3. 提交事务
+      await transaction.commit()
+    } catch (e) {
+      await transaction.rollback()
+      throw new Error(`批量保存账单失败: ${e.message}`)
     }
-
-    // 3. 提交事务
-    await transaction.commit()
-
-    // 4. 获取新创建的账单详情
-    const newBills = await getBillsByIds({ query: { ids: newBillIds } }, models)
-    return newBills
-  } catch (e) {
-    await transaction.rollback()
-    throw new Error(`批量保存账单失败: ${e.message}`)
   }
+
+  // 4. 获取所有新创建的账单详情
+  const newBills = await getBillsByIds({ query: { ids: allBillIds } }, models)
+  return newBills
 }
 
 /**

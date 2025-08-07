@@ -47,6 +47,7 @@ defineComponent({
     }
 
     const handleAddRow = (e) => {
+      if (list.value.length >= 20) return
       const { rowIndex } = e.currentTarget.dataset
       list.value.splice(rowIndex + 1, 0, newBill())
     }
@@ -59,6 +60,7 @@ defineComponent({
     }
 
     const handleCopyRow = (e) => {
+      if (list.value.length >= 20) return
       const { rowIndex } = e.currentTarget.dataset
       const rowToCopy = list.value[rowIndex]
       // Deep copy to avoid reference issues
