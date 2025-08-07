@@ -1,20 +1,14 @@
-import { defineComponent, ref, reactive, computed, provide, onReady, watch } from '@vue-mini/core'
+import { defineComponent, ref, provide, onReady, onUnload, watch } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
 import Dialog from '@vant/weapp/dialog/dialog.js'
 import { newBill } from '@/service/bill-service.js'
 import { upsertBill, deleteBill, saveBills } from '@/api/bill.js'
 import store, { storeKey } from './store'
+import { useOcr } from './composables/use-ocr.js'
+import { useAi } from './composables/use-ai.js'
 
 function useBillPopup(state, billPopupRef) {
-  const {
-    typeValue,
-    monthValue,
-    totalIncome,
-    totalExpense,
-    totalBalance,
-    updateBills,
-    updateAccountSummary,
-  } = state
+  const { typeValue, monthValue, updateBills, updateAccountSummary } = state
 
   const billPopped = ref(false)
 
@@ -46,30 +40,58 @@ function useBillPopup(state, billPopupRef) {
   }
 }
 
+function useProcessPhoto() {
+  let _resolve = null
+  let _reject = null
+
+  const handleOcrResult = async (texts) => {
+    try {
+      console.log('Parsed texts:', texts)
+      _resolve(texts)
+    } catch (err) {
+      Toast.fail('未能识别出有效账单')
+      _reject(err)
+    }
+  }
+  const { initVK, stopVK, runNativeOCR } = useOcr(handleOcrResult)
+
+  onReady(() => {
+    // 延迟初始化，避免影响首页加载
+    setTimeout(initVK, 300)
+  })
+
+  onUnload(stopVK)
+
+  function handleOcr(imagePath) {
+    runNativeOCR(imagePath)
+    return new Promise((resolve, reject) => {
+      _resolve = resolve
+      _reject = reject
+    })
+  }
+
+  return {
+    handleOcr,
+  }
+}
+
 defineComponent({
   setup(props, { selectComponent }) {
     const state = store()
-    const {
-      typeValue,
-      monthValue,
-      totalIncome,
-      totalExpense,
-      totalBalance,
-      removeBills,
-      updateBills,
-      updateAccountSummary,
-    } = state
+    const { typeValue, monthValue, removeBills, updateBills, updateAccountSummary } = state
     provide(storeKey, state)
 
     const billPopup = ref(null)
     const batchPopup = ref(null)
 
+    const { billPopped, processBill } = useBillPopup(state, billPopup)
+    const { handleOcr } = useProcessPhoto()
+    const { analyzeBillsFromText } = useAi()
+
     onReady(() => {
       billPopup.value = selectComponent('#bill-popup')
       batchPopup.value = selectComponent('#batch-popup')
     })
-
-    const { billPopped, processBill } = useBillPopup(state, billPopup)
 
     const scrollTop = ref(0)
     // 监听月份变化，自动滚动到顶部
@@ -81,18 +103,6 @@ defineComponent({
 
     const handleAddBill = () => {
       processBill(newBill())
-      // wx.cloud.callFunction({
-      //   name: 'data-importer',
-      //   data: {},
-      //   success: (res) => {
-      //     console.log('data-importer called successfully', res.result)
-      //     Toast.success('导入成功')
-      //   },
-      //   fail: (err) => {
-      //     console.error('data-importer called failed', err)
-      //     Toast.fail('导入失败')
-      //   },
-      // })
     }
 
     const handleEditBill = (e) => {
@@ -112,7 +122,7 @@ defineComponent({
       Toast.success('删除成功')
     }
 
-    const handleBatchBills = async () => {
+    const handleBatchBills = async (initialBills) => {
       if (!batchPopup.value) return
 
       billPopped.value = true
@@ -120,22 +130,56 @@ defineComponent({
       let bills = null
 
       try {
-        bills = await batchPopup.value.show()
+        bills = await batchPopup.value.show(initialBills)
       } finally {
         billPopped.value = false
       }
 
-      const res = await saveBills(bills, { month: monthValue.value, type: typeValue.value })
-      updateAccountSummary(res)
-      updateBills(res.data)
+      if (bills && bills.length > 0) {
+        const res = await saveBills(bills, { month: monthValue.value, type: typeValue.value })
+        updateAccountSummary(res)
+        updateBills(res.data)
+      }
+    }
+
+    const handlePhotoBills = async () => {
+      let imagePath
+      try {
+        const res = await wx.chooseMedia({
+          count: 1,
+          mediaType: ['image'],
+          sourceType: ['album', 'camera'],
+        })
+        imagePath = res.tempFiles[0].tempFilePath
+      } catch (err) {
+        // Handle cancellation
+        if (err.errMsg && !err.errMsg.includes('cancel')) {
+          console.error('chooseMedia failed', err)
+          Toast.fail('选择图片失败')
+        }
+        return // exit if no image selected
+      }
+
+      const texts = await handleOcr(imagePath)
+      const bills = await analyzeBillsFromText(texts.join(' '))
+      console.log('AI识别出的账单:', bills)
+      if (bills && bills.length > 0) {
+        handleBatchBills(bills)
+      } else {
+        Toast('未识别到有效账单')
+      }
     }
 
     const handleActionSelect = (e) => {
       const action = e.detail
       if (action.detail.value === 'batch') {
         handleBatchBills()
+        return
       }
-      // 可以为其他 action 添加逻辑
+      if (action.detail.value === 'photo') {
+        handlePhotoBills()
+        return
+      }
     }
 
     return {

@@ -41,3 +41,23 @@ export function formatDate(date, fmt) {
 export function getCurrentMonth() {
   return dayjs().format('YYYY-MM')
 }
+
+export function parseDate(dateString) {
+  if (!dateString) return Date.now()
+  try {
+    // 尝试直接解析，如果已经是时间戳或标准格式
+    let date = new Date(dateString)
+    if (!isNaN(date.getTime())) {
+      return date.getTime()
+    }
+    // 尝试添加当前年份来解析 "MM-DD HH:mm" 等格式
+    date = new Date(`${new Date().getFullYear()}-${dateString}`)
+    if (!isNaN(date.getTime())) {
+      return date.getTime()
+    }
+    // 所有尝试失败后，返回当前时间
+    return Date.now()
+  } catch (e) {
+    return Date.now()
+  }
+}

@@ -1,5 +1,6 @@
 import { defineComponent, ref } from '@vue-mini/core'
 import { isEmpty } from 'lodash'
+import { parseDate } from '@/utils/date.js'
 
 defineComponent({
   setup() {
@@ -8,14 +9,25 @@ defineComponent({
 
     let _resolve, _reject
 
-    const show = () => {
-      list.value = Array.from({ length: 3 }, () => ({
-        datetime: Date.now(),
-        category: '',
-        amount: '',
-        note: '',
-        tags: [],
-      }))
+    const show = (bills) => {
+      if (bills && bills.length > 0) {
+        list.value = bills.map((bill) => ({
+          datetime: parseDate(bill.datetime),
+          category: '', // AI尚不能识别分类
+          amount: bill.amount || '',
+          note: bill.note || '',
+          tags: [], // AI尚不能识别标签
+        }))
+      } else {
+        // 如果没有传入账单，则显示3个空行供手动输入
+        list.value = Array.from({ length: 3 }, () => ({
+          datetime: Date.now(),
+          category: '',
+          amount: '',
+          note: '',
+          tags: [],
+        }))
+      }
       visible.value = true
       return new Promise((resolve, reject) => {
         _resolve = resolve

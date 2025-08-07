@@ -10,9 +10,9 @@
     <!-- Main Content: make it scrollable -->
     <view class="flex-1 overflow-y-auto">
       <!-- Rows -->
-      <block wx:for="{{ list }}" wx:for-item="bill" wx:for-index="rowIndex" wx:key="rowIndex">
+      <view wx:for="{{ list }}" wx:for-item="bill" wx:for-index="rowIndex" wx:key="rowIndex" class="mb-3 p-1  bg-slate-100">
         <!-- Row 1: Date, Category, Amount -->
-        <view class="grid grid-cols-3 gap-2">
+        <view class="grid grid-cols-3 gap-1">
           <calendar-field
             label=""
             value="{{ bill.datetime }}"
@@ -40,7 +40,7 @@
           />
         </view>
         <!-- Row 2: Note and Tags -->
-        <view class="grid grid-cols-5 gap-2 mt-1">
+        <view class="grid grid-cols-5 gap-1 mt-1">
           <van-field
             class="col-span-3"
             label=""
@@ -60,13 +60,13 @@
             data-row-index="{{ rowIndex }}"
           />
         </view>
-      </block>
+      </view>
     </view>
 
     <!-- Footer: stays at the bottom, original structure preserved -->
     <view class="flex items-center py-4 border-t border-solid border-gray-100">
       <view class="flex-1">
-        <van-button type="primary" @tap="handleConfirm">确定</van-button>
+        <van-button type="primary" size="small" @tap="handleConfirm" custom-class="w-20">确定</van-button>
       </view>
       <view class="flex-1 text-center text-sm text-gray-500">
         <!-- 提示信息 -->
