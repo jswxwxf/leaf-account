@@ -31,9 +31,8 @@ function getAiPrompt() {
 export function useAi() {
   const analyzeBillsFromText = async (rawText) => {
     const prompt = getAiPrompt().replace('{raw_text}', rawText)
-    console.log('AI分析请求:', prompt)
 
-    wx.showLoading({ title: 'AI解析中...' })
+    wx.showLoading({ title: 'AI 解析中...' })
 
     try {
       const model = wx.cloud.extend.AI.createModel('hunyuan-exp')
@@ -48,7 +47,6 @@ export function useAi() {
       })
       wx.hideLoading()
       const reply = res.choices[0].message.content
-      console.log('AI分析结果:', reply)
       return JSON.parse(reply)
     } catch (err) {
       wx.hideLoading()

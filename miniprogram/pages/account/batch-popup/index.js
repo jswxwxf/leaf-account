@@ -1,6 +1,7 @@
 import { defineComponent, ref } from '@vue-mini/core'
 import { isEmpty } from 'lodash'
 import { parseDate } from '@/utils/date.js'
+import { newBill } from '@/service/bill-service.js'
 
 defineComponent({
   setup() {
@@ -20,13 +21,7 @@ defineComponent({
         }))
       } else {
         // 如果没有传入账单，则显示3个空行供手动输入
-        list.value = Array.from({ length: 3 }, () => ({
-          datetime: Date.now(),
-          category: '',
-          amount: '',
-          note: '',
-          tags: [],
-        }))
+        list.value = Array.from({ length: 3 }, newBill)
       }
       visible.value = true
       return new Promise((resolve, reject) => {
@@ -51,6 +46,26 @@ defineComponent({
       list.value[rowIndex][field] = e.detail
     }
 
+    const handleAddRow = (e) => {
+      const { rowIndex } = e.currentTarget.dataset
+      list.value.splice(rowIndex + 1, 0, newBill())
+    }
+
+    const handleDeleteRow = (e) => {
+      const { rowIndex } = e.currentTarget.dataset
+      if (list.value.length > 1) {
+        list.value.splice(rowIndex, 1)
+      }
+    }
+
+    const handleCopyRow = (e) => {
+      const { rowIndex } = e.currentTarget.dataset
+      const rowToCopy = list.value[rowIndex]
+      // Deep copy to avoid reference issues
+      const newRow = JSON.parse(JSON.stringify(rowToCopy))
+      list.value.splice(rowIndex + 1, 0, newRow)
+    }
+
     return {
       visible,
       list,
@@ -58,6 +73,9 @@ defineComponent({
       handleClose,
       handleConfirm,
       handleFormChange,
+      handleAddRow,
+      handleDeleteRow,
+      handleCopyRow,
     }
   },
 })

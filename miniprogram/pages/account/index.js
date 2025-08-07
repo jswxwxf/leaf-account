@@ -46,7 +46,6 @@ function useProcessPhoto() {
 
   const handleOcrResult = async (texts) => {
     try {
-      console.log('Parsed texts:', texts)
       _resolve(texts)
     } catch (err) {
       Toast.fail('未能识别出有效账单')
@@ -155,7 +154,6 @@ defineComponent({
 
       const texts = await handleOcr(imagePath.value)
       const bills = await analyzeBillsFromText(texts.join(' '))
-      console.log('AI识别出的账单:', bills)
       if (bills && bills.length > 0) {
         handleBatchBills(bills)
       } else {

@@ -9,7 +9,7 @@ export function useOcr(onOcrResult) {
       return
     }
 
-    wx.showLoading({ title: 'AI解析中...' })
+    wx.showLoading({ title: 'AI 解析中...' })
     ocrRunning = true
 
     try {
@@ -27,7 +27,6 @@ export function useOcr(onOcrResult) {
         },
       })
 
-      console.log('invokeService success', invokeRes)
       wx.hideLoading()
       ocrRunning = false
 

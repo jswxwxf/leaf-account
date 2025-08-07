@@ -7,11 +7,11 @@ import { getDayOfWeek, formatDate } from '@/utils/date.js'
  */
 export function newBill() {
   return {
-    amount: '',
     datetime: Date.now(),
+    category: '',
+    amount: '',
     note: '',
     tags: [],
-    category: null,
   }
 }
 

@@ -7,10 +7,10 @@
     "bill-popup": "./bill-popup/index",
     "batch-popup": "./batch-popup/index",
     "add-button": "./add-button/index",
-    "category-helper": "/components/category-helper/index",
-    "tags-helper": "/components/tags-helper/index",
-    "calendar-popup": "/components/calendar-popup/index",
-    "calendar-helper": "/components/calendar-helper/index"
+    "category-helper": "./components/category-helper/index",
+    "tags-helper": "./components/tags-helper/index",
+    "calendar-popup": "./components/calendar-popup/index",
+    "calendar-helper": "./components/calendar-helper/index"
   },
   "styleIsolation": "apply-shared"
 }
