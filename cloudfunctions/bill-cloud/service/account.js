@@ -39,6 +39,9 @@ async function updateAccount(event, models, dbOrTransaction) {
 
     if (Object.keys(updateData).length === 0) return // 如果没有要更新的，直接返回
 
+    updateData.updatedAt = db.serverDate()
+    updateData.updatedBy = OPENID
+
     result = await account.where({ _openid: OPENID }).update({ data: updateData })
     if (result.stats.updated === 0) {
       // 理论上不会发生，因为我们已经查询过
@@ -54,6 +57,10 @@ async function updateAccount(event, models, dbOrTransaction) {
         balance: balanceIncrement || 0,
         totalIncome: incomeIncrement || 0,
         totalExpense: expenseIncrement || 0,
+        createdAt: db.serverDate(),
+        createdBy: OPENID,
+        updatedAt: db.serverDate(),
+        updatedBy: OPENID,
       },
     })
     if (!result._id) {

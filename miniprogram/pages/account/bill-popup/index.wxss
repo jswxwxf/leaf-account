@@ -1,3 +1,3 @@
 .bill-popup-cell-group {
-  --cell-font-size: 32rpx;
+  --cell-font-size: 30rpx;
 }

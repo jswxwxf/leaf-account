@@ -222,6 +222,25 @@ function isWeekend(timestamp) {
   return day === 0 || day === 6 // 0 是周日, 6 是周六
 }
 
+/**
+ * 判断一个日期是否为今天
+ * @param {number} timestamp - 必须是时间戳数字
+ * @returns {boolean} - 如果是今天则返回 true, 否则返回 false
+ */
+function isToday(timestamp) {
+  if (!timestamp) return false
+  var date = getDate(parseInt(timestamp, 10))
+  if (isNaN(date.getTime())) return false
+
+  var today = getDate()
+
+  return (
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth() &&
+    date.getDate() === today.getDate()
+  )
+}
+
 module.exports = {
   stringify: stringify,
   formatMoney: formatMoney,
@@ -229,4 +248,5 @@ module.exports = {
   formatDateTime: formatDateTime,
   getDayOfWeek: getDayOfWeek,
   isWeekend: isWeekend,
+  isToday: isToday,
 }

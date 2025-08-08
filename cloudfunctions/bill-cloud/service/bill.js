@@ -67,7 +67,10 @@ async function saveBill(event, models) {
       )
 
       // 3. 更新账单
-      await transaction.collection('bill').doc(billId).update({ data: newBill })
+      await transaction
+        .collection('bill')
+        .doc(billId)
+        .update({ data: { ...newBill, updatedAt: db.serverDate(), updatedBy: OPENID } })
       savedBill = { ...originalBill, _id: billId }
     } else {
       // --- 新增逻辑 ---
@@ -85,7 +88,16 @@ async function saveBill(event, models) {
       // 2. 创建新账单
       const createResult = await transaction
         .collection('bill')
-        .add({ data: { ...billToSave, _openid: OPENID } })
+        .add({
+          data: {
+            ...billToSave,
+            _openid: OPENID,
+            createdAt: db.serverDate(),
+            createdBy: OPENID,
+            updatedAt: db.serverDate(),
+            updatedBy: OPENID,
+          },
+        })
       if (!createResult._id) {
         throw new Error('创建新账单失败')
       }
@@ -161,7 +173,16 @@ async function saveBills(event, models) {
       for (const bill of billsToSave) {
         const result = await transaction
           .collection('bill')
-          .add({ data: { ...bill, _openid: OPENID } })
+          .add({
+            data: {
+              ...bill,
+              _openid: OPENID,
+              createdAt: db.serverDate(),
+              createdBy: OPENID,
+              updatedAt: db.serverDate(),
+              updatedBy: OPENID,
+            },
+          })
         newBillIds.push(result._id)
       }
 
@@ -208,7 +229,7 @@ async function getBillsByIds(event, models) {
       note: true,
       category: { _id: true, name: true, type: true },
       tags: { _id: true, name: true, type: true },
-      _createTime: true,
+      createdAt: true,
     },
     filter: {
       where: {
@@ -406,9 +427,9 @@ async function getBills(event, models) {
         amount: true,
         datetime: true,
         note: true,
-        _createTime: true,
         category: { _id: true, name: true, type: true },
         tags: { _id: true, name: true, type: true },
+        createdAt: true,
       },
       filter: { where: weeklyWhereClause },
       orderBy: [{ datetime: 'desc' }],
