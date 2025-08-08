@@ -3,7 +3,8 @@
   type="digit"
   value="{{ displayValue }}"
   placeholder="{{ placeholder }}"
-  error-message="{{ errors[field][0].message }}"
+  error="{{ showError ? false : fields[field] === false }}"
+  error-message="{{ showError ? errors[field][0].message : '' }}"
   @focus="onFocus"
   @blur="onBlur"
 />

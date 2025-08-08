@@ -1,10 +1,9 @@
 <van-field
   label="{{ label }}"
-  value="{{ formattedDate }}"
+  type="{{ type }}"
+  value="{{ value }}"
   placeholder="{{ placeholder }}"
   error="{{ showError ? false : fields[field] === false }}"
   error-message="{{ showError ? errors[field][0].message : '' }}"
-  is-link
-  readonly
-  bind:click-input="handleClick"
+  @change="handleChange"
 />

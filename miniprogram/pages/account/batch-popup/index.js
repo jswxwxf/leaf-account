@@ -1,12 +1,13 @@
-import { defineComponent, ref } from '@vue-mini/core'
+import { defineComponent, nextTick, ref } from '@vue-mini/core'
 import { isEmpty } from 'lodash'
 import { parseDate } from '@/utils/date.js'
 import { newBill } from '@/service/bill-service.js'
 
 defineComponent({
-  setup() {
+  setup(props, { selectAllComponents }) {
     const visible = ref(false)
     const list = ref([])
+    const billForms = ref([])
 
     let _resolve, _reject
 
@@ -23,6 +24,11 @@ defineComponent({
         // 如果没有传入账单，则显示3个空行供手动输入
         list.value = Array.from({ length: 3 }, newBill)
       }
+      nextTick(() => {
+        selectAllComponents('.bill-form').forEach((form) => {
+          form.clearErrors()
+        })
+      })
       visible.value = true
       return new Promise((resolve, reject) => {
         _resolve = resolve
@@ -35,9 +41,27 @@ defineComponent({
       visible.value = false
     }
 
-    const handleConfirm = () => {
-      _resolve(list.value)
-      visible.value = false
+    const handleConfirm = async () => {
+      billForms.value = selectAllComponents('.bill-form')
+
+      // 创建一个校验任务数组
+      const validationPromises = list.value.map((bill, index) => {
+        const form = billForms.value[index]
+        // 返回每个表单的校验 Promise
+        return form.validate(bill)
+      })
+
+      // 等待所有表单校验完成
+      const results = await Promise.all(validationPromises)
+
+      // 检查是否所有表单都通过了校验
+      const allValid = results.every(({ isValid }) => isValid)
+
+      if (allValid) {
+        // 全部通过后，才执行提交
+        _resolve(list.value)
+        visible.value = false
+      }
     }
 
     const handleFormChange = (e) => {

@@ -35,11 +35,12 @@
           data-field="amount"
           @change="handleFormChange"
         />
-        <van-field
+        <bill-field
           label="备注"
           value="{{ bill.note }}"
           placeholder="请输入备注"
-          error-message="{{ errors.note[0].message }}"
+          field="note"
+          rule="required"
           data-field="note"
           @change="handleFormChange"
         />

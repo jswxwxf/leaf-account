@@ -34,4 +34,5 @@ export function useFormItem(props) {
 export const formItemProps = (defaultName) => ({
   field: { type: String, value: defaultName },
   rule: { type: String },
+  showError: { type: Boolean, value: true },
 })

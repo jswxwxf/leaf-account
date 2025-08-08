@@ -4,7 +4,9 @@
     "calendar-field": "/components/calendar-field/index",
     "category-field": "/components/category-field/index",
     "money-field": "/components/money-field/index",
-    "tags-field": "/components/tags-field/index"
+    "tags-field": "/components/tags-field/index",
+    "bill-form": "/components/bill-form/index",
+    "bill-field": "/components/bill-field/index"
   },
   "styleIsolation": "apply-shared"
 }
