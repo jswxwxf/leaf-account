@@ -17,7 +17,7 @@ defineComponent({
           category: '', // AI尚不能识别分类
           amount: bill.amount || '',
           note: bill.note || '',
-          tags: [], // AI尚不能识别标签
+          tags: '', // AI尚不能识别标签
         }))
       } else {
         // 如果没有传入账单，则显示3个空行供手动输入

@@ -19,7 +19,7 @@ defineComponent({
     ...formItemProps('amount'),
   },
   setup(props, { triggerEvent }) {
-    useFormItem(props)
+    const formState = useFormItem(props)
     const isFocused = ref(false)
     const displayValue = ref('')
 
@@ -56,6 +56,7 @@ defineComponent({
     }
 
     return {
+      ...formState,
       displayValue,
       onFocus,
       onBlur,

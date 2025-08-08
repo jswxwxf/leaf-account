@@ -5,6 +5,8 @@ defineComponent({
     const visible = ref(false)
     const bill = ref({})
     const billForm = ref()
+    const fields = ref({})
+    const errors = ref({})
 
     onReady(() => {
       // 获取表单组件实例
@@ -32,8 +34,12 @@ defineComponent({
     }
 
     const handleConfirm = async () => {
-      const valid = await billForm.value.validate(bill.value)
-      if (!valid) return
+      const result = await billForm.value.validate(bill.value)
+      if (result.isInvalid) {
+        fields.value = result.fields
+        errors.value = result.errors
+        return
+      }
 
       _resolve({ ...bill.value })
       visible.value = false
@@ -48,6 +54,8 @@ defineComponent({
     return {
       visible,
       bill,
+      fields,
+      errors,
       show,
       handleClose,
       handleConfirm,

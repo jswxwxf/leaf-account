@@ -19,13 +19,14 @@ defineComponent({
     ...formItemProps('category'),
   },
   setup(props, { triggerEvent }) {
-    useFormItem(props)
+    const formState = useFormItem(props)
     async function handleClick() {
       const result = await showCategoryPopup()
       triggerEvent('change', result)
     }
 
     return {
+      ...formState,
       handleClick,
     }
   },

@@ -39,13 +39,12 @@
           label="备注"
           value="{{ bill.note }}"
           placeholder="请输入备注"
+          error-message="{{ errors.note[0].message }}"
           data-field="note"
           @change="handleFormChange"
         />
         <tags-field
           value="{{ bill.tags }}"
-          field="tags"
-          rule="required"
           data-field="tags"
           @change="handleFormChange"
         />

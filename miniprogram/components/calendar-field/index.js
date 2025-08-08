@@ -25,7 +25,7 @@ defineComponent({
   },
 
   setup(props, { triggerEvent }) {
-    useFormItem(props)
+    const formState = useFormItem(props)
     const formattedDate = computed(() => {
       if (!props.value) return ''
       const format = props.type === 'short' ? 'MM月DD日' : 'YYYY-MM-DD'
@@ -38,6 +38,7 @@ defineComponent({
     }
 
     return {
+      ...formState,
       formattedDate,
       handleClick,
     }

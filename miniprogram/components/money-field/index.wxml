@@ -3,6 +3,7 @@
   type="digit"
   value="{{ displayValue }}"
   placeholder="{{ placeholder }}"
+  error-message="{{ errors[field][0].message }}"
   @focus="onFocus"
   @blur="onBlur"
 />

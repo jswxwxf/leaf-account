@@ -19,13 +19,14 @@ defineComponent({
     ...formItemProps('tags'),
   },
   setup(props, { triggerEvent }) {
-    useFormItem(props)
+    const formState = useFormItem(props)
     async function handleClick() {
       const result = await showTagsPopup(props.value)
       triggerEvent('change', result)
     }
 
     return {
+      ...formState,
       handleClick,
     }
   },

@@ -2,6 +2,7 @@
   label="{{ label }}"
   value="{{ formattedDate }}"
   placeholder="{{ placeholder }}"
+  error-message="{{ errors[field][0].message }}"
   is-link
   readonly
   bind:click-input="handleClick"

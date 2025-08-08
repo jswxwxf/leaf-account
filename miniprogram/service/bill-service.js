@@ -11,7 +11,7 @@ export function newBill() {
     category: '',
     amount: '',
     note: '',
-    tags: [],
+    tags: '',
   }
 }
 

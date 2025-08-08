@@ -1,3 +1,4 @@
+import { ref } from '@vue-mini/core'
 import { validate as _validate, setLocales, setOptions, zh } from 'robust-validator'
 
 setLocales(zh)
@@ -5,6 +6,8 @@ setOptions({ language: 'zh' })
 
 export default function store() {
   const rules = {}
+  const fields = ref({})
+  const errors = ref({})
 
   function registerRule(field, rule) {
     if (rule) {
@@ -16,12 +19,15 @@ export default function store() {
 
   async function validate(data) {
     const result = await _validate(data, rules)
-    console.log(result)
-    return result.isValid
+    fields.value = result.fields
+    errors.value = result.errors
+    return result
   }
 
   return {
     registerRule,
+    fields,
+    errors,
     validate,
   }
 }

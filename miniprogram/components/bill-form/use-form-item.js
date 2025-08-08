@@ -8,7 +8,7 @@ import { storeKey } from './store.js'
  * @param {object} props - The component props, expected to contain 'field' and 'rule'.
  */
 export function useFormItem(props) {
-  const { registerRule } = inject(storeKey, {})
+  const { registerRule, fields, errors } = inject(storeKey, {})
 
   if (!registerRule) {
     // If not wrapped in a form, do nothing.
@@ -24,6 +24,11 @@ export function useFormItem(props) {
       immediate: true,
     },
   )
+
+  return {
+    fields,
+    errors,
+  }
 }
 
 export const formItemProps = (defaultName) => ({
