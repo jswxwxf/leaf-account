@@ -1,5 +1,5 @@
 {
-  "name": "controller",
+  "name": "bill-cloud",
   "version": "1.0.0",
   "description": "小程序统一业务逻辑入口",
   "main": "index.js",

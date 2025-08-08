@@ -12,7 +12,7 @@ import { get, post } from './request-cloud.js'
  * @returns {Promise<Tag[]>}
  */
 export function getTags() {
-  return get('controller', { $url: '/get/tags' })
+  return get('bill-cloud', { $url: '/get/tags' })
 }
 
 /**
@@ -21,7 +21,7 @@ export function getTags() {
  * @returns {Promise<any>}
  */
 export function addTags(tags) {
-  return post('controller', {
+  return post('bill-cloud', {
     $url: '/post/tags',
     tags,
   })

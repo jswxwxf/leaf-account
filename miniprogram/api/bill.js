@@ -16,7 +16,7 @@ import { get, post } from './request-cloud.js'
  * @returns {Promise<Bill[]>}
  */
 export function getBills(query = {}) {
-  return get('controller', {
+  return get('bill-cloud', {
     $url: '/get/bills',
     query,
   })
@@ -28,7 +28,7 @@ export function getBills(query = {}) {
  * @returns {Promise<any>}
  */
 export function upsertBill(bill, query = {}) {
-  return post('controller', {
+  return post('bill-cloud', {
     $url: '/upsert/bill',
     query,
     body: { bill },
@@ -41,7 +41,7 @@ export function upsertBill(bill, query = {}) {
  * @returns {Promise<any>}
  */
 export function saveBills(bills, query = {}) {
-  return post('controller', {
+  return post('bill-cloud', {
     $url: '/batch/bills',
     query,
     body: { bills },
@@ -54,7 +54,7 @@ export function saveBills(bills, query = {}) {
  * @returns {Promise<any>}
  */
 export function deleteBill(id, query = {}) {
-  return post('controller', {
+  return post('bill-cloud', {
     $url: '/delete/bill',
     query,
     id,

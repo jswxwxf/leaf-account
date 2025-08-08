@@ -12,7 +12,7 @@ import { get, post } from './request-cloud.js'
  * @returns {Promise<Category[]>}
  */
 export function getCategories() {
-  return get('controller', { $url: '/get/categories' })
+  return get('bill-cloud', { $url: '/get/categories' })
 }
 
 /**
@@ -21,7 +21,7 @@ export function getCategories() {
  * @returns {Promise<any>}
  */
 export function addCategory(category) {
-  return post('controller', {
+  return post('bill-cloud', {
     $url: '/post/category',
     category,
   })

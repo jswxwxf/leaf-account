@@ -15,7 +15,7 @@ import { get } from './request-cloud.js'
  * @returns {Promise<Account>}
  */
 export function getAccount() {
-  return get('controller', {
+  return get('bill-cloud', {
     $url: '/get/account',
   })
 }
