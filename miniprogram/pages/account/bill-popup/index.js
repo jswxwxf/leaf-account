@@ -8,6 +8,12 @@ defineComponent({
     const fields = ref({})
     const errors = ref({})
 
+    function clearErrors() {
+      billForm.value.clearErrors()
+      fields.value = {}
+      errors.value = {}
+    }
+
     onReady(() => {
       // 获取表单组件实例
       billForm.value = selectComponent('#billForm')
@@ -22,6 +28,7 @@ defineComponent({
     const show = (value) => {
       bill.value = value
       visible.value = true
+      clearErrors()
       return new Promise((resolve, reject) => {
         _resolve = resolve
         _reject = reject

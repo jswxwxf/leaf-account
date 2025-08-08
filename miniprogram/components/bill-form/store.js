@@ -33,10 +33,16 @@ export default function store() {
     return result
   }
 
+  function clearErrors() {
+    fields.value = {}
+    errors.value = {}
+  }
+
   return {
-    registerRule,
     fields,
     errors,
+    clearErrors,
+    registerRule,
     validate,
   }
 }
