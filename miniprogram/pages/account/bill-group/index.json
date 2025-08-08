@@ -3,6 +3,6 @@
   "component": true,
   "styleIsolation": "apply-shared",
   "usingComponents": {
-    "bill-tag": "../components/bill-tag/index"
+    "bill-tag": "/components/bill-tag/index"
   }
 }

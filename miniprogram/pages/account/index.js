@@ -4,8 +4,8 @@ import Dialog from '@vant/weapp/dialog/dialog.js'
 import { newBill } from '@/service/bill-service.js'
 import { upsertBill, deleteBill, saveBills } from '@/api/bill.js'
 import store, { storeKey } from './store'
-import { useOcr } from './composables/use-ocr.js'
-import { useAi } from './composables/use-ai.js'
+import { useOcr } from '@/composables/use-ocr.js'
+import { useAi } from '@/composables/use-ai.js'
 
 function useBillPopup(state, billPopupRef) {
   const { typeValue, monthValue, updateBills, updateAccountSummary } = state

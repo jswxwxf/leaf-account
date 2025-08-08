@@ -208,6 +208,7 @@ async function getBillsByIds(event, models) {
       note: true,
       category: { _id: true, name: true, type: true },
       tags: { _id: true, name: true, type: true },
+      _createTime: true,
     },
     filter: {
       where: {
@@ -405,6 +406,7 @@ async function getBills(event, models) {
         amount: true,
         datetime: true,
         note: true,
+        _createTime: true,
         category: { _id: true, name: true, type: true },
         tags: { _id: true, name: true, type: true },
       },

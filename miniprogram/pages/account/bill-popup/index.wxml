@@ -10,40 +10,42 @@
 >
   <view class="h-full w-full bg-white px-4 pt-2 flex flex-col max-h-screen">
     <!-- Main Content: Form -->
-    <van-cell-group border="{{ false }}" custom-class="flex-1 overflow-y-auto bill-popup-cell-group">
-      <calendar-field
-        label="日期"
-        value="{{ bill.datetime }}"
-        data-field="datetime"
-        @change="handleFormChange"
-      />
-      <category-field
-        label="分类"
-        value="{{ bill.category }}"
-        data-field="category"
-        @change="handleFormChange"
-      />
-      <money-field
-        value="{{ bill.amount }}"
-        data-field="amount"
-        @change="handleFormChange"
-      />
-      <van-field
-        label="备注"
-        value="{{ bill.note }}"
-        placeholder="请输入备注"
-        data-field="note"
-        @change="handleFormChange"
-      />
-      <tags-field
-        value="{{ bill.tags }}"
-        data-field="tags"
-        @change="handleFormChange"
-      />
-    </van-cell-group>
-    <!-- <view class="w-full text-wrap overflow-auto">
+    <form>
+      <van-cell-group border="{{ false }}" custom-class="flex-1 overflow-y-auto bill-popup-cell-group">
+        <calendar-field
+          label="日期"
+          value="{{ bill.datetime }}"
+          data-field="datetime"
+          @change="handleFormChange"
+        />
+        <category-field
+          label="分类"
+          value="{{ bill.category }}"
+          data-field="category"
+          @change="handleFormChange"
+        />
+        <money-field
+          value="{{ bill.amount }}"
+          data-field="amount"
+          @change="handleFormChange"
+        />
+        <van-field
+          label="备注"
+          value="{{ bill.note }}"
+          placeholder="请输入备注"
+          data-field="note"
+          @change="handleFormChange"
+        />
+        <tags-field
+          value="{{ bill.tags }}"
+          data-field="tags"
+          @change="handleFormChange"
+        />
+      </van-cell-group>
+    </form>
+    <view class="w-full text-wrap overflow-auto">
       {{utils.stringify(bill)}}
-    </view> -->
+    </view>
 
     <!-- Footer -->
     <view class="flex items-center py-4">

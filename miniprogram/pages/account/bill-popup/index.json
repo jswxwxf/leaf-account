@@ -1,10 +1,11 @@
 {
   "component": true,
   "usingComponents": {
-    "calendar-field": "../components/calendar-field/index",
-    "category-field": "../components/category-field/index",
-    "money-field": "../components/money-field/index",
-    "tags-field": "../components/tags-field/index"
+    "form": "/components/form/index",
+    "calendar-field": "/components/calendar-field/index",
+    "category-field": "/components/category-field/index",
+    "money-field": "/components/money-field/index",
+    "tags-field": "/components/tags-field/index"
   },
   "styleIsolation": "apply-shared"
 }
