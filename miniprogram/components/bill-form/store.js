@@ -1,8 +1,17 @@
 import { ref } from '@vue-mini/core'
-import { validate as _validate, setLocales, setOptions, zh } from 'robust-validator'
+import { validate as _validate, register, setLocales, setOptions, zh } from 'robust-validator'
+import { isEmpty } from 'lodash'
 
 setLocales(zh)
 setOptions({ language: 'zh' })
+
+const isNotEmpty = (value) => {
+  return !isEmpty(value)
+}
+
+register('notEmpty', isNotEmpty, {
+  zh: "该字段是必须的.",
+})
 
 export default function store() {
   const rules = {}
