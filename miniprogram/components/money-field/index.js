@@ -1,5 +1,6 @@
-import { defineComponent, ref, computed, watch } from '@vue-mini/core'
+import { defineComponent, ref, watch } from '@vue-mini/core'
 import { formatMoney, parseMoney } from '@/utils/index.js'
+import { useFormItem, formItemProps } from '../bill-form/use-form-item.js'
 
 defineComponent({
   properties: {
@@ -15,8 +16,10 @@ defineComponent({
       type: String,
       value: '请输入金额',
     },
+    ...formItemProps('amount'),
   },
   setup(props, { triggerEvent }) {
+    useFormItem(props)
     const isFocused = ref(false)
     const displayValue = ref('')
 

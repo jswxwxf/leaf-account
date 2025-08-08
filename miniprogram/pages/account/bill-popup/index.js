@@ -4,6 +4,16 @@ defineComponent({
   setup(props, { selectComponent }) {
     const visible = ref(false)
     const bill = ref({})
+    const billForm = ref()
+
+    onReady(() => {
+      // 获取表单组件实例
+      billForm.value = selectComponent('#billForm')
+
+      // 手动为 van-field 等无法使用 useFormItem 的组件注册校验规则
+      // 这是对第三方组件或原生组件进行校验的推荐做法
+      billForm.value.registerRule('note', 'required')
+    })
 
     let _resolve, _reject
 
@@ -21,7 +31,10 @@ defineComponent({
       visible.value = false
     }
 
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
+      const valid = await billForm.value.validate(bill.value)
+      if (!valid) return
+
       _resolve({ ...bill.value })
       visible.value = false
     }

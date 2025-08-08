@@ -1,5 +1,6 @@
-import { defineComponent, ref } from '@vue-mini/core'
+import { defineComponent } from '@vue-mini/core'
 import { showCategoryPopup } from '@/utils/index.js'
+import { useFormItem, formItemProps } from '../bill-form/use-form-item.js'
 
 defineComponent({
   properties: {
@@ -15,8 +16,10 @@ defineComponent({
       type: String,
       value: '请选择分类',
     },
+    ...formItemProps('category'),
   },
   setup(props, { triggerEvent }) {
+    useFormItem(props)
     async function handleClick() {
       const result = await showCategoryPopup()
       triggerEvent('change', result)

@@ -1,7 +1,7 @@
 {
   "component": true,
   "usingComponents": {
-    "form": "/components/form/index",
+    "bill-form": "/components/bill-form/index",
     "calendar-field": "/components/calendar-field/index",
     "category-field": "/components/category-field/index",
     "money-field": "/components/money-field/index",

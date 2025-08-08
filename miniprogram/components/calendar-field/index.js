@@ -1,6 +1,7 @@
-import { defineComponent, ref, computed } from '@vue-mini/core'
+import { defineComponent, computed } from '@vue-mini/core'
 import { formatDate } from '@/utils/date.js'
 import { showCalendar } from '@/utils/index.js'
+import { useFormItem, formItemProps } from '../bill-form/use-form-item.js'
 
 defineComponent({
   properties: {
@@ -20,9 +21,11 @@ defineComponent({
       type: String,
       value: '请选择日期',
     },
+    ...formItemProps('datetime'),
   },
 
   setup(props, { triggerEvent }) {
+    useFormItem(props)
     const formattedDate = computed(() => {
       if (!props.value) return ''
       const format = props.type === 'short' ? 'MM月DD日' : 'YYYY-MM-DD'

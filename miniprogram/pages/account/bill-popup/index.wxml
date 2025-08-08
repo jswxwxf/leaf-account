@@ -10,22 +10,28 @@
 >
   <view class="h-full w-full bg-white px-4 pt-2 flex flex-col max-h-screen">
     <!-- Main Content: Form -->
-    <form>
+    <bill-form id="billForm">
       <van-cell-group border="{{ false }}" custom-class="flex-1 overflow-y-auto bill-popup-cell-group">
         <calendar-field
           label="日期"
           value="{{ bill.datetime }}"
+          field="datetime"
+          rule="required"
           data-field="datetime"
           @change="handleFormChange"
         />
         <category-field
           label="分类"
           value="{{ bill.category }}"
+          field="category"
+          rule="required"
           data-field="category"
           @change="handleFormChange"
         />
         <money-field
           value="{{ bill.amount }}"
+          field="amount"
+          rule="required"
           data-field="amount"
           @change="handleFormChange"
         />
@@ -38,11 +44,13 @@
         />
         <tags-field
           value="{{ bill.tags }}"
+          field="tags"
+          rule="required"
           data-field="tags"
           @change="handleFormChange"
         />
       </van-cell-group>
-    </form>
+    </bill-form>
     <!-- <view class="w-full text-wrap overflow-auto">
       {{utils.stringify(bill)}}
     </view> -->

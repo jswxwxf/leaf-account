@@ -36,6 +36,7 @@
     "@vue-mini/core": "^1.2.3",
     "clsx": "^2.1.1",
     "lodash": "^4.17.21",
+    "robust-validator": "^3.0.0",
     "tesseract.js": "^6.0.1"
   }
 }
