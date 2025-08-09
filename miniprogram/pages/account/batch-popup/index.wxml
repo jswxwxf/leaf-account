@@ -49,7 +49,7 @@
                 value="{{ bill.amount }}"
                 placeholder="输入金额"
                 field="amount"
-                rule="required"
+                rule="requiredMoney"
                 show-error="{{ false }}"
                 bind:change="handleFormChange"
                 data-field="amount"

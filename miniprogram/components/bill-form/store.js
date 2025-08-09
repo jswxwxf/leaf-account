@@ -1,16 +1,24 @@
 import { ref } from '@vue-mini/core'
 import { validate as _validate, register, setLocales, setOptions, zh } from 'robust-validator'
-import { isEmpty } from 'lodash'
+import { isEmpty as _isEmpty } from 'lodash'
 
 setLocales(zh)
 setOptions({ language: 'zh' })
 
-const isNotEmpty = (value) => {
-  return !isEmpty(value)
+function isEmpty(value) {
+  return !_isEmpty(value)
 }
 
-register('notEmpty', isNotEmpty, {
-  zh: "该字段是必须的.",
+register('notEmpty', isEmpty, {
+  zh: '该字段是必须的.',
+})
+
+function requiredMoney(value) {
+  return parseFloat(value) > 0
+}
+
+register('requiredMoney', requiredMoney, {
+  zh: '该字段是必须的.',
 })
 
 export default function store() {
@@ -38,10 +46,20 @@ export default function store() {
     errors.value = {}
   }
 
+  function clearError(field) {
+    if (fields.value) {
+      fields.value[field] = true
+    }
+    if (errors.value) {
+      delete errors.value[field]
+    }
+  }
+
   return {
     fields,
     errors,
     clearErrors,
+    clearError,
     registerRule,
     validate,
   }

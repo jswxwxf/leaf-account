@@ -31,7 +31,7 @@
         <money-field
           value="{{ bill.amount }}"
           field="amount"
-          rule="required"
+          rule="requiredMoney"
           data-field="amount"
           @change="handleFormChange"
         />

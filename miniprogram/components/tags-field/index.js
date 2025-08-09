@@ -20,7 +20,10 @@ defineComponent({
   },
   setup(props, { triggerEvent }) {
     const formState = useFormItem(props)
+    const { clearError } = formState
+
     async function handleClick() {
+      clearError()
       const result = await showTagsPopup(props.value)
       triggerEvent('change', result)
     }

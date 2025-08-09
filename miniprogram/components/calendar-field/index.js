@@ -26,6 +26,8 @@ defineComponent({
 
   setup(props, { triggerEvent }) {
     const formState = useFormItem(props)
+    const { clearError } = formState
+
     const formattedDate = computed(() => {
       if (!props.value) return ''
       const format = props.type === 'short' ? 'MM月DD日' : 'YYYY-MM-DD'
@@ -33,6 +35,7 @@ defineComponent({
     })
 
     const handleClick = async () => {
+      clearError()
       const result = await showCalendar(props.value)
       triggerEvent('change', result)
     }

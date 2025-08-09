@@ -20,6 +20,7 @@ defineComponent({
   },
   setup(props, { triggerEvent }) {
     const formState = useFormItem(props)
+    const { clearError } = formState
     const isFocused = ref(false)
     const displayValue = ref('')
 
@@ -35,6 +36,7 @@ defineComponent({
     )
 
     const onFocus = () => {
+      clearError()
       isFocused.value = true
       // 聚焦时，显示原始数值以便编辑
       const num = parseMoney(props.value)
