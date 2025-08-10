@@ -21,6 +21,7 @@ exports.main = async (event, context) => {
     await db.collection('bill').where({ _id: _.exists(true) }).remove()
     await db.collection('category').where({ _id: _.exists(true) }).remove()
     await db.collection('tag').where({ _id: _.exists(true) }).remove()
+    await db.collection('account').where({ _id: _.exists(true) }).remove()
     console.log('旧数据清空完毕。')
 
     // 1. 读取 db.json 文件
@@ -38,10 +39,11 @@ exports.main = async (event, context) => {
     const categoriesToCreate = categoryNames.map((name) => ({
       name,
       type: incomeCategoryNames.includes(name) ? '20' : '10', // '20' income, '10' expense
+      _openid: '',
     }))
 
     const tagNames = [...new Set(bills.flatMap((b) => b.tags || []))].filter(Boolean)
-    const tagsToCreate = tagNames.map((name) => ({ name, type: '10' })) // 默认为支出
+    const tagsToCreate = tagNames.map((name) => ({ name, type: '10', _openid: '' })) // 默认为支出
 
     if (categoriesToCreate.length > 0) {
       await models.category.createMany({ data: categoriesToCreate })
@@ -76,6 +78,7 @@ exports.main = async (event, context) => {
         amount: Number(bill.amount) || 0,
         datetime: new Date(`${bill.date} ${bill.time}`).getTime(),
         note: bill.note || '',
+        _openid: '',
       }
 
       // 关联 Category
@@ -101,7 +104,7 @@ exports.main = async (event, context) => {
 
     return {
       success: true,
-      message: `数据导入成功！导入了 ${bills.length} 条账单, ${categories.length} 个分类, ${tags.length} 个标签。`,
+      message: `数据导入成功！导入了 ${bills.length} 条账单, ${categoriesToCreate.length} 个分类, ${tagsToCreate.length} 个标签。`,
     }
   } catch (error) {
     console.error('数据导入失败:', error)

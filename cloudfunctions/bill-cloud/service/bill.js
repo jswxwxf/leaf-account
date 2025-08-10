@@ -101,7 +101,7 @@ async function saveBill(event, models) {
       if (!createResult._id) {
         throw new Error('创建新账单失败')
       }
-      savedBill = { ...originalBill, _id: createResult._id }
+      savedBill = { ...originalBill, _id: createResult._id, createdAt: { $date: Date.now() } }
     }
 
     // 提交事务
@@ -236,7 +236,7 @@ async function getBillsByIds(event, models) {
         $and: [
           { _id: { $in: ids } },
           {
-            $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }],
+            $or: [{ _openid: { $eq: OPENID } }, { _openid: { $eq: '' } }, { _openid: { $empty: true } }],
           },
         ],
       },
@@ -333,7 +333,7 @@ async function getBills(event, models) {
   const where = {
     $and: [
       {
-        $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }],
+        $or: [{ _openid: { $eq: OPENID } }, { _openid: { $eq: '' } }, { _openid: { $empty: true } }],
       },
     ],
   }

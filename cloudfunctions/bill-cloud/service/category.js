@@ -1,6 +1,7 @@
 const cloud = require('wx-server-sdk')
 const db = cloud.database()
 const _ = db.command
+const { BizError } = require('../middleware.js')
 
 /**
  * 获取所有分类
@@ -12,7 +13,7 @@ async function getCategories(event, models) {
 
   const whereClauses = [
     {
-      $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }],
+      $or: [{ _openid: { $eq: OPENID } }, { _openid: { $eq: '' } }, { _openid: { $empty: true } }],
     },
   ]
 
@@ -21,15 +22,21 @@ async function getCategories(event, models) {
   }
 
   // 如果只有一个查询条件，则不需要 $and
-  const finalWhere =
-    whereClauses.length > 1 ? { $and: whereClauses } : whereClauses[0]
+  const finalWhere = whereClauses.length > 1 ? { $and: whereClauses } : whereClauses[0]
 
   const { data } = await models.category.list({
     filter: { where: finalWhere },
-    orderBy: [{ type: 'desc' }, { name: 'desc' }],
+    orderBy: [{ _openid: 'asc' }, { type: 'desc' }, { name: 'desc' }],
     pageSize: 1000,
   })
-  return data.records
+
+  // 为每个分类添加 isBuiltIn 标志
+  const recordsWithFlag = data.records.map((record) => ({
+    ...record,
+    isBuiltIn: !record._openid,
+  }))
+
+  return recordsWithFlag
 }
 
 /**
@@ -75,6 +82,25 @@ async function deleteCategory(event, models) {
 
   if (!id) {
     throw new Error('缺少分类ID')
+  }
+
+  // 检查是否有账单正在使用该分类
+  const {
+    data: { total },
+  } = await models.bill.list({
+    filter: {
+      where: {
+        category: { $eq: id },
+        _openid: { $eq: OPENID },
+      },
+    },
+    pageNumber: 1,
+    pageSize: 1,
+    getCount: true,
+  })
+
+  if (total > 0) {
+    throw new BizError(`该分类正被 ${total} 条账单使用，无法删除`)
   }
 
   const { data } = await models.category.delete({

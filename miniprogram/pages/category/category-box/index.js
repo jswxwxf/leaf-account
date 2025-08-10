@@ -9,10 +9,12 @@ defineComponent({
   },
   setup(props, { triggerEvent }) {
     const onDelete = () => {
+      if (props.category.isBuiltIn) return
       triggerEvent('delete', props.category)
     }
 
     const onEdit = () => {
+      if (props.category.isBuiltIn) return
       triggerEvent('edit', props.category)
     }
 

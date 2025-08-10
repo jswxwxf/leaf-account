@@ -1,0 +1,7 @@
+.expense-box {
+  @apply border border-red-400;
+}
+
+.income-box {
+  @apply border border-green-400;
+}

@@ -11,10 +11,10 @@ defineComponent({
       income: [],
     })
     const newCategory = ref({ name: '' })
-    const categoryForm = ref()
+    const categoryPopup = ref()
 
     onReady(() => {
-      categoryForm.value = selectComponent('#categoryForm')
+      categoryPopup.value = selectComponent('#category-popup')
     })
 
     const onTabChange = (event) => {
@@ -36,30 +36,20 @@ defineComponent({
     }
 
     const handleAdd = async () => {
-      const result = await categoryForm.value.validate(newCategory.value)
-      if (result.isInvalid) {
-        return
-      }
-
-      const type = activeTab.value // 20: expense, 10: income
-      await addCategory({
-        name: newCategory.value.name,
-        type,
-      })
-      newCategory.value = { name: '' }
-      categoryForm.value.clearErrors()
-      await loadData()
+      const type = activeTab.value
+      await addCategory({ ...newCategory.value, type })
       wx.showToast({ title: '添加成功', icon: 'success' })
+
+      newCategory.value = { name: '' }
+      await loadData()
     }
 
     const handleEdit = async (event) => {
-      // await Dialog.confirm({
-      //   title: '确认删除',
-      //   message: '删除后将无法恢复，是否继续？',
-      // })
-      // await deleteCategory(event.detail)
-      // await loadData()
-      // wx.showToast({ title: '删除成功', icon: 'success' })
+      const updatedCategory = await categoryPopup.value.show(event.detail)
+      console.log(updatedCategory)
+      await updateCategory(updatedCategory)
+      await loadData()
+      wx.showToast({ title: '更新成功', icon: 'success' })
     }
 
     const handleDelete = async (event) => {

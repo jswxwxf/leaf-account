@@ -10,16 +10,23 @@ async function getTags(event, models) {
   const { OPENID } = cloud.getWXContext()
   // 权限：只能获取自己的或公共的
   const where = {
-    $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }],
+    $or: [{ _openid: { $eq: OPENID } }, { _openid: { $eq: '' } }, { _openid: { $empty: true } }],
   }
 
   // 默认最多获取 100 条，对于标签来说足够了
   const { data } = await models.tag.list({
     filter: { where },
-    orderBy: [{ type: 'asc' }],
+    orderBy: [{ _openid: 'asc' }, { type: 'asc' }],
     limit: 100,
   })
-  return data.records
+
+  // 为每个标签添加 isBuiltIn 标志
+  const recordsWithFlag = data.records.map((record) => ({
+    ...record,
+    isBuiltIn: !record._openid,
+  }))
+
+  return recordsWithFlag
 }
 
 /**

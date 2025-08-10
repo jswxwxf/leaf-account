@@ -178,14 +178,20 @@ exports.main = (event, context) => {
       }
     } catch (e) {
       console.error('/delete/category error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      if (e.isBiz) {
+        // 如果是业务逻辑错误，将明确的错误信息返回给前端
+        ctx.body = { code: 400, success: false, message: e.message }
+      } else {
+        // 如果是其他未知错误，返回通用提示
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
     }
   })
 
   /**
    * @desc 更新分类
    */
-  app.router('/update/category', async (ctx) => {
+  app.router('/put/category', async (ctx) => {
     try {
       const data = await updateCategory(event, models)
       if (data.updated > 0) {
@@ -194,8 +200,12 @@ exports.main = (event, context) => {
         ctx.body = { code: 404, success: false, message: '未找到要更新的记录' }
       }
     } catch (e) {
-      console.error('/update/category error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      console.error('/put/category error:', e)
+      if (e.isBiz) {
+        ctx.body = { code: 400, success: false, message: e.message }
+      } else {
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
     }
   })
 

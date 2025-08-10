@@ -7,41 +7,43 @@
 
   <!-- Expense Content -->
   <view class="flex-grow overflow-auto px-4 pb-4" wx:if="{{ activeTab === '20' }}">
-    <view class="grid grid-cols-3 gap-2">
-      <block wx:for="{{ categories.expense }}" wx:key="_id">
-        <category-box category="{{ item }}" @delete="handleDelete" @edit="handleEdit" />
-      </block>
+    <block wx:if="{{ categories.expense.length > 0 }}">
+      <view class="grid grid-cols-3 gap-2">
+        <block wx:for="{{ categories.expense }}" wx:key="_id">
+          <category-box category="{{ item }}" @edit="handleEdit" @delete="handleDelete" />
+        </block>
+      </view>
+    </block>
+    <view wx:else class="text-center text-gray-500 py-10">
+      暂无支出分类，快去添加吧~
     </view>
   </view>
 
   <!-- Income Content -->
   <view class="flex-grow overflow-auto px-4 pb-4" wx:if="{{ activeTab === '10' }}">
-    <view class="grid grid-cols-3 gap-2">
-      <block wx:for="{{ categories.income }}" wx:key="_id">
-        <category-box category="{{ item }}" @delete="handleDelete" @edit="handleEdit" />
-      </block>
+    <block wx:if="{{ categories.income.length > 0 }}">
+      <view class="grid grid-cols-3 gap-2">
+        <block wx:for="{{ categories.income }}" wx:key="_id">
+          <category-box category="{{ item }}" @edit="handleEdit" @delete="handleDelete" />
+        </block>
+      </view>
+    </block>
+    <view wx:else class="text-center text-gray-500 py-10">
+      暂无收入分类，快去添加吧~
     </view>
   </view>
 
   <!-- Footer -->
   <view class="flex-shrink-0 p-4 border-t border-gray-200 bg-white pb-safe">
-    <bill-form id="categoryForm">
-      <view class="flex items-center space-x-2">
-        <bill-field
-          value="{{ newCategory.name }}"
-          placeholder="请输入分类名称"
-          field="name"
-          rule="required|max:4"
-          data-field="name"
-          @change="handleFormChange"
-          class="flex-grow"
-        />
-        <van-button type="primary" size="small" bind:tap="handleAdd" class="!w-20">{{ isEditing ? '更新' : '添加' }}</van-button>
-        <van-button wx:if="{{ isEditing }}" size="small" bind:tap="handleCancel" class="!w-20">取消</van-button>
-      </view>
-    </bill-form>
+    <category-editor
+      value="{{ newCategory }}"
+      data-field="name"
+      @change="handleFormChange"
+      @submit="handleAdd"
+    />
     <view class="text-center text-sm text-gray-600 pt-4">轻触分类可编辑，点击右上角可删除。</view>
   </view>
 </view>
 
 <van-dialog id="van-dialog" />
+<category-popup id="category-popup" />

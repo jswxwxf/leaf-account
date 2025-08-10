@@ -1,0 +1,14 @@
+<bill-form id="categoryForm">
+  <view class="flex items-center space-x-2">
+    <bill-field
+      value="{{ value.name }}"
+      placeholder="请输入分类名称"
+      field="name"
+      rule="required|max:4"
+      data-field="name"
+      @change="handleChange"
+      class="flex-grow"
+    />
+    <van-button type="primary" size="small" @tap="handleSubmit" class="!w-20">{{isEdit ? '保存' : '添加'}}</van-button>
+  </view>
+</bill-form>

@@ -1,0 +1,12 @@
+<van-popup show="{{ visible }}" position="bottom" closeable bind:close="handleClose">
+  <view class="p-4">
+    <view class="text-lg font-bold text-center mb-4">编辑分类</view>
+    <category-editor
+      value="{{ category }}"
+      is-edit
+      data-field="name"
+      @change="handleFormChange"
+      @submit="handleConfirm"
+    />
+  </view>
+</van-popup>
