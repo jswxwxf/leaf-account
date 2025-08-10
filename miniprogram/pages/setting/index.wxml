@@ -1,7 +1,7 @@
 <view class="flex flex-col min-h-screen bg-gray-100">
   <view class="flex-grow pt-4">
     <van-cell-group>
-      <van-cell title="分类管理" is-link />
+      <van-cell title="分类管理" is-link @tap="handleCategory" />
     </van-cell-group>
   </view>
 

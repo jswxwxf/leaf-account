@@ -1,0 +1,32 @@
+<view class="flex flex-col h-screen">
+  <!-- Manual Tabs Header -->
+  <van-tabs active="{{ activeTab }}" @change="onTabChange" color="#34D399" class="flex-shrink-0 mb-4">
+    <van-tab title="支出"></van-tab>
+    <van-tab title="入账"></van-tab>
+  </van-tabs>
+
+  <!-- Expense Content -->
+  <view class="flex-grow overflow-auto px-4 pb-4" hidden="{{ activeTab !== 0 }}">
+    <view class="grid grid-cols-3 gap-2">
+      <block wx:for="{{ categories.expense }}" wx:key="index">
+        <view class="bg-gray-200 h-12 flex items-center justify-center rounded-lg">
+          <text class="text-sm">{{ item }}</text>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- Income Content -->
+  <view class="flex-grow overflow-auto px-4 pb-4" hidden="{{ activeTab !== 1 }}">
+    <view class="grid grid-cols-3 gap-2">
+      <block wx:for="{{ categories.income }}" wx:key="index">
+        <view class="bg-gray-200 h-12 flex items-center justify-center rounded-lg">
+          <text class="text-sm">{{ item }}</text>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- Footer -->
+  <view class="flex-shrink-0 text-center text-sm text-gray-600 py-4 pb-safe">轻触你添加的分类可编辑。</view>
+</view>

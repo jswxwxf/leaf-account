@@ -17,8 +17,15 @@ defineComponent({
       });
     }
 
+    const handleCategory = () => {
+      wx.navigateTo({
+        url: '/pages/category/index'
+      })
+    }
+
     return {
       handleReset,
+      handleCategory,
     }
   },
 })
