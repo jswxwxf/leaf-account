@@ -14,7 +14,7 @@ register('notEmpty', isEmpty, {
 })
 
 function requiredMoney(value) {
-  return parseFloat(value) > 0
+  return parseInt(parseFloat(value) * 100) !== 0
 }
 
 register('requiredMoney', requiredMoney, {

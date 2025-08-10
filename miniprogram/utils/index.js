@@ -18,13 +18,13 @@ export function showCategorySelector() {
   return categorySelector.value.show()
 }
 
-export const calendarPopup = ref(null)
+export const calendarSelector = ref(null)
 
 export function showCalendar(currentDate) {
-  if (!calendarPopup.value) {
-    return Promise.reject(new Error('Calendar popup not initialized'))
+  if (!calendarSelector.value) {
+    return Promise.reject(new Error('Calendar selector not initialized'))
   }
-  return calendarPopup.value.show(currentDate)
+  return calendarSelector.value.show(currentDate)
 }
 
 export const theToast = ref(null)

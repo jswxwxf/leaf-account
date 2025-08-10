@@ -1,6 +1,6 @@
 {
   "component": true,
   "usingComponents": {
-    "calendar-popup": "../calendar-popup/index"
+    "calendar-selector": "../calendar-selector/index"
   }
 }
