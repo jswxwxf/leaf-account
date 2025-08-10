@@ -60,3 +60,13 @@ export function deleteBill(id, query = {}) {
     id,
   })
 }
+
+/**
+ * 清空所有账单并重置账户
+ * @returns {Promise<any>}
+ */
+export function resetBills() {
+  return post('bill-cloud', {
+    $url: '/delete/reset-bills',
+  })
+}

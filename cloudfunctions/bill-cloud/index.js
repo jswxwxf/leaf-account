@@ -20,6 +20,7 @@ const {
   deleteBill,
   getBillsByIds,
   getBillsSummary,
+  resetBills,
 } = require('./service/bill.js')
 const { getAccount } = require('./service/account.js')
 const { getCategories, addCategory, deleteCategory, updateCategory } = require('./service/category.js')
@@ -84,6 +85,19 @@ exports.main = (event, context) => {
     } catch (e) {
       console.error('/delete/bill error:', e)
       ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+    }
+  })
+
+  /**
+   * @desc 清空账目
+   */
+  app.router('/delete/reset-bills', async (ctx) => {
+    try {
+      const data = await resetBills(event, models)
+      ctx.body = { code: 200, success: true, message: `成功清空 ${data.deleted} 条账单`, data }
+    } catch (e) {
+      console.error('/post/reset-bills error:', e)
+      ctx.body = { code: 500, success: false, message: '操作失败，请稍后重试' }
     }
   })
 

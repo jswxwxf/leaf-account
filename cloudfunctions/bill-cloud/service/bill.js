@@ -522,4 +522,40 @@ module.exports = {
   getBills,
   getBillsByIds,
   deleteBill,
+  resetBills,
+}
+
+/**
+ * 清空当前用户的所有账单及公共账单，并重置账户。
+ * @param {object} event - 云函数的原始 event 对象
+ * @param {object} models - 数据模型实例
+ */
+async function resetBills(event, models) {
+  const { OPENID } = cloud.getWXContext()
+  const transaction = await db.startTransaction()
+
+  try {
+    // 1. 删除所有相关账单
+    const deleteResult = await transaction.collection('bill').where({ _openid: OPENID }).remove()
+
+    // 2. 重置账户信息
+    await transaction.collection('account').doc(OPENID).set({
+      data: {
+        _openid: OPENID,
+        balance: 0,
+        totalIncome: 0,
+        totalExpense: 0,
+        name: 'default',
+        updatedAt: db.serverDate()
+      }
+    })
+
+    await transaction.commit()
+    return {
+      deleted: deleteResult.stats.removed
+    }
+  } catch (e) {
+    await transaction.rollback()
+    throw new Error(`重置账目失败: ${e.message}`)
+  }
 }
