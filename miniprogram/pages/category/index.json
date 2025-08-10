@@ -1,7 +1,11 @@
 {
   "$schema": "https://vite.icebreaker.top/component.json",
   "component": true,
-  "usingComponents": {},
+  "usingComponents": {
+    "bill-form": "/components/bill-form/index",
+    "bill-field": "/components/bill-field/index",
+    "category-box": "./category-box/index"
+  },
   "styleIsolation": "apply-shared",
   "navigationBarTitleText": "分类管理"
 }

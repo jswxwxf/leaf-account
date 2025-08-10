@@ -16,6 +16,18 @@ export function getCategories() {
 }
 
 /**
+ * 更新一个分类
+ * @param {object} category - 分类数据
+ * @returns {Promise<any>}
+ */
+export function updateCategory(category) {
+  return post('bill-cloud', {
+    $url: '/put/category',
+    category,
+  })
+}
+
+/**
  * 添加一个新分类
  * @param {object} category - 分类数据
  * @returns {Promise<any>}
@@ -24,5 +36,17 @@ export function addCategory(category) {
   return post('bill-cloud', {
     $url: '/post/category',
     category,
+  })
+}
+
+/**
+ * 删除一个分类
+ * @param {string} id - 分类ID
+ * @returns {Promise<any>}
+ */
+export function deleteCategory(id) {
+  return post('bill-cloud', {
+    $url: '/delete/category',
+    id,
   })
 }

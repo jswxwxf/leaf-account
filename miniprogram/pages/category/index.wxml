@@ -1,32 +1,47 @@
 <view class="flex flex-col h-screen">
   <!-- Manual Tabs Header -->
   <van-tabs active="{{ activeTab }}" @change="onTabChange" color="#34D399" class="flex-shrink-0 mb-4">
-    <van-tab title="支出"></van-tab>
-    <van-tab title="入账"></van-tab>
+    <van-tab title="支出" name="20" />
+    <van-tab title="入账" name="10" />
   </van-tabs>
 
   <!-- Expense Content -->
-  <view class="flex-grow overflow-auto px-4 pb-4" hidden="{{ activeTab !== 0 }}">
+  <view class="flex-grow overflow-auto px-4 pb-4" wx:if="{{ activeTab === 20 }}">
     <view class="grid grid-cols-3 gap-2">
       <block wx:for="{{ categories.expense }}" wx:key="_id">
-        <view class="bg-gray-200 h-12 flex items-center justify-center rounded-lg">
-          <text class="text-sm">{{ item.name }}</text>
-        </view>
+        <category-box category="{{ item }}" @delete="handleDelete" @edit="handleEdit" />
       </block>
     </view>
   </view>
 
   <!-- Income Content -->
-  <view class="flex-grow overflow-auto px-4 pb-4" hidden="{{ activeTab !== 1 }}">
+  <view class="flex-grow overflow-auto px-4 pb-4" wx:if="{{ activeTab === 10 }}">
     <view class="grid grid-cols-3 gap-2">
       <block wx:for="{{ categories.income }}" wx:key="_id">
-        <view class="bg-gray-200 h-12 flex items-center justify-center rounded-lg">
-          <text class="text-sm">{{ item.name }}</text>
-        </view>
+        <category-box category="{{ item }}" @delete="handleDelete" @edit="handleEdit" />
       </block>
     </view>
   </view>
 
   <!-- Footer -->
-  <view class="flex-shrink-0 text-center text-sm text-gray-600 py-4 pb-safe">轻触你添加的分类可编辑。</view>
+  <view class="flex-shrink-0 p-4 border-t border-gray-200 bg-white pb-safe">
+    <bill-form id="categoryForm">
+      <view class="flex items-center space-x-2">
+        <bill-field
+          value="{{ newCategory.name }}"
+          placeholder="请输入分类名称"
+          field="name"
+          rule="required|max:4"
+          data-field="name"
+          @change="handleFormChange"
+          class="flex-grow"
+        />
+        <van-button type="primary" size="small" bind:tap="handleAdd" class="!w-20">{{ isEditing ? '更新' : '添加' }}</van-button>
+        <van-button wx:if="{{ isEditing }}" size="small" bind:tap="handleCancel" class="!w-20">取消</van-button>
+      </view>
+    </bill-form>
+    <view class="text-center text-sm text-gray-600 pt-4">轻触分类可编辑，点击右上角可删除。</view>
+  </view>
 </view>
+
+<van-dialog id="van-dialog" />
