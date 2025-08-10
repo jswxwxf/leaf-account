@@ -8,9 +8,9 @@
   <!-- Expense Content -->
   <view class="flex-grow overflow-auto px-4 pb-4" hidden="{{ activeTab !== 0 }}">
     <view class="grid grid-cols-3 gap-2">
-      <block wx:for="{{ categories.expense }}" wx:key="index">
+      <block wx:for="{{ categories.expense }}" wx:key="_id">
         <view class="bg-gray-200 h-12 flex items-center justify-center rounded-lg">
-          <text class="text-sm">{{ item }}</text>
+          <text class="text-sm">{{ item.name }}</text>
         </view>
       </block>
     </view>
@@ -19,9 +19,9 @@
   <!-- Income Content -->
   <view class="flex-grow overflow-auto px-4 pb-4" hidden="{{ activeTab !== 1 }}">
     <view class="grid grid-cols-3 gap-2">
-      <block wx:for="{{ categories.income }}" wx:key="index">
+      <block wx:for="{{ categories.income }}" wx:key="_id">
         <view class="bg-gray-200 h-12 flex items-center justify-center rounded-lg">
-          <text class="text-sm">{{ item }}</text>
+          <text class="text-sm">{{ item.name }}</text>
         </view>
       </block>
     </view>

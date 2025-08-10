@@ -1,7 +1,7 @@
 {
   "$schema": "https://vite.icebreaker.top/component.json",
   "component": true,
-  "styleIsolation": "apply-shared",
   "usingComponents": {},
+  "styleIsolation": "apply-shared",
   "navigationBarTitleText": "分类管理"
 }
