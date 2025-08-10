@@ -40,7 +40,15 @@ async function initCategory() {
   }
 
   // 3. 批量插入新的系统分类数据
-  const addResult = await collection.add(categoriesToCreate)
+  const categoriesWithMeta = categoriesToCreate.map(c => ({
+    ...c,
+    createdAt: db.serverDate(),
+    updatedAt: db.serverDate(),
+    createdBy: 'administrator',
+    updatedBy: 'administrator',
+  }))
+
+  const addResult = await collection.add(categoriesWithMeta)
   console.log(`成功插入 ${addResult.inserted} 条新的系统分类。`)
 
   return {

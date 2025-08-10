@@ -26,7 +26,7 @@ async function getCategories(event, models) {
 
   const { data } = await models.category.list({
     filter: { where: finalWhere },
-    orderBy: [{ _openid: 'asc' }, { type: 'desc' }, { name: 'desc' }],
+    orderBy: [{ type: 'desc' }, { name: 'desc' }],
     pageSize: 1000,
   })
 
