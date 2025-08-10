@@ -1,4 +1,4 @@
-<bill-form id="tagForm">
+<bill-form id="tagForm" @init="handleFormInit">
   <view class="flex items-center space-x-2">
     <van-field
       value="{{ value.name }}"
@@ -6,6 +6,7 @@
       border="{{ false }}"
       use-button-slot
       @change="handleNameChange"
+      error-message="{{ errors.name[0].message }}"
       custom-class="flex-1 input-wrapper"
     >
       <view slot="right-icon" class="flex gap-1 items-center h-full">

@@ -8,15 +8,21 @@ defineComponent({
     },
     isEdit: {
       type: Boolean,
-      value: false
-    }
+      value: false,
+    },
   },
   setup(props, { triggerEvent, selectComponent }) {
     const tagForm = ref()
+    const errors = ref()
 
     onReady(() => {
       tagForm.value = selectComponent('#tagForm')
     })
+
+    const handleFormInit = (e) => {
+      e.detail.registerRule('name', 'required|max:4')
+      errors.value = e.detail.errors
+    }
 
     const handleNameChange = (e) => {
       const newName = e.detail
@@ -37,6 +43,8 @@ defineComponent({
     }
 
     return {
+      errors,
+      handleFormInit,
       handleNameChange,
       handleTypeChange,
       handleSubmit,
