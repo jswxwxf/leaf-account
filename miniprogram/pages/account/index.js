@@ -95,7 +95,19 @@ defineComponent({
     })
 
     const handleAddBill = async () => {
-      processBill(newBill())
+      // processBill(newBill())
+      // await wx.cloud.callFunction({
+      //   name: 'data-importer',
+      //   data: {},
+      //   success: (res) => {
+      //     console.log('data-importer called successfully', res.result)
+      //     Toast.success('导入成功')
+      //   },
+      //   fail: (err) => {
+      //     console.error('data-importer called failed', err)
+      //     Toast.fail('导入失败')
+      //   },
+      // })
       // await wx.cloud.callFunction({
       //   name: 'data-init',
       //   data: {
@@ -107,18 +119,6 @@ defineComponent({
       //   },
       //   fail: (err) => {
       //     console.error('data-init called failed', err)
-      //     Toast.fail('导入失败')
-      //   },
-      // })
-      // await wx.cloud.callFunction({
-      //   name: 'data-importer',
-      //   data: {},
-      //   success: (res) => {
-      //     console.log('data-importer called successfully', res.result)
-      //     Toast.success('导入成功')
-      //   },
-      //   fail: (err) => {
-      //     console.error('data-importer called failed', err)
       //     Toast.fail('导入失败')
       //   },
       // })
