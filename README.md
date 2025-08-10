@@ -1,4 +1,4 @@
-# 小叶记账 (leaf-account)
+# 小枫记账 (leaf-account)
 
 一个基于 `vue-mini` + `tailwindcss` 构建的微信小程序记账应用。
 

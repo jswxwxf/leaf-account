@@ -12,7 +12,8 @@ defineComponent({
     const actions = ref([
       { name: '记入多笔', value: 'batch' },
       { name: '识图记帐', value: 'photo' },
-      { name: '导入文件', value: 'import' },
+      // { name: '语音记帐', value: 'voice' },
+      // { name: '导入文件', value: 'import' },
     ])
 
     const handleMainClick = (e) => {

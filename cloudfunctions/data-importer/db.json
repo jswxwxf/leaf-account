@@ -46,7 +46,7 @@
     },
     {
       "_id": "109",
-      "category": "人情",
+      "category": "付人情",
       "icon": "friends-o",
       "time": "21:58",
       "note": "腹肌小胖汁",
@@ -302,7 +302,7 @@
     },
     {
       "_id": "90",
-      "category": "人情",
+      "category": "收人情",
       "icon": "friends-o",
       "time": "10:51",
       "note": "转账备注:微信转账",
@@ -632,7 +632,7 @@
     },
     {
       "_id": "61",
-      "category": "人情",
+      "category": "付人情",
       "icon": "friends-o",
       "time": "15:16",
       "note": "转账备注:微信转账",
@@ -980,7 +980,7 @@
       "amount": -68.6,
       "tags": [],
       "date": "2025-07-02",
-      "transactionId": "4200067743202507028933963883"
+      "transactionId": "4200002739202507028933963883"
     },
     {
       "_id": "29",

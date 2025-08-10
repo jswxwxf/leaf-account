@@ -20,7 +20,6 @@ exports.main = async (event, context) => {
     console.log('正在清空旧数据...')
     await db.collection('bill').where({ _id: _.exists(true) }).remove()
     await db.collection('category').where({ _id: _.exists(true) }).remove()
-    await db.collection('tag').where({ _id: _.exists(true) }).remove()
     await db.collection('account').where({ _id: _.exists(true) }).remove()
     console.log('旧数据清空完毕。')
 
@@ -35,23 +34,18 @@ exports.main = async (event, context) => {
 
     // 2. 准备并创建 Categories 和 Tags
     const categoryNames = [...new Set(bills.map((b) => b.category))].filter(Boolean)
-    const incomeCategoryNames = ['人情', '商家转账', '工资', '理财']
+    const categoryDataPath = path.resolve(__dirname, '../data-init/category-data.json')
+    const categoryData = JSON.parse(fs.readFileSync(categoryDataPath, 'utf-8'))
+    const incomeCategoryNames = categoryData.income.map(c => c.name)
     const categoriesToCreate = categoryNames.map((name) => ({
       name,
-      type: incomeCategoryNames.includes(name) ? '20' : '10', // '20' income, '10' expense
+      type: incomeCategoryNames.includes(name) ? '10' : '20', // '10' income, '20' expense
       _openid: '',
     }))
-
-    const tagNames = [...new Set(bills.flatMap((b) => b.tags || []))].filter(Boolean)
-    const tagsToCreate = tagNames.map((name) => ({ name, type: '10', _openid: '' })) // 默认为支出
 
     if (categoriesToCreate.length > 0) {
       await models.category.createMany({ data: categoriesToCreate })
       console.log(`成功创建 ${categoriesToCreate.length} 个分类。`)
-    }
-    if (tagsToCreate.length > 0) {
-      await models.tag.createMany({ data: tagsToCreate })
-      console.log(`成功创建 ${tagsToCreate.length} 个标签。`)
     }
 
     // 3. 获取刚创建的 Categories 和 Tags 的 ID，并建立映射
@@ -63,19 +57,12 @@ exports.main = async (event, context) => {
       return acc
     }, {})
 
-    const createdTags = await models.tag.list({
-      filter: { where: { name: { $in: tagNames } } },
-    })
-    const tagMap = createdTags.data.records.reduce((acc, cur) => {
-      acc[cur.name] = cur._id
-      return acc
-    }, {})
 
     // 4. 重构并批量导入 Bills
     const billsToSave = bills.map((bill) => {
       // 核心字段
       const newBill = {
-        amount: Number(bill.amount) || 0,
+        amount: incomeCategoryNames.includes(bill.category) ? Math.abs(Number(bill.amount) || 0) : -Math.abs(Number(bill.amount) || 0),
         datetime: new Date(`${bill.date} ${bill.time}`).getTime(),
         note: bill.note || '',
         _openid: '',
@@ -86,15 +73,6 @@ exports.main = async (event, context) => {
         newBill.category = cloud.database().collection('category').doc(categoryMap[bill.category])
       }
 
-      // 关联 Tags
-      if (bill.tags && bill.tags.length > 0) {
-        newBill.tags = bill.tags
-          .map((tagName) => tagMap[tagName])
-          .filter(Boolean)
-          .map((tagId) => cloud.database().collection('tag').doc(tagId))
-      } else {
-        newBill.tags = []
-      }
 
       return newBill
     })
@@ -104,7 +82,7 @@ exports.main = async (event, context) => {
 
     return {
       success: true,
-      message: `数据导入成功！导入了 ${bills.length} 条账单, ${categoriesToCreate.length} 个分类, ${tagsToCreate.length} 个标签。`,
+      message: `数据导入成功！导入了 ${bills.length} 条账单, ${categoriesToCreate.length} 个分类。`,
     }
   } catch (error) {
     console.error('数据导入失败:', error)

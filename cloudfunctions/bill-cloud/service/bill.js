@@ -255,7 +255,7 @@ async function getBillsSummary(event, models) {
 
   // 权限：只能获取自己的或公共的
   const whereClause = {
-    $and: [{ $or: [{ _openid: OPENID }, { _openid: _.exists(false) }] }],
+    $and: [{ $or: [{ _openid: OPENID }, { _openid: _.exists(false) }, { _openid: '' }] }],
   }
 
   if (month) {

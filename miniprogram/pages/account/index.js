@@ -94,8 +94,34 @@ defineComponent({
       scrollTop.value = 0
     })
 
-    const handleAddBill = () => {
-      processBill(newBill())
+    const handleAddBill = async () => {
+      // processBill(newBill())
+      await wx.cloud.callFunction({
+        name: 'data-init',
+        data: {
+          task: 'init-category'
+        },
+        success: (res) => {
+          console.log('data-init called successfully', res.result)
+          Toast.success('导入成功')
+        },
+        fail: (err) => {
+          console.error('data-init called failed', err)
+          Toast.fail('导入失败')
+        },
+      })
+      // await wx.cloud.callFunction({
+      //   name: 'data-importer',
+      //   data: {},
+      //   success: (res) => {
+      //     console.log('data-importer called successfully', res.result)
+      //     Toast.success('导入成功')
+      //   },
+      //   fail: (err) => {
+      //     console.error('data-importer called failed', err)
+      //     Toast.fail('导入失败')
+      //   },
+      // })
     }
 
     const handleEditBill = (e) => {
