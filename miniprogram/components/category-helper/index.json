@@ -1,6 +1,6 @@
 {
   "component": true,
   "usingComponents": {
-    "category-popup": "../category-popup/index"
+    "category-selector": "../category-selector/index"
   }
 }

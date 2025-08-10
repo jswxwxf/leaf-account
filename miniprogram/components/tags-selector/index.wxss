@@ -1,4 +1,4 @@
-/* miniprogram/components/tags-popup/index.wxss */
+/* miniprogram/components/tags-selector/index.wxss */
 .tag-list {
   max-height: 35vh;
   overflow-y: auto;

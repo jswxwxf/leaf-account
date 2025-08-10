@@ -1,6 +1,6 @@
 {
   "component": true,
   "usingComponents": {
-    "tags-popup": "../tags-popup/index"
+    "tags-selector": "../tags-selector/index"
   }
 }

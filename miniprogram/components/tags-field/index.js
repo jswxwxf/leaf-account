@@ -1,5 +1,5 @@
 import { defineComponent } from '@vue-mini/core'
-import { showTagsPopup } from '@/utils/index.js'
+import { showTagsSelector } from '@/utils/index.js'
 import { useFormItem, formItemProps } from '../bill-form/use-form-item.js'
 
 defineComponent({
@@ -24,7 +24,7 @@ defineComponent({
 
     async function handleClick() {
       clearError()
-      const result = await showTagsPopup(props.value)
+      const result = await showTagsSelector(props.value)
       triggerEvent('change', result)
     }
 

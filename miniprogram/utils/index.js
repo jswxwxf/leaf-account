@@ -1,21 +1,21 @@
 import { ref } from '@vue-mini/core'
 
-export const tagsPopup = ref(null)
+export const tagsSelector = ref(null)
 
-export function showTagsPopup(tags) {
-  if (!tagsPopup.value) {
-    return Promise.reject(new Error('Tags popup not initialized'))
+export function showTagsSelector(tags) {
+  if (!tagsSelector.value) {
+    return Promise.reject(new Error('Tags selector not initialized'))
   }
-  return tagsPopup.value.show(tags)
+  return tagsSelector.value.show(tags)
 }
 
-export const categoryPopup = ref(null)
+export const categorySelector = ref(null)
 
-export function showCategoryPopup() {
-  if (!categoryPopup.value) {
-    return Promise.reject(new Error('Category popup not initialized'))
+export function showCategorySelector() {
+  if (!categorySelector.value) {
+    return Promise.reject(new Error('Category selector not initialized'))
   }
-  return categoryPopup.value.show()
+  return categorySelector.value.show()
 }
 
 export const calendarPopup = ref(null)

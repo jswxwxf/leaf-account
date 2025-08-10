@@ -1,5 +1,5 @@
 import { defineComponent } from '@vue-mini/core'
-import { showCategoryPopup } from '@/utils/index.js'
+import { showCategorySelector } from '@/utils/index.js'
 import { useFormItem, formItemProps } from '../bill-form/use-form-item.js'
 
 defineComponent({
@@ -24,7 +24,7 @@ defineComponent({
 
     async function handleClick() {
       clearError()
-      const result = await showCategoryPopup()
+      const result = await showCategorySelector()
       triggerEvent('change', result)
     }
 

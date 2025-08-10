@@ -1,14 +1,14 @@
 import { defineComponent, onDetach, onReady } from '@vue-mini/core'
-import { categoryPopup } from '@/utils/index.js'
+import { categorySelector } from '@/utils/index.js'
 
 defineComponent({
   setup(props, { selectComponent }) {
     onReady(() => {
-      categoryPopup.value = selectComponent('#category-popup')
+      categorySelector.value = selectComponent('#category-selector')
     })
 
     onDetach(() => {
-      categoryPopup.value = null
+      categorySelector.value = null
     })
   },
 })

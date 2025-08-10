@@ -1,4 +1,4 @@
-/* miniprogram/components/category-popup/index.wxss */
+/* miniprogram/components/category-selector/index.wxss */
 .category-list {
   max-height: 35vh;
   overflow-y: auto;
