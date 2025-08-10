@@ -2,7 +2,7 @@
   <view class="flex items-center space-x-2">
     <van-field
       value="{{ value.name }}"
-      placeholder="新标签，点击右侧切换颜色"
+      placeholder="点击右侧切换颜色"
       border="{{ false }}"
       use-button-slot
       @change="handleNameChange"
