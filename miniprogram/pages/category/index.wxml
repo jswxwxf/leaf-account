@@ -15,7 +15,7 @@
       </view>
     </block>
     <view wx:else class="text-center text-gray-500 py-10">
-      暂无支出分类，快去添加吧~
+      暂无支出分类，快来添加吧~
     </view>
   </view>
 
@@ -29,19 +29,18 @@
       </view>
     </block>
     <view wx:else class="text-center text-gray-500 py-10">
-      暂无收入分类，快去添加吧~
+      暂无收入分类，快来添加吧~
     </view>
   </view>
 
   <!-- Footer -->
-  <view class="flex-shrink-0 p-4 border-t border-gray-200 bg-white pb-safe">
+  <view class="flex-shrink-0 p-4 border-t border-gray-200 pb-safe">
     <category-editor
       value="{{ newCategory }}"
       data-field="name"
       @change="handleFormChange"
       @submit="handleAdd"
     />
-    <view class="text-center text-sm text-gray-600 pt-4">轻触分类可编辑，点击右上角可删除。</view>
   </view>
 </view>
 

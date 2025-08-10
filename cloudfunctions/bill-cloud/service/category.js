@@ -1,7 +1,7 @@
 const cloud = require('wx-server-sdk')
 const db = cloud.database()
 const _ = db.command
-const { BizError } = require('../middleware.js')
+const { BizError } = require('./common.js')
 
 /**
  * 获取所有分类
@@ -45,7 +45,7 @@ async function getCategories(event, models) {
  * @param {object} models - 数据模型实例
  */
 async function addCategory(event, models) {
-  const { category } = event
+  const { category } = event.body
   const { OPENID } = cloud.getWXContext()
 
   if (!category || !category.name) {
@@ -123,7 +123,7 @@ async function deleteCategory(event, models) {
  * @param {object} models - 数据模型实例
  */
 async function updateCategory(event, models) {
-  const { category } = event
+  const { category } = event.body
   const { _id, ...data } = category
   const { OPENID } = cloud.getWXContext()
 

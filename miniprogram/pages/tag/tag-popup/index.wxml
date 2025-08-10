@@ -1,0 +1,11 @@
+<van-popup show="{{ visible }}" position="bottom" closeable bind:close="handleClose">
+  <view class="p-4">
+    <view class="text-lg font-bold text-center mb-4 text-{{tag.type}}">编辑标签</view>
+    <tag-editor
+      value="{{ tag }}"
+      is-edit
+      @change="handleFormChange"
+      @submit="handleConfirm"
+    />
+  </view>
+</van-popup>

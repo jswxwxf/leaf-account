@@ -1,7 +1,7 @@
 {
   "component": true,
   "usingComponents": {
-    "category-editor": "../category-editor/index"
+    "bill-tag": "/components/bill-tag/index"
   },
   "styleIsolation": "apply-shared"
 }

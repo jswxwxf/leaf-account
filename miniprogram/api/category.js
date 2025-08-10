@@ -23,7 +23,7 @@ export function getCategories() {
 export function updateCategory(category) {
   return post('bill-cloud', {
     $url: '/put/category',
-    category,
+    body: { category },
   })
 }
 
@@ -35,7 +35,7 @@ export function updateCategory(category) {
 export function addCategory(category) {
   return post('bill-cloud', {
     $url: '/post/category',
-    category,
+    body: { category },
   })
 }
 

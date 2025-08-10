@@ -1,0 +1,11 @@
+.border-10 {
+  @apply border-blue-500;
+}
+
+.border-20 {
+  @apply border-red-500;
+}
+
+.border-30 {
+  @apply border-yellow-500;
+}

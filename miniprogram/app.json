@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/account/index",
+"pages/tag/index",
     "pages/stats/index",
     "pages/setting/index",
     "pages/category/index"

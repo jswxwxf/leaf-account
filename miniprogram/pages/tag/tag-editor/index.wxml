@@ -1,0 +1,19 @@
+<bill-form id="tagForm">
+  <view class="flex items-center space-x-2">
+    <van-field
+      value="{{ value.name }}"
+      placeholder="新标签，点击右侧切换颜色"
+      border="{{ false }}"
+      use-button-slot
+      @change="handleNameChange"
+      custom-class="flex-1 input-wrapper"
+    >
+      <view slot="right-icon" class="flex gap-1 items-center h-full">
+        <view class="w-4 h-4 bg-blue-500 {{value.type === '10' ? 'ring-2 ring-offset-2' : ''}}" data-type="10" @tap="handleTypeChange" />
+        <view class="w-4 h-4 bg-red-500 {{value.type === '20' ? 'ring-2 ring-offset-2' : ''}}" data-type="20" @tap="handleTypeChange" />
+        <view class="w-4 h-4 bg-yellow-500 {{value.type === '30' ? 'ring-2 ring-offset-2' : ''}}" data-type="30" @tap="handleTypeChange" />
+      </view>
+    </van-field>
+    <van-button type="primary" size="small" @tap="handleSubmit" class="!w-20">{{isEdit ? '保存' : '添加'}}</van-button>
+  </view>
+</bill-form>

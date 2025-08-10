@@ -1,0 +1,17 @@
+<view class="tag-item flex items-center p-2">
+  <view class="flex-grow text-center">
+    <bill-tag type="{{ tag.type }}" plain>{{ tag.name }}</bill-tag>
+  </view>
+  <view class="flex flex-col gap-1 w-4 pl-3 pr-1 items-center border-l border-gray-300">
+    <van-icon
+      name="edit"
+      class="{{ tag.isBuiltIn ? 'text-gray-300' : 'text-gray-500' }}"
+      catch:tap="onEdit"
+    />
+    <van-icon
+      name="delete-o"
+      class="{{ tag.isBuiltIn ? 'text-gray-300' : 'text-red-500' }}"
+      catch:tap="onDelete"
+    />
+  </view>
+</view>

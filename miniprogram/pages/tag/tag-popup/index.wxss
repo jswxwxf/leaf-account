@@ -1,0 +1,11 @@
+.text-10 {
+  @apply text-blue-500;
+}
+
+.text-20 {
+  @apply text-red-500;
+}
+
+.text-30 {
+  @apply text-yellow-500;
+}

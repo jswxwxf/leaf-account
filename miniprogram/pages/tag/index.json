@@ -1,0 +1,11 @@
+{
+  "$schema": "https://vite.icebreaker.top/component.json",
+  "component": true,
+  "usingComponents": {
+    "tag-box": "./tag-box/index",
+    "tag-editor": "./tag-editor/index",
+    "tag-popup": "./tag-popup/index"
+  },
+  "styleIsolation": "apply-shared",
+  "navigationBarTitleText": "标签管理"
+}

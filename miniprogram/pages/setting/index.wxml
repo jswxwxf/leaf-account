@@ -2,6 +2,7 @@
   <view class="flex-grow pt-4">
     <van-cell-group>
       <van-cell title="分类管理" is-link @tap="handleCategory" />
+      <van-cell title="标签管理" is-link @tap="handleTag" />
     </van-cell-group>
   </view>
 

@@ -2,14 +2,7 @@ const cloud = require('wx-server-sdk')
 const { getAccount } = require('./service/account.js')
 const { getBillsSummary } = require('./service/bill.js')
 
-// 自定义业务逻辑错误
-class BizError extends Error {
-  constructor(message) {
-    super(message)
-    this.name = 'BizError'
-    this.isBiz = true // 自定义标记
-  }
-}
+const { BizError } = require('./service/common.js')
 
 // --- 中间件应用的路由列表 ---
 const REQUIRE_LOGIN_ROUTES = [
@@ -80,6 +73,5 @@ function useMiddlewares(app, event, models) {
 }
 
 module.exports = {
-  BizError,
   useMiddlewares,
 }
