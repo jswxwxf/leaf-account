@@ -26,7 +26,7 @@ async function getCategories(event, models) {
 
   const { data } = await models.category.list({
     filter: { where: finalWhere },
-    orderBy: [{ type: 'desc' }],
+    orderBy: [{ type: 'desc' }, { name: 'desc' }],
     pageSize: 1000,
   })
   return data.records
@@ -64,8 +64,66 @@ async function getCategoryIds(event, models) {
   return []
 }
 
+/**
+ * 删除一个分类
+ * @param {object} event - 云函数的原始 event 对象，包含 { id }
+ * @param {object} models - 数据模型实例
+ */
+async function deleteCategory(event, models) {
+  const { id } = event
+  const { OPENID } = cloud.getWXContext()
+
+  if (!id) {
+    throw new Error('缺少分类ID')
+  }
+
+  const { data } = await models.category.delete({
+    filter: {
+      where: {
+        _id: { $eq: id },
+        _openid: { $eq: OPENID }, // 确保只能删除自己的分类
+      },
+    },
+  })
+
+  return {
+    deleted: data.count,
+  }
+}
+
+/**
+ * 更新一个分类
+ * @param {object} event - 云函数的原始 event 对象，包含 { category }
+ * @param {object} models - 数据模型实例
+ */
+async function updateCategory(event, models) {
+  const { category } = event
+  const { _id, ...data } = category
+  const { OPENID } = cloud.getWXContext()
+
+  if (!category || !_id) {
+    throw new Error('缺少分类ID')
+  }
+
+  const { data: result } = await models.category.update({
+    filter: {
+      where: {
+        _id: { $eq: _id },
+        _openid: { $eq: OPENID }, // 确保只能更新自己的分类
+      },
+    },
+    data,
+  })
+
+  return {
+    updated: result.count,
+  }
+}
+
 module.exports = {
   getCategories,
   getCategoryIds,
   addCategory,
+  deleteCategory,
+  updateCategory,
 }

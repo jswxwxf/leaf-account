@@ -1,7 +1,7 @@
-<view class="flex items-center bg-gray-100 rounded-lg p-3">
-  <view class="flex-grow text-sm">{{ category.name }}</view>
-  <view class="flex items-center space-x-4">
+<view class="flex items-center bg-gray-100 p-2">
+  <view class="flex-grow text-center text-sm">{{ category.name }}</view>
+  <view class="flex flex-col gap-1 w-4 pl-3 pr-1 items-center border-l border-gray-300">
     <van-icon name="edit" class="text-gray-500" catch:tap="onEdit" />
-    <van-icon name="delete" class="text-red-500" catch:tap="onDelete" />
+    <van-icon name="delete-o" class="text-red-500" catch:tap="onDelete" />
   </view>
 </view>

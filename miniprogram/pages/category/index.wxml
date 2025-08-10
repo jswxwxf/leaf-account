@@ -6,7 +6,7 @@
   </van-tabs>
 
   <!-- Expense Content -->
-  <view class="flex-grow overflow-auto px-4 pb-4" wx:if="{{ activeTab === 20 }}">
+  <view class="flex-grow overflow-auto px-4 pb-4" wx:if="{{ activeTab === '20' }}">
     <view class="grid grid-cols-3 gap-2">
       <block wx:for="{{ categories.expense }}" wx:key="_id">
         <category-box category="{{ item }}" @delete="handleDelete" @edit="handleEdit" />
@@ -15,7 +15,7 @@
   </view>
 
   <!-- Income Content -->
-  <view class="flex-grow overflow-auto px-4 pb-4" wx:if="{{ activeTab === 10 }}">
+  <view class="flex-grow overflow-auto px-4 pb-4" wx:if="{{ activeTab === '10' }}">
     <view class="grid grid-cols-3 gap-2">
       <block wx:for="{{ categories.income }}" wx:key="_id">
         <category-box category="{{ item }}" @delete="handleDelete" @edit="handleEdit" />

@@ -22,7 +22,7 @@ const {
   getBillsSummary,
 } = require('./service/bill.js')
 const { getAccount } = require('./service/account.js')
-const { getCategories, addCategory } = require('./service/category.js')
+const { getCategories, addCategory, deleteCategory, updateCategory } = require('./service/category.js')
 const { getTags, addTags } = require('./service/tag.js')
 
 exports.main = (event, context) => {
@@ -161,6 +161,40 @@ exports.main = (event, context) => {
       ctx.body = { code: 200, success: true, message: '批量添加成功', data }
     } catch (e) {
       console.error('/post/tags error:', e)
+      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+    }
+  })
+
+  /**
+   * @desc 删除分类
+   */
+  app.router('/delete/category', async (ctx) => {
+    try {
+      const data = await deleteCategory(event, models)
+      if (data.deleted > 0) {
+        ctx.body = { code: 200, success: true, message: '删除成功' }
+      } else {
+        ctx.body = { code: 404, success: false, message: '未找到要删除的记录' }
+      }
+    } catch (e) {
+      console.error('/delete/category error:', e)
+      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+    }
+  })
+
+  /**
+   * @desc 更新分类
+   */
+  app.router('/update/category', async (ctx) => {
+    try {
+      const data = await updateCategory(event, models)
+      if (data.updated > 0) {
+        ctx.body = { code: 200, success: true, message: '更新成功' }
+      } else {
+        ctx.body = { code: 404, success: false, message: '未找到要更新的记录' }
+      }
+    } catch (e) {
+      console.error('/update/category error:', e)
       ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
     }
   })

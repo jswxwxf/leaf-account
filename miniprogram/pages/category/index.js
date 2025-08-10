@@ -5,7 +5,7 @@ import { addCategory, getCategories, deleteCategory, updateCategory } from '@/ap
 
 defineComponent({
   setup(props, { selectComponent }) {
-    const activeTab = ref(20)
+    const activeTab = ref('20')
     const categories = ref({
       expense: [],
       income: [],
