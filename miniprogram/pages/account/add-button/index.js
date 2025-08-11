@@ -16,6 +16,7 @@ defineComponent({
       // { name: '语音记帐', value: 'voice' },
       // { name: '导入文件', value: 'import' },
       { name: '余额对账', value: 'reconcile' },
+      { name: '今日汇总', value: 'today-summary' },
     ])
 
     const handleMainClick = (e) => {

@@ -2,11 +2,13 @@ import { defineComponent, ref, provide, onReady, onUnload, watch } from '@vue-mi
 import Toast from '@vant/weapp/toast/toast.js'
 import Dialog from '@vant/weapp/dialog/dialog.js'
 import { reconcileAccount } from '@/api/account.js'
-import { upsertBill, deleteBill, saveBills } from '@/api/bill.js'
+import { upsertBill, deleteBill, saveBills, getAllBills } from '@/api/bill.js'
 import { newBill } from '@/service/bill-service.js'
 import store, { storeKey } from './store'
 import { useOcr } from '@/composables/use-ocr.js'
 import { useAi } from '@/composables/use-ai.js'
+import { formatDate } from '@/utils/date.js'
+import { formatMoney } from '@/utils/index.js'
 
 function useBillPopup(state, billPopupRef) {
   const { typeValue, monthValue, updateBills, updateAccountSummary } = state
@@ -45,7 +47,7 @@ function useProcessPhoto() {
   let _resolve = null
   let _reject = null
 
-  const handleOcrResult = async (texts) => {
+  const handleOcrres = async (texts) => {
     try {
       _resolve(texts)
     } catch (err) {
@@ -53,7 +55,7 @@ function useProcessPhoto() {
       _reject(err)
     }
   }
-  const { runNativeOCR } = useOcr(handleOcrResult)
+  const { runNativeOCR } = useOcr(handleOcrres)
 
   function handleOcr(imagePath) {
     runNativeOCR(imagePath)
@@ -104,7 +106,7 @@ defineComponent({
       //   name: 'data-importer',
       //   data: {},
       //   success: (res) => {
-      //     console.log('data-importer called successfully', res.result)
+      //     console.log('data-importer called successfully', res.res)
       //     Toast.success('导入成功')
       //   },
       //   fail: (err) => {
@@ -118,7 +120,7 @@ defineComponent({
       //     task: 'init-category'
       //   },
       //   success: (res) => {
-      //     console.log('data-init called successfully', res.result)
+      //     console.log('data-init called successfully', res.res)
       //     Toast.success('导入成功')
       //   },
       //   fail: (err) => {
@@ -192,11 +194,43 @@ defineComponent({
     }
 
     const handleReconcile = async () => {
-      const result = await reconcilePopup.value.show(totalBalance.value)
-      await reconcileAccount(result.actualBalance)
+      const res = await reconcilePopup.value.show(totalBalance.value)
+      await reconcileAccount(res.actualBalance)
       // 重新加载账单
       state.loadData()
       Toast.success('对账成功')
+    }
+
+    const handleTodaySummary = async () => {
+      const res = await getAllBills({ createdDate: formatDate(new Date(), 'YYYY-MM-DD') })
+      const { totalIncome, totalExpense, summaryLines } = (res.data || []).reduce(
+        (acc, bill) => {
+          const amount = bill.amount || 0
+          if (bill.category.type === '10') {
+            acc.totalIncome += amount
+          } else {
+            acc.totalExpense += amount
+          }
+          const line = [
+            formatDate(bill.datetime, 'YYYY-MM-DD'),
+            bill.category?.name,
+            bill.note,
+            formatMoney(amount),
+          ].join('\t')
+          acc.summaryLines.push(line)
+          return acc
+        },
+        { totalIncome: 0, totalExpense: 0, summaryLines: [] },
+      )
+
+      const summaryText = [
+        ...summaryLines,
+        `\n收入: ${formatMoney(totalIncome)}`,
+        `支出: ${formatMoney(-totalExpense)}`,
+        `余额: ${formatMoney(res.account.balance)}`,
+      ].join('\n')
+
+      console.log(summaryText)
     }
 
     const handleActionSelect = (e) => {
@@ -211,6 +245,10 @@ defineComponent({
       }
       if (action.detail.value === 'reconcile') {
         handleReconcile()
+        return
+      }
+      if (action.detail.value === 'today-summary') {
+        handleTodaySummary()
         return
       }
     }

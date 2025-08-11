@@ -21,6 +21,7 @@ const {
   getBillsByIds,
   getBillsSummary,
   resetBills,
+  getAllBills,
 } = require('./service/bill.js')
 const { getAccount, reconcileAccount } = require('./service/account.js')
 const { getCategories, addCategory, deleteCategory, updateCategory } = require('./service/category.js')
@@ -54,6 +55,19 @@ exports.main = (event, context) => {
       ctx.body = { code: 200, success: true, message: '获取成功', ...result }
     } catch (e) {
       console.error('/get/bills error:', e)
+      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+    }
+  })
+
+  /**
+   * @desc 获取所有账单（不分页）
+   */
+  app.router('/get/bills/all', async (ctx) => {
+    try {
+      const data = await getAllBills(event, models)
+      ctx.body = { code: 200, success: true, message: '获取成功', data }
+    } catch (e) {
+      console.error('/get/bills/all error:', e)
       ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
     }
   })

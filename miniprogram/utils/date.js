@@ -31,7 +31,7 @@ export function getDayOfWeek(dateString) {
  * @param {string} fmt - 格式字符串，例如 'YYYY-MM-DD HH:mm:ss'
  * @returns {string}
  */
-export function formatDate(date, fmt) {
+export function formatDate(date, fmt = 'YYYY-MM-DD HH:mm:ss') {
   if (!date) return ''
   return dayjs(date).format(fmt)
 }
@@ -58,7 +58,7 @@ export function parseDate(dateString) {
     'YYYY/MM/DD HH:mm',
     'YYYY/MM/DD',
     'M月D日 HH:mm', // 直接处理 "8月6日 09:47"
-    'M月D日',      // 直接处理 "8月6日"
+    'M月D日', // 直接处理 "8月6日"
     'M-D HH:mm',
     'M-D',
     'HH:mm',

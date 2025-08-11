@@ -22,6 +22,19 @@ export function getBills(query = {}) {
   })
 }
 
+
+/**
+ * 获取所有账单
+ * @param {object} query - 查询参数
+ * @returns {Promise<Bill[]>}
+ */
+export function getAllBills(query = {}) {
+  return get('bill-cloud', {
+    $url: '/get/bills/all',
+    query,
+  })
+}
+
 /**
  * 创建或更新一个账单
  * @param {Omit<Bill, '_id'> | Bill} bill - 账单数据

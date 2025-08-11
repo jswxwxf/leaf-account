@@ -86,18 +86,16 @@ async function saveBill(event, models) {
       )
 
       // 2. 创建新账单
-      const createResult = await transaction
-        .collection('bill')
-        .add({
-          data: {
-            ...billToSave,
-            _openid: OPENID,
-            createdAt: db.serverDate(),
-            createdBy: OPENID,
-            updatedAt: db.serverDate(),
-            updatedBy: OPENID,
-          },
-        })
+      const createResult = await transaction.collection('bill').add({
+        data: {
+          ...billToSave,
+          _openid: OPENID,
+          createdAt: db.serverDate(),
+          createdBy: OPENID,
+          updatedAt: db.serverDate(),
+          updatedBy: OPENID,
+        },
+      })
       if (!createResult._id) {
         throw new Error('创建新账单失败')
       }
@@ -171,18 +169,16 @@ async function saveBills(event, models) {
       // 2. 串行创建账单
       const newBillIds = []
       for (const bill of billsToSave) {
-        const result = await transaction
-          .collection('bill')
-          .add({
-            data: {
-              ...bill,
-              _openid: OPENID,
-              createdAt: db.serverDate(),
-              createdBy: OPENID,
-              updatedAt: db.serverDate(),
-              updatedBy: OPENID,
-            },
-          })
+        const result = await transaction.collection('bill').add({
+          data: {
+            ...bill,
+            _openid: OPENID,
+            createdAt: db.serverDate(),
+            createdBy: OPENID,
+            updatedAt: db.serverDate(),
+            updatedBy: OPENID,
+          },
+        })
         newBillIds.push(result._id)
       }
 
@@ -236,7 +232,7 @@ async function getBillsByIds(event, models) {
         $and: [
           { _id: { $in: ids } },
           {
-            $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }],
+            _openid: { $eq: OPENID },
           },
         ],
       },
@@ -255,7 +251,7 @@ async function getBillsSummary(event, models) {
 
   // 权限：只能获取自己的或公共的
   const whereClause = {
-    $and: [{ $or: [{ _openid: OPENID }, { _openid: _.exists(false) }] }],
+    $and: [{ _openid: { $eq: OPENID } }],
   }
 
   if (month) {
@@ -333,7 +329,7 @@ async function getBills(event, models) {
   const where = {
     $and: [
       {
-        $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }],
+        _openid: { $eq: OPENID },
       },
     ],
   }
@@ -457,6 +453,66 @@ async function getBills(event, models) {
 }
 
 /**
+ * 获取所有账单（不分页）
+ * @param {object} event - 云函数的原始 event 对象
+ * @param {object} models - 数据模型实例
+ */
+async function getAllBills(event, models) {
+  const { type, createdAt } = event.query || {}
+  const { OPENID } = cloud.getWXContext()
+
+  const where = {
+    $and: [
+      {
+        _openid: { $eq: OPENID },
+      },
+    ],
+  }
+
+  if (type) {
+    const categoryIds = await getCategoryIds({ query: { type } }, models)
+    if (categoryIds.length > 0) {
+      where.$and.push({ category: { $in: categoryIds } })
+    } else {
+      return [] // 如果没有找到该类型的分类，直接返回空数组
+    }
+  }
+
+  // 根据 createdDate 计算时间范围
+  if (createdAt) {
+    const startDate = new Date(createdAt)
+    startDate.setHours(0, 0, 0, 0) // 设置为当天的开始
+
+    const endDate = new Date(createdAt)
+    endDate.setHours(23, 59, 59, 999) // 设置为当天的结束
+
+    where.$and.push(
+      { createdAt: { $gte: startDate.getTime() } },
+      { createdAt: { $lte: endDate.getTime() } },
+    )
+  }
+
+  const {
+    data: { records },
+  } = await models.bill.list({
+    select: {
+      _id: true,
+      amount: true,
+      datetime: true,
+      note: true,
+      category: { _id: true, name: true, type: true },
+      tags: { _id: true, name: true, type: true },
+      createdAt: true,
+    },
+    filter: { where },
+    orderBy: [{ datetime: 'desc' }],
+    pageSize: 1000, // 设置一个较大的数值以获取所有记录
+  })
+
+  return records
+}
+
+/**
  * 删除账单，并同步更新账户余额。
  * @param {object} event - 云函数的原始 event 对象
  * @param {object} models - 数据模型实例
@@ -515,16 +571,6 @@ async function deleteBill(event, models) {
   }
 }
 
-module.exports = {
-  saveBill,
-  saveBills,
-  getBillsSummary,
-  getBills,
-  getBillsByIds,
-  deleteBill,
-  resetBills,
-}
-
 /**
  * 清空当前用户的所有账单及公共账单，并重置账户。
  * @param {object} event - 云函数的原始 event 对象
@@ -539,23 +585,37 @@ async function resetBills(event, models) {
     const deleteResult = await transaction.collection('bill').where({ _openid: OPENID }).remove()
 
     // 2. 重置账户信息
-    await transaction.collection('account').doc(OPENID).set({
-      data: {
-        _openid: OPENID,
-        balance: 0,
-        totalIncome: 0,
-        totalExpense: 0,
-        name: 'default',
-        updatedAt: db.serverDate()
-      }
-    })
+    await transaction
+      .collection('account')
+      .doc(OPENID)
+      .set({
+        data: {
+          _openid: OPENID,
+          balance: 0,
+          totalIncome: 0,
+          totalExpense: 0,
+          name: 'default',
+          updatedAt: db.serverDate(),
+        },
+      })
 
     await transaction.commit()
     return {
-      deleted: deleteResult.stats.removed
+      deleted: deleteResult.stats.removed,
     }
   } catch (e) {
     await transaction.rollback()
     throw new Error(`重置账目失败: ${e.message}`)
   }
+}
+
+module.exports = {
+  saveBill,
+  saveBills,
+  getBillsSummary,
+  getBills,
+  getAllBills,
+  getBillsByIds,
+  deleteBill,
+  resetBills,
 }

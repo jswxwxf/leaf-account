@@ -12,7 +12,7 @@ const REQUIRE_LOGIN_ROUTES = [
   '/post/category',
   '/post/tags',
 ]
-const WITH_ACCOUNT_ROUTES = ['/upsert/bill', '/get/bills', '/batch/bills', '/delete/bill']
+const WITH_ACCOUNT_ROUTES = ['/upsert/bill', '/get/bills', '/get/bills/all', '/batch/bills', '/delete/bill']
 const WITH_SUMMARY_ROUTES = ['/upsert/bill', '/get/bills', '/batch/bills', '/delete/bill']
 
 /**
