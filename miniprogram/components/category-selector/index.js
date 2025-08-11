@@ -1,4 +1,4 @@
-import { defineComponent, ref, onMounted } from '@vue-mini/core'
+import { defineComponent, ref, onMounted, onReady } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
 import { getCategories, addCategory } from '@/api/category.js'
 import { newCategory } from '@/service/category-service.js'
@@ -18,7 +18,7 @@ function useNewCategory() {
     theNewCategory.value = newCategory()
   }
 
-  const handleAddNew = async (categories) => {
+  const addNewCategory = async (categories) => {
     const name = theNewCategory.value.name.trim()
     if (!name) return null // 返回 null 表示无需操作
 
@@ -43,23 +43,30 @@ function useNewCategory() {
     onCategoryChange,
     toggleCategoryType,
     resetNewCategory,
-    handleAddNew,
+    addNewCategory,
   }
 }
 
 defineComponent({
-  setup(props, { triggerEvent }) {
+  setup(props, { triggerEvent, selectComponent }) {
     const visible = ref(false)
     const categories = ref([])
+    const errors = ref()
+    const categoryForm = ref()
+
     const {
       theNewCategory,
       onCategoryChange,
       toggleCategoryType,
       resetNewCategory,
-      handleAddNew: addNewCategoryService, // 重命名以区分
+      addNewCategory,
     } = useNewCategory()
 
     let _resolve, _reject
+
+    onReady(() => {
+      categoryForm.value = selectComponent('#category-form')
+    })
 
     const fetchCategories = async () => {
       const res = await getCategories()
@@ -70,6 +77,7 @@ defineComponent({
       visible.value = true
       resetNewCategory()
       fetchCategories()
+      categoryForm.value.clearErrors()
       return new Promise((resolve, reject) => {
         _resolve = resolve
         _reject = reject
@@ -92,27 +100,35 @@ defineComponent({
     }
 
     const handleAddNew = async () => {
-      try {
-        const savedCategory = await addNewCategoryService(categories.value)
-        if (savedCategory) {
-          hide()
-          _resolve(savedCategory)
-        }
-      } catch (e) {
-        Toast.fail(e.message)
+      const result = await categoryForm.value.validate(theNewCategory.value)
+      if (result.isInvalid) {
+        return
       }
+
+      const savedCategory = await addNewCategory(categories.value)
+      if (savedCategory) {
+        hide()
+        _resolve(savedCategory)
+      }
+    }
+
+    const handleFormInit = (e) => {
+      e.detail.registerRule('name', 'required|max:4')
+      errors.value = e.detail.errors
     }
 
     return {
       visible,
       categories,
       theNewCategory,
+      errors,
       show,
       handleClose,
       handleSelect,
       onCategoryChange,
       toggleCategoryType,
       handleAddNew,
+      handleFormInit,
     }
   },
 })

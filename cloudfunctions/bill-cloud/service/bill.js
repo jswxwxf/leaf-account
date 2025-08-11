@@ -17,6 +17,10 @@ async function saveBill(event, models) {
   if (!bill) {
     throw new Error('请求中缺少 bill 对象')
   }
+  const { datetime, category, amount, note } = bill
+  if (!datetime || !category || !amount || note === undefined || note === null) {
+    throw new Error('参数不合法，datetime, category, amount, note 不能为空')
+  }
 
   const originalBill = { ...bill } // 保留原始账单对象用于返回
   const billToSave = { ...bill, amount: parseFloat(bill.amount) || 0 }
@@ -28,10 +32,11 @@ async function saveBill(event, models) {
     billToSave.amount = -billToSave.amount
   }
 
-  billToSave.category = billToSave.category?._id
+  const categoryId = billToSave.category?._id
+  billToSave.category = categoryId
 
-  // 启动数据库事务
-  const transaction = await db.startTransaction()
+   // 启动数据库事务
+   const transaction = await db.startTransaction()
   try {
     let savedBill
 
@@ -102,6 +107,13 @@ async function saveBill(event, models) {
       savedBill = { ...originalBill, _id: createResult._id, createdAt: { $date: Date.now() } }
     }
 
+   if (categoryId) {
+     await transaction
+       .collection('category')
+       .doc(categoryId)
+       .update({ data: { usedAt: db.serverDate() } })
+   }
+
     // 提交事务
     await transaction.commit()
     return savedBill
@@ -133,6 +145,10 @@ async function saveBills(event, models) {
   for (let i = 0; i < bills.length; i += BATCH_SIZE) {
     const batch = bills.slice(i, i + BATCH_SIZE)
     const billsToSave = batch.map((bill) => {
+      const { datetime, category, amount, note } = bill
+      if (!datetime || !category || !amount || note === undefined || note === null) {
+        throw new Error('参数不合法，datetime, category, amount, note 不能为空')
+      }
       const billToSave = { ...bill, amount: parseFloat(bill.amount) || 0 }
       // 确保金额正负与类别匹配
       if (billToSave.category?.type === '10' && billToSave.amount < 0) {
@@ -145,7 +161,11 @@ async function saveBills(event, models) {
       return billToSave
     })
 
-    const balanceIncrement = billsToSave.reduce((sum, bill) => sum + bill.amount, 0)
+    const categoryIds = [
+      ...new Set(billsToSave.map((bill) => bill.category).filter((id) => id)),
+    ]
+
+     const balanceIncrement = billsToSave.reduce((sum, bill) => sum + bill.amount, 0)
     const incomeIncrement = billsToSave.reduce(
       (sum, bill) => sum + (bill.amount > 0 ? bill.amount : 0),
       0,
@@ -187,6 +207,19 @@ async function saveBills(event, models) {
       }
 
       allBillIds.push(...newBillIds)
+
+     if (categoryIds.length > 0) {
+       await transaction
+         .collection('category')
+         .where({
+           _id: _.in(categoryIds),
+         })
+         .update({
+           data: {
+             usedAt: db.serverDate(),
+           },
+         })
+     }
 
       // 3. 提交事务
       await transaction.commit()

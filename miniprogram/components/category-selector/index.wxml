@@ -20,25 +20,28 @@
     </view>
 
     <!-- 新分类输入 -->
-    <van-field
-      value="{{ theNewCategory.name }}"
-      placeholder="新分类，点击右边图标切换类型"
-      border="{{ false }}"
-      use-button-slot
-      @change="onCategoryChange"
-      custom-class="flex-1 input-wrapper input-wrapper--type-{{theNewCategory.type}}"
-    >
-      <view slot="right-icon">
-        <view wx:if="{{theNewCategory.type === '20'}}" class="flex items-center gap-1" @tap="toggleCategoryType">
-          <van-icon name="cash-back-record-o" color="#ee0a24" size="20px" />支
+    <bill-form id="category-form" @init="handleFormInit">
+      <van-field
+        value="{{ theNewCategory.name }}"
+        placeholder="新分类，点击右边图标切换类型"
+        border="{{ false }}"
+        use-button-slot
+        @change="onCategoryChange"
+        error-message="{{ errors.name[0].message }}"
+        custom-class="flex-1 input-wrapper input-wrapper--type-{{theNewCategory.type}}"
+      >
+        <view slot="right-icon">
+          <view wx:if="{{theNewCategory.type === '20'}}" class="flex items-center gap-1" @tap="toggleCategoryType">
+            <van-icon name="cash-back-record-o" color="#ee0a24" size="20px" />支
+          </view>
+          <view wx:if="{{theNewCategory.type === '10'}}" class="flex items-center gap-1" @tap="toggleCategoryType">
+            <van-icon name="gold-coin-o" color="#07c160" size="20px" />收
+          </view>
         </view>
-        <view wx:if="{{theNewCategory.type === '10'}}" class="flex items-center gap-1" @tap="toggleCategoryType">
-          <van-icon name="gold-coin-o" color="#07c160" size="20px" />收
-        </view>
-      </view>
-      <van-button slot="button" size="small" type="primary" bind:click="handleAddNew" disabled="{{ !theNewCategory.name }}">
-        确定
-      </van-button>
-    </van-field>
+        <van-button slot="button" size="small" type="primary" bind:click="handleAddNew" disabled="{{ !theNewCategory.name }}">
+          确定
+        </van-button>
+      </van-field>
+    </bill-form>
   </view>
 </van-popup>

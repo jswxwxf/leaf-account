@@ -26,7 +26,11 @@ export function useFormItem(props) {
   )
 
   const clearError = () => {
-    _clearError(props.field)
+    // 如果不显示错误信息，则需要在获得焦点的时候清除错误状态
+    // 以免用户输入的字符因为错误状态而变成红色
+    if (!props.showError) {
+      _clearError(props.field)
+    }
   }
 
   return {

@@ -1,5 +1,7 @@
 {
   "component": true,
-  "usingComponents": {},
+  "usingComponents": {
+    "bill-form": "../bill-form/index"
+  },
   "styleIsolation": "apply-shared"
 }
