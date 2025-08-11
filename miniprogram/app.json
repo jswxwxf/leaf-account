@@ -22,12 +22,6 @@
         "selectedIconPath": "assets/images/ep-notebook-selected.png"
       },
       {
-        "pagePath": "pages/stats/index",
-        "text": "查询",
-        "iconPath": "assets/images/ep-pie-chart.png",
-        "selectedIconPath": "assets/images/ep-pie-chart-selected.png"
-      },
-      {
         "pagePath": "pages/setting/index",
         "text": "设置",
         "iconPath": "assets/images/ep-setting.png",

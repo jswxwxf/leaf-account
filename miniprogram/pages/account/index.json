@@ -10,7 +10,8 @@
     "calendar-helper": "/components/calendar-helper/index",
     "category-helper": "/components/category-helper/index",
     "tags-helper": "/components/tags-helper/index",
-    "reconcile-popup": "./reconcile-popup/index"
+    "reconcile-popup": "./reconcile-popup/index",
+    "alert-popup": "/components/alert-popup/index"
   },
   "styleIsolation": "apply-shared"
 }

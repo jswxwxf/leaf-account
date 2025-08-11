@@ -1,28 +1,27 @@
 <wxs src="../../../utils/utils.wxs" module="utils" />
 
-<view
-  class="text-white pt-4 pb-3 px-4 shadow-md"
-  style="background-image: url('../../../assets/images/leaf.jpg'); background-size: cover; background-position: center"
-  hidden="{{ hidden }}"
->
-  <van-dropdown-menu active-color="#5A9E62">
-    <van-dropdown-item value="{{ typeValue }}" options="{{ typeOptions }}" bind:change="handleTypeChange" />
-    <van-dropdown-item
-      value="{{ monthValue }}"
-      options="{{ monthOptions }}"
-      popup-style="max-height: 60vh"
-      bind:change="handleDateChange"
-    />
-  </van-dropdown-menu>
-  <view class="flex justify-between items-center mt-4">
-    <view class="text-sm bg-black/30 px-3 py-1 van-ellipsis">
-      支 {{monthValue === '' ? 'N/A' : '¥' + utils.formatMoney(-totalExpense) }}
-    </view>
-    <view class="text-sm bg-black/30 px-3 py-1 van-ellipsis">
-      收 {{monthValue === '' ? 'N/A' : '¥' + utils.formatMoney(totalIncome) }}
-    </view>
-    <view class="text-sm bg-black/30 px-3 py-1 van-ellipsis" @tap="onBalanceTap">
-      总余 ¥{{ utils.formatMoney(totalBalance) }}
+<view class="relative overflow-hidden text-white pt-4 pb-3 px-4 shadow-md" hidden="{{ hidden }}">
+  <image src="../../../assets/images/leaf.jpg" mode="aspectFill" class="absolute inset-0 w-full h-full" />
+  <view class="relative" style="--dropdown-menu-background-color: rgba(0, 0, 0, 0.5); --dropdown-menu-title-text-color: white;">
+    <van-dropdown-menu active-color="#5A9E62">
+      <van-dropdown-item value="{{ typeValue }}" options="{{ typeOptions }}" bind:change="handleTypeChange" />
+      <van-dropdown-item
+        value="{{ monthValue }}"
+        options="{{ monthOptions }}"
+        popup-style="max-height: 60vh"
+        bind:change="handleDateChange"
+      />
+    </van-dropdown-menu>
+    <view class="flex justify-between items-center mt-4">
+      <view class="text-sm bg-black/30 px-3 py-1 van-ellipsis">
+        支 {{monthValue === '' ? 'N/A' : '¥' + utils.formatMoney(-totalExpense) }}
+      </view>
+      <view class="text-sm bg-black/30 px-3 py-1 van-ellipsis">
+        收 {{monthValue === '' ? 'N/A' : '¥' + utils.formatMoney(totalIncome) }}
+      </view>
+      <view class="text-sm bg-black/30 px-3 py-1 van-ellipsis" @tap="onBalanceTap">
+        总余 ¥{{ utils.formatMoney(totalBalance) }}
+      </view>
     </view>
   </view>
 </view>

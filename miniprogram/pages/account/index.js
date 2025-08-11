@@ -80,6 +80,7 @@ defineComponent({
     const billPopup = ref(null)
     const batchPopup = ref(null)
     const reconcilePopup = ref(null)
+    const alertPopup = ref(null)
     const imagePath = ref('')
 
     const { billPopped, processBill } = useBillPopup(state, billPopup)
@@ -90,6 +91,7 @@ defineComponent({
       billPopup.value = selectComponent('#bill-popup')
       batchPopup.value = selectComponent('#batch-popup')
       reconcilePopup.value = selectComponent('#reconcile-popup')
+      alertPopup.value = selectComponent('#alert-popup')
     })
 
     const scrollTop = ref(0)
@@ -230,7 +232,7 @@ defineComponent({
         `余额: ${formatMoney(res.account.balance)}`,
       ].join('\n')
 
-      console.log(summaryText)
+      alertPopup.value.show(summaryText)
     }
 
     const handleActionSelect = (e) => {
