@@ -1,9 +1,9 @@
-import { defineComponent, ref } from '@vue-mini/core'
+import { defineComponent, ref, onReady } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast'
 import { getTags } from '@/api/tag.js'
 import { newTag, saveTags } from '@/service/tag-service.js'
 
-function useNewTag(tags, selectedTags) {
+function useNewTag(tags, selectedTags, tagForm) {
   const theNewTag = ref(newTag())
 
   const handleTypeChange = (event) => {
@@ -15,7 +15,12 @@ function useNewTag(tags, selectedTags) {
     theNewTag.value.name = event.detail
   }
 
-  const handleAddNew = () => {
+  const handleAddNew = async () => {
+    const result = await tagForm.value.validate(theNewTag.value)
+    if (result.isInvalid) {
+      return
+    }
+
     const name = theNewTag.value.name.trim()
     if (!name) return
 
@@ -37,6 +42,7 @@ function useNewTag(tags, selectedTags) {
 
     // 清空输入框
     theNewTag.value = newTag()
+    tagForm.clearErrors()
   }
 
   const resetNewTag = () => {
@@ -53,17 +59,24 @@ function useNewTag(tags, selectedTags) {
 }
 
 defineComponent({
-  setup(props, { triggerEvent }) {
+  setup(props, { triggerEvent, selectComponent }) {
     const visible = ref(false)
     const tags = ref([])
     const selectedTags = ref([])
+    const errors = ref()
+    const tagForm = ref()
 
     let _resolve, _reject
 
     const { theNewTag, handleTypeChange, onTagChange, handleAddNew, resetNewTag } = useNewTag(
       tags,
       selectedTags,
+      tagForm,
     )
+
+    onReady(() => {
+      tagForm.value = selectComponent('#tag-form')
+    })
 
     const fetchTags = async () => {
       const res = await getTags()
@@ -75,6 +88,7 @@ defineComponent({
       selectedTags.value = [...value]
       resetNewTag()
       fetchTags()
+      tagForm.value.clearErrors()
       return new Promise((resolve, reject) => {
         _resolve = resolve
         _reject = reject
@@ -102,21 +116,22 @@ defineComponent({
     }
 
     const handleConfirm = async () => {
-      try {
-        // 找出所有新创建的（没有_id）并且被选中的标签
-        const newTagsToCreate = selectedTags.value.filter((t) => !t._id)
-        const savedNewTags = await saveTags(newTagsToCreate)
+      // 找出所有新创建的（没有_id）并且被选中的标签
+      const newTagsToCreate = selectedTags.value.filter((t) => !t._id)
+      const savedNewTags = await saveTags(newTagsToCreate)
 
-        // 合并：已有的 + 新保存的
-        const finalSelectedTags = selectedTags.value
-          .filter((t) => t._id) // 先拿出所有已存在的
-          .concat(savedNewTags) // 再加上刚刚保存成功的
+      // 合并：已有的 + 新保存的
+      const finalSelectedTags = selectedTags.value
+        .filter((t) => t._id) // 先拿出所有已存在的
+        .concat(savedNewTags) // 再加上刚刚保存成功的
 
-        hide()
-        _resolve(finalSelectedTags)
-      } catch (e) {
-        Toast.fail(e.message || '保存失败')
-      }
+      hide()
+      _resolve(finalSelectedTags)
+    }
+
+    const handleFormInit = (e) => {
+      e.detail.registerRule('name', 'required|max:4')
+      errors.value = e.detail.errors
     }
 
     return {
@@ -124,6 +139,7 @@ defineComponent({
       tags,
       theNewTag,
       selectedTags,
+      errors,
       show,
       handleClose,
       handleSelect,
@@ -131,6 +147,7 @@ defineComponent({
       handleAddNew,
       handleTypeChange,
       handleConfirm,
+      handleFormInit,
     }
   },
 })
