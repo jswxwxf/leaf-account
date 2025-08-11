@@ -8,7 +8,7 @@ defineComponent({
       value: false,
     },
   },
-  setup() {
+  setup(props, { triggerEvent }) {
     const { typeValue, monthValue, totalExpense, totalIncome, totalBalance } = inject(storeKey)
 
     const typeOptions = ref([
@@ -41,6 +41,10 @@ defineComponent({
       typeValue.value = e.detail
     }
 
+    const onBalanceTap = () => {
+      triggerEvent('balance-tap')
+    }
+
     return {
       typeOptions,
       monthOptions,
@@ -51,6 +55,7 @@ defineComponent({
       totalBalance,
       handleDateChange,
       handleTypeChange,
+      onBalanceTap,
     }
   },
 })

@@ -1,5 +1,5 @@
 <view class="h-screen bg-gray-100 flex flex-col">
-  <account-summary hidden="{{ billPopped }}" />
+  <account-summary hidden="{{ billPopped }}" @balance-tap="handleReconcile" />
 
   <bill-popup id="bill-popup" />
   <batch-popup id="batch-popup" />
