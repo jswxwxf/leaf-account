@@ -145,6 +145,7 @@ export default function store() {
     updateAccountSummary,
     updateBills,
     removeBills,
+    loadData,
     dailyBills,
     typeValue,
     monthValue,

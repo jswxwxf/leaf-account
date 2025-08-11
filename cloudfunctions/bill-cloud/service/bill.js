@@ -1,6 +1,6 @@
 const cloud = require('wx-server-sdk')
 const { getCategoryIds } = require('./category.js')
-const { updateAccount } = require('./account.js')
+const { updateAccount } = require('./common.js')
 
 const db = cloud.database()
 const _ = db.command
@@ -236,7 +236,7 @@ async function getBillsByIds(event, models) {
         $and: [
           { _id: { $in: ids } },
           {
-            $or: [{ _openid: { $eq: OPENID } }, { _openid: { $eq: '' } }, { _openid: { $empty: true } }],
+            $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }],
           },
         ],
       },
@@ -255,7 +255,7 @@ async function getBillsSummary(event, models) {
 
   // 权限：只能获取自己的或公共的
   const whereClause = {
-    $and: [{ $or: [{ _openid: OPENID }, { _openid: _.exists(false) }, { _openid: '' }] }],
+    $and: [{ $or: [{ _openid: OPENID }, { _openid: _.exists(false) }] }],
   }
 
   if (month) {
@@ -333,7 +333,7 @@ async function getBills(event, models) {
   const where = {
     $and: [
       {
-        $or: [{ _openid: { $eq: OPENID } }, { _openid: { $eq: '' } }, { _openid: { $empty: true } }],
+        $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }],
       },
     ],
   }

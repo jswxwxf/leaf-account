@@ -21,6 +21,14 @@ register('requiredMoney', requiredMoney, {
   zh: '该字段是必须的.',
 })
 
+function requiredPositive(value) {
+  return parseInt(parseFloat(value) * 100) > 0
+}
+
+register('requiredPositive', requiredPositive, {
+  zh: '该字段是必须的.',
+})
+
 export default function store() {
   const rules = {}
   const fields = ref({})

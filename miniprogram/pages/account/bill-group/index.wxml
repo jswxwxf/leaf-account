@@ -1,6 +1,6 @@
 <wxs src="../../../utils/utils.wxs" module="utils" />
 
-<view class="bg-white rounded-lg shadow-sm mb-2">
+<view class="bg-white shadow-sm mb-2">
   <van-cell-group>
     <van-cell>
       <view slot="title" class="flex justify-between items-center">
@@ -15,7 +15,7 @@
       </view>
     </van-cell>
     <block wx:for="{{ item.bills }}" wx:key="_id" wx:for-item="bill">
-      <van-swipe-cell right-width="{{ 145 }}">
+      <van-swipe-cell right-width="{{ 130 }}">
         <van-cell custom-class="{{ utils.isToday(bill.createdAt.$date) ? 'bill-item--today' : '' }}">
           <view class="flex items-center">
             <view class="flex-1 text-left min-w-0">

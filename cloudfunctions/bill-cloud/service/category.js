@@ -13,7 +13,7 @@ async function getCategories(event, models) {
 
   const whereClauses = [
     {
-      $or: [{ _openid: { $eq: OPENID } }, { _openid: { $eq: '' } }, { _openid: { $empty: true } }],
+      $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }],
     },
   ]
 
@@ -51,6 +51,27 @@ async function addCategory(event, models) {
   if (!category || !category.name) {
     throw new Error('缺少分类名称')
   }
+
+  // 检查是否存在同名分类（包括用户自己的和内置的）
+  const {
+    data: { total },
+  } = await models.category.list({
+    filter: {
+      where: {
+        $and: [
+          { name: { $eq: category.name } },
+          { $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }] },
+        ],
+      },
+    },
+    getCount: true,
+    pageSize: 1,
+  })
+
+  if (total > 0) {
+    throw new BizError(`分类 "${category.name}" 已存在`)
+  }
+
   const result = await models.category.create({
     data: { ...category, _openid: OPENID },
   })
@@ -129,6 +150,31 @@ async function updateCategory(event, models) {
 
   if (!category || !_id) {
     throw new Error('缺少分类ID')
+  }
+
+  if (data.name) {
+    // 检查是否存在同名分类（包括用户自己的和内置的，但排除当前正在更新的分类）
+    const {
+      data: { total, records },
+    } = await models.category.list({
+      filter: {
+        where: {
+          $and: [
+            { name: { $eq: data.name } },
+            { $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }] },
+          ],
+        },
+      },
+      getCount: true,
+      pageSize: 1,
+    })
+
+    if (total > 0) {
+      const existingCategory = records[0]
+      if (existingCategory._id !== _id) {
+        throw new BizError(`分类 "${data.name}" 已存在或与内置分类同名`)
+      }
+    }
   }
 
   const { data: result } = await models.category.update({

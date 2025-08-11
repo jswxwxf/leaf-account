@@ -40,7 +40,7 @@ exports.main = async (event, context) => {
     const categoriesToCreate = categoryNames.map((name) => ({
       name,
       type: incomeCategoryNames.includes(name) ? '10' : '20', // '10' income, '20' expense
-      _openid: '',
+      _openid: null,
     }))
 
     if (categoriesToCreate.length > 0) {
@@ -65,7 +65,7 @@ exports.main = async (event, context) => {
         amount: incomeCategoryNames.includes(bill.category) ? Math.abs(Number(bill.amount) || 0) : -Math.abs(Number(bill.amount) || 0),
         datetime: new Date(`${bill.date} ${bill.time}`).getTime(),
         note: bill.note || '',
-        _openid: '',
+        _openid: null,
       }
 
       // 关联 Category

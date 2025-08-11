@@ -19,8 +19,6 @@
       scroll-top="{{ scrollTop }}"
     >
       <view class="pb-16 pt-2 relative">
-        <add-button hidden="{{ billPopped }}" @click="handleAddBill" @select="handleActionSelect" />
-
         <block wx:for="{{ dailyBills }}" wx:key="_id">
           <bill-group item="{{ item }}" @edit="handleEditBill" @delete="handleDeleteBill" />
         </block>
@@ -34,6 +32,11 @@
       </view>
     </scroll-view>
   </block>
+
+  <!-- Fixed Add Button -->
+  <view class="fixed bottom-16 right-4 z-50">
+    <add-button hidden="{{ billPopped }}" @click="handleAddBill" @select="handleActionSelect" />
+  </view>
 </view>
 
 <van-toast id="van-toast" />
@@ -42,3 +45,4 @@
 <category-helper />
 <tags-helper />
 <calendar-helper />
+<reconcile-popup id="reconcile-popup" />

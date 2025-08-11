@@ -1,4 +1,4 @@
-import { get } from './request-cloud.js'
+import { get, post } from './request-cloud.js'
 
 /**
  * @typedef {object} Account
@@ -17,5 +17,17 @@ import { get } from './request-cloud.js'
 export function getAccount() {
   return get('bill-cloud', {
     $url: '/get/account',
+  })
+}
+
+/**
+ * 对账
+ * @param {number} actualBalance - 实际余额
+ * @returns {Promise<Account>}
+ */
+export function reconcileAccount(actualBalance) {
+  return post('bill-cloud', {
+    $url: '/put/account/reconcile',
+    actualBalance,
   })
 }

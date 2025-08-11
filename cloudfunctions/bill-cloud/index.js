@@ -22,7 +22,7 @@ const {
   getBillsSummary,
   resetBills,
 } = require('./service/bill.js')
-const { getAccount } = require('./service/account.js')
+const { getAccount, reconcileAccount } = require('./service/account.js')
 const { getCategories, addCategory, deleteCategory, updateCategory } = require('./service/category.js')
 const { getTags, addTags, addTag, updateTag, deleteTag } = require('./service/tag.js')
 
@@ -116,6 +116,19 @@ exports.main = (event, context) => {
   })
 
   /**
+   * @desc 对账
+   */
+  app.router('/put/account/reconcile', async (ctx) => {
+    try {
+      const data = await reconcileAccount(event, models)
+      ctx.body = { code: 200, success: true, message: '对账成功', data }
+    } catch (e) {
+      console.error('/put/account/reconcile error:', e)
+      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+    }
+  })
+
+  /**
    * @desc 获取分类列表
    * @param {object} query - 查询参数
    * @param {string} [query.type] - 分类类型，'10' 为收入，'20' 为支出
@@ -158,7 +171,11 @@ exports.main = (event, context) => {
       ctx.body = { code: 200, success: true, message: '添加成功', data }
     } catch (e) {
       console.error('/post/category error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+     if (e.isBiz) {
+       ctx.body = { code: 400, success: false, message: e.message }
+     } else {
+       ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+     }
     }
   })
 

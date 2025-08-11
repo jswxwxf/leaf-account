@@ -9,7 +9,8 @@
     "add-button": "./add-button/index",
     "calendar-helper": "/components/calendar-helper/index",
     "category-helper": "/components/category-helper/index",
-    "tags-helper": "/components/tags-helper/index"
+    "tags-helper": "/components/tags-helper/index",
+    "reconcile-popup": "./reconcile-popup/index"
   },
   "styleIsolation": "apply-shared"
 }

@@ -1,0 +1,26 @@
+<wxs src="../../../utils/utils.wxs" module="utils" />
+
+<van-popup show="{{ visible }}" @close="handleClose">
+  <view class="p-4">
+    <view class="text-lg font-bold text-center">账单对账</view>
+    <view class="py-4 w-[80vw]">
+      <bill-form id="reconcileForm">
+        <van-cell-group>
+          <van-field value="{{ '¥ ' + utils.formatMoney(systemBalance) }}" label="当前系统余额" readonly />
+          <money-field
+            value="{{ actualBalance }}"
+            label="实际余额"
+            placeholder="请输入核对后的实际余额"
+            field="actualBalance"
+            rule="requiredPositive"
+            data-field="actualBalance"
+            @change="onActualBalanceChange"
+          />
+        </van-cell-group>
+      </bill-form>
+    </view>
+    <view>
+      <van-button type="primary" block @click="handleConfirm">完成对账</van-button>
+    </view>
+  </view>
+</van-popup>

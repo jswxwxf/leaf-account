@@ -1,8 +1,9 @@
 import { defineComponent, ref, provide, onReady, onUnload, watch } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
 import Dialog from '@vant/weapp/dialog/dialog.js'
-import { newBill } from '@/service/bill-service.js'
+import { reconcileAccount } from '@/api/account.js'
 import { upsertBill, deleteBill, saveBills } from '@/api/bill.js'
+import { newBill } from '@/service/bill-service.js'
 import store, { storeKey } from './store'
 import { useOcr } from '@/composables/use-ocr.js'
 import { useAi } from '@/composables/use-ai.js'
@@ -70,11 +71,13 @@ function useProcessPhoto() {
 defineComponent({
   setup(props, { selectComponent }) {
     const state = store()
-    const { typeValue, monthValue, removeBills, updateBills, updateAccountSummary } = state
+    const { typeValue, monthValue, totalBalance, removeBills, updateBills, updateAccountSummary } =
+      state
     provide(storeKey, state)
 
     const billPopup = ref(null)
     const batchPopup = ref(null)
+    const reconcilePopup = ref(null)
     const imagePath = ref('')
 
     const { billPopped, processBill } = useBillPopup(state, billPopup)
@@ -84,6 +87,7 @@ defineComponent({
     onReady(() => {
       billPopup.value = selectComponent('#bill-popup')
       batchPopup.value = selectComponent('#batch-popup')
+      reconcilePopup.value = selectComponent('#reconcile-popup')
     })
 
     const scrollTop = ref(0)
@@ -95,7 +99,7 @@ defineComponent({
     })
 
     const handleAddBill = async () => {
-      // processBill(newBill())
+      processBill(newBill())
       // await wx.cloud.callFunction({
       //   name: 'data-importer',
       //   data: {},
@@ -187,6 +191,14 @@ defineComponent({
       }
     }
 
+    const handleReconcile = async () => {
+      const result = await reconcilePopup.value.show(totalBalance.value)
+      await reconcileAccount(result.actualBalance)
+      // 重新加载账单
+      state.loadData()
+      Toast.success('对账成功')
+    }
+
     const handleActionSelect = (e) => {
       const action = e.detail
       if (action.detail.value === 'batch') {
@@ -197,6 +209,10 @@ defineComponent({
         handlePhotoBills()
         return
       }
+      if (action.detail.value === 'reconcile') {
+        handleReconcile()
+        return
+      }
     }
 
     return {
@@ -204,10 +220,11 @@ defineComponent({
       billPopped,
       scrollTop,
       imagePath,
+      handleActionSelect,
       handleAddBill,
       handleEditBill,
       handleDeleteBill,
-      handleActionSelect,
+      handleReconcile,
     }
   },
 })

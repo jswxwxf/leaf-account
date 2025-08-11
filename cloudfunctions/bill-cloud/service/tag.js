@@ -10,7 +10,7 @@ async function getTags(event, models) {
   const { OPENID } = cloud.getWXContext()
   // 权限：只能获取自己的或公共的
   const where = {
-    $or: [{ _openid: { $eq: OPENID } }, { _openid: { $eq: '' } }, { _openid: { $empty: true } }],
+    $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }],
   }
 
   // 默认最多获取 100 条，对于标签来说足够了

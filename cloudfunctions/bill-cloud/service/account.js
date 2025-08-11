@@ -1,73 +1,8 @@
 const cloud = require('wx-server-sdk')
+const { saveBill } = require('./bill.js')
 
 const db = cloud.database()
 const _ = db.command
-
-/**
- * 原子化地更新用户的账户汇总信息。
- * 如果账户不存在，则会自动创建。
- * @param {object} event - 包含增量信息的对象
- * @param {number} event.balanceIncrement - 余额的变动量
- * @param {number} event.incomeIncrement - 总收入的变动量
- * @param {number} event.expenseIncrement - 总支出的变动量
- * @param {object} models - 数据模型实例
- * @param {object} [dbOrTransaction] - 数据库或事务实例，如果未提供，则使用默认的 db 实例
- */
-async function updateAccount(event, models, dbOrTransaction) {
-  const { balanceIncrement, incomeIncrement, expenseIncrement } = event
-  const { OPENID } = cloud.getWXContext()
-  const dbInstance = dbOrTransaction || db
-
-  if (!OPENID) {
-    throw new Error('必须提供 OPENID 以更新账户')
-  }
-
-  const account = dbInstance.collection('account')
-
-  // 1. 查询账户是否存在
-  // 注意：云函数环境下的数据库操作会自动带上调用者的 openid，
-  // 但为了逻辑清晰和在事务中正确操作，这里明确使用 where 子句。
-  const { data: accounts } = await account.where({ _openid: OPENID }).limit(1).get()
-
-  let result
-  if (accounts && accounts.length > 0) {
-    // 2. 如果存在，则更新
-    const updateData = {}
-    if (balanceIncrement) updateData.balance = _.inc(balanceIncrement)
-    if (incomeIncrement) updateData.totalIncome = _.inc(incomeIncrement)
-    if (expenseIncrement) updateData.totalExpense = _.inc(expenseIncrement)
-
-    if (Object.keys(updateData).length === 0) return // 如果没有要更新的，直接返回
-
-    updateData.updatedAt = db.serverDate()
-    updateData.updatedBy = OPENID
-
-    result = await account.where({ _openid: OPENID }).update({ data: updateData })
-    if (result.stats.updated === 0) {
-      // 理论上不会发生，因为我们已经查询过
-      throw new Error('更新用户账户失败')
-    }
-  } else {
-    // 3. 如果不存在，则创建
-    // 在云函数中使用 db.add() 时，必须手动添补 _openid
-    result = await account.add({
-      data: {
-        _openid: OPENID,
-        name: 'default',
-        balance: balanceIncrement || 0,
-        totalIncome: incomeIncrement || 0,
-        totalExpense: expenseIncrement || 0,
-        createdAt: db.serverDate(),
-        createdBy: OPENID,
-        updatedAt: db.serverDate(),
-        updatedBy: OPENID,
-      },
-    })
-    if (!result._id) {
-      throw new Error('创建用户账户失败')
-    }
-  }
-}
 
 /**
  * 获取当前用户的账户信息。
@@ -121,7 +56,78 @@ async function getAccount(event, models, { withId = false } = {}) {
   }
 }
 
+async function reconcileAccount(event, models) {
+  const { actualBalance } = event
+  const { OPENID } = cloud.getWXContext()
+
+  if (typeof actualBalance !== 'number') {
+    throw new Error('缺少有效的 actualBalance 参数')
+  }
+
+  // 1. 获取当前系统余额
+  const currentAccount = await getAccount(event, models)
+  const systemBalance = currentAccount.balance
+  const difference = actualBalance - systemBalance
+
+  // 如果没有差额，则无需操作
+  if (Math.abs(difference) < 0.01) {
+    return currentAccount
+  }
+
+  // 2. 确定调账类型和分类
+  const isIncome = difference > 0
+  const categoryName = isIncome ? '增余额' : '减余额'
+  const categoryType = isIncome ? '10' : '20'
+
+  const {
+    data: { records: categories },
+  } = await models.category.list({
+    filter: {
+      where: {
+        name: { $eq: categoryName },
+        type: { $eq: categoryType },
+        _openid: { $empty: true }, // 只使用内置的分类
+      },
+    },
+    page: 1,
+    pageSize: 1,
+  })
+
+  if (!categories || categories.length === 0) {
+    throw new Error(`找不到内置分类: ${categoryName}`)
+  }
+  const category = categories[0]
+
+  // 3. 构建调账账单
+  const reconcileBill = {
+    amount: difference,
+    category: {
+      _id: category._id,
+      name: category.name,
+      type: category.type,
+    },
+    datetime: Date.now(),
+    note: `对账调整`,
+  }
+
+  // 4. 创建一个新的 event 对象来调用 saveBill
+  const saveBillEvent = {
+    ...event, // 继承父 event 的上下文
+    body: {
+      bill: reconcileBill,
+    },
+  }
+
+  // 5. 调用 saveBill 来创建账单并自动更新账户余额
+  // saveBill 内部处理事务，无需在这里手动开启
+  await saveBill(saveBillEvent, models)
+
+  // 6. 返回更新后的账户信息
+  // 此时账户信息已经被 saveBill 更新，所以重新获取一次
+  return getAccount(event, models)
+}
+
 module.exports = {
-  updateAccount,
   getAccount,
+  reconcileAccount,
 }

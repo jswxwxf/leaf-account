@@ -15,6 +15,7 @@ defineComponent({
       // { name: '文字记帐', value: 'text' },
       // { name: '语音记帐', value: 'voice' },
       // { name: '导入文件', value: 'import' },
+      { name: '余额对账', value: 'reconcile' },
     ])
 
     const handleMainClick = (e) => {
