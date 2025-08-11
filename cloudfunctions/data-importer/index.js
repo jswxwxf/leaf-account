@@ -13,6 +13,7 @@ const models = client.models
 
 exports.main = async (event, context) => {
   try {
+    const { OPENID } = cloud.getWXContext()
     const db = cloud.database()
     const _ = db.command
 
@@ -40,7 +41,7 @@ exports.main = async (event, context) => {
     const categoriesToCreate = categoryNames.map((name) => ({
       name,
       type: incomeCategoryNames.includes(name) ? '10' : '20', // '10' income, '20' expense
-      _openid: null,
+      _openid: OPENID,
     }))
 
     if (categoriesToCreate.length > 0) {
@@ -65,7 +66,7 @@ exports.main = async (event, context) => {
         amount: incomeCategoryNames.includes(bill.category) ? Math.abs(Number(bill.amount) || 0) : -Math.abs(Number(bill.amount) || 0),
         datetime: new Date(`${bill.date} ${bill.time}`).getTime(),
         note: bill.note || '',
-        _openid: null,
+        _openid: OPENID,
       }
 
       // 关联 Category

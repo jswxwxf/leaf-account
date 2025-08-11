@@ -20,7 +20,6 @@ async function initCategory() {
   // 1. 查找所有已存在的系统分类
   const { data: existingCategories } = await collection.where({
     name: _.in(allCategoryNames),
-    _openid: _.exists(false)
   }).get()
 
   const existingCategoryNames = new Set(existingCategories.map(c => c.name))
