@@ -34,7 +34,7 @@
   </block>
 
   <!-- Fixed Add Button -->
-  <view class="fixed bottom-16 right-4 z-50">
+  <view class="fixed bottom-16 right-4">
     <add-button hidden="{{ billPopped }}" @click="handleAddBill" @select="handleActionSelect" />
   </view>
 </view>
