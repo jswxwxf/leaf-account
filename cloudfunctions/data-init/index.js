@@ -41,8 +41,8 @@ async function initCategory() {
   // 3. 批量插入新的系统分类数据
   const categoriesWithMeta = categoriesToCreate.map(c => ({
     ...c,
-    createdAt: db.serverDate(),
-    updatedAt: db.serverDate(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
     createdBy: 'administrator',
     updatedBy: 'administrator',
   }))

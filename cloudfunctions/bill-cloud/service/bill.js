@@ -76,7 +76,7 @@ async function saveBill(event, models) {
       await transaction
         .collection('bill')
         .doc(billId)
-        .update({ data: { ...newBill, updatedAt: db.serverDate(), updatedBy: OPENID } })
+        .update({ data: { ...newBill, updatedAt: Date.now(), updatedBy: OPENID } })
       savedBill = { ...originalBill, _id: billId }
     } else {
       // --- 新增逻辑 ---
@@ -96,23 +96,23 @@ async function saveBill(event, models) {
         data: {
           ...billToSave,
           _openid: OPENID,
-          createdAt: db.serverDate(),
+          createdAt: Date.now(),
           createdBy: OPENID,
-          updatedAt: db.serverDate(),
+          updatedAt: Date.now(),
           updatedBy: OPENID,
         },
       })
       if (!createResult._id) {
         throw new Error('创建新账单失败')
       }
-      savedBill = { ...originalBill, _id: createResult._id, createdAt: { $date: Date.now() } }
+      savedBill = { ...originalBill, _id: createResult._id, createdAt: Date.now() }
     }
 
    if (categoryId) {
      await transaction
        .collection('category')
        .doc(categoryId)
-       .update({ data: { usedAt: db.serverDate() } })
+       .update({ data: { usedAt: Date.now() } })
    }
 
     // 提交事务
@@ -195,9 +195,9 @@ async function saveBills(event, models) {
           data: {
             ...bill,
             _openid: OPENID,
-            createdAt: db.serverDate(),
+            createdAt: Date.now(),
             createdBy: OPENID,
-            updatedAt: db.serverDate(),
+            updatedAt: Date.now(),
             updatedBy: OPENID,
           },
         })
@@ -218,7 +218,7 @@ async function saveBills(event, models) {
          })
          .update({
            data: {
-             usedAt: db.serverDate(),
+             usedAt: Date.now(),
            },
          })
      }
@@ -630,7 +630,7 @@ async function resetBills(event, models) {
           totalIncome: 0,
           totalExpense: 0,
           name: 'default',
-          updatedAt: db.serverDate(),
+          updatedAt: Date.now(),
         },
       })
 
