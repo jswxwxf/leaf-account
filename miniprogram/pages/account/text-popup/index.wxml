@@ -1,0 +1,19 @@
+<van-popup show="{{ visible }}" custom-style="height: 100%; width: 100%;" bind:close="handleClose">
+  <view class="h-full flex flex-col">
+    <view class="flex-1 p-4">
+      <textarea
+        class="w-full h-full bg-white"
+        placeholder="请输入账单文本内容..."
+        value="{{ content }}"
+        bindinput="handleChange"
+        maxlength="-1"
+      />
+    </view>
+    <view class="flex items-center justify-between p-2 bg-gray-200 shadow-lg">
+      <van-button type="primary" @click="handleConfirm" custom-class="flex-1 w-32" disabled="{{ !content }}">
+        AI 识别
+      </van-button>
+      <van-button type="default" @click="handleClose" custom-class="flex-1 w-32">关闭</van-button>
+    </view>
+  </view>
+</van-popup>

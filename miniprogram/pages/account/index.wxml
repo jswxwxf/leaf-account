@@ -10,6 +10,11 @@
       <image src="{{ imagePath }}" class="w-full" mode="widthFix" />
     </scroll-view>
   </block>
+  <block wx:elif="{{ billPopped && textContent }}">
+    <scroll-view scroll-y class="flex-1 overflow-hidden">
+      <view class="p-4"><text user-select>{{ textContent }}</text></view>
+    </scroll-view>
+  </block>
   <block wx:else>
     <scroll-view
       scroll-y
@@ -47,3 +52,4 @@
 <calendar-helper />
 <reconcile-popup id="reconcile-popup" />
 <summary-popup id="summary-popup" />
+<text-popup id="text-popup" />

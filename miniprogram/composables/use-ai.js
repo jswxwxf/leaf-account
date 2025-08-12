@@ -20,6 +20,7 @@ function getAiPrompt() {
     "category": null,
     "amount": number,
     "note": string,
+    "tags": string[]
   }
 ]
 
@@ -47,6 +48,7 @@ export function useAi() {
       })
       wx.hideLoading()
       const reply = res.choices[0].message.content
+      console.log(reply)
       return JSON.parse(reply)
     } catch (err) {
       wx.hideLoading()

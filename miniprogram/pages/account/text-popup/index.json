@@ -1,0 +1,8 @@
+{
+  "$schema": "https://vite.icebreaker.top/component.json",
+  "component": true,
+  "usingComponents": {
+    "calendar-field": "/components/calendar-field/index"
+  },
+  "styleIsolation": "apply-shared"
+}

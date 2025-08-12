@@ -79,7 +79,9 @@ defineComponent({
     const batchPopup = ref(null)
     const reconcilePopup = ref(null)
     const summaryPopup = ref(null)
+    const textPopup = ref(null)
     const imagePath = ref('')
+    const textContent = ref('')
 
     const { billPopped, processBill } = useBillPopup(state, billPopup)
     const { handleOcr } = useProcessPhoto()
@@ -90,6 +92,7 @@ defineComponent({
       batchPopup.value = selectComponent('#batch-popup')
       reconcilePopup.value = selectComponent('#reconcile-popup')
       summaryPopup.value = selectComponent('#summary-popup')
+      textPopup.value = selectComponent('#text-popup')
     })
 
     const scrollTop = ref(0)
@@ -159,6 +162,7 @@ defineComponent({
       } finally {
         billPopped.value = false
         imagePath.value = ''
+        textContent.value = ''
       }
 
       if (bills && bills.length > 0) {
@@ -193,6 +197,16 @@ defineComponent({
       }
     }
 
+    const handleTextBills = async () => {
+      textContent.value = await textPopup.value.show()
+      const bills = await analyzeBillsFromText(textContent.value)
+      if (bills && bills.length > 0) {
+        handleBatchBills(bills)
+      } else {
+        Toast('未识别到有效账单')
+      }
+    }
+
     const handleReconcile = async () => {
       const res = await reconcilePopup.value.show(totalBalance.value)
       await reconcileAccount(res.actualBalance)
@@ -215,6 +229,10 @@ defineComponent({
         handlePhotoBills()
         return
       }
+      if (action.detail.value === 'text') {
+        handleTextBills()
+        return
+      }
       if (action.detail.value === 'reconcile') {
         handleReconcile()
         return
@@ -230,6 +248,7 @@ defineComponent({
       billPopped,
       scrollTop,
       imagePath,
+      textContent,
       handleActionSelect,
       handleAddBill,
       handleEditBill,
