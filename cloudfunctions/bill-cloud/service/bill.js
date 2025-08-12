@@ -6,6 +6,15 @@ const db = cloud.database()
 const _ = db.command
 
 /**
+ * 将金额四舍五入到两位小数。
+ * @param {number|string} amount - 金额
+ * @returns {number} - 处理后的金额
+ */
+function parseMoney(amount) {
+  return Math.round((parseFloat(amount) || 0) * 100) / 100
+}
+
+/**
  * 保存账单（创建或更新），并同步更新账户余额。
  * @param {object} event - 云函数的原始 event 对象
  * @param {object} models - 数据模型实例
@@ -24,7 +33,7 @@ async function saveBill(event, models) {
   }
 
   const originalBill = { ...bill, note } // 保留原始账单对象用于返回
-  const billToSave = { ...bill, note, amount: parseFloat(bill.amount) || 0 }
+  const billToSave = { ...bill, note, amount: parseMoney(bill.amount) }
 
   // 确保金额正负与类别匹配
   if (billToSave.category?.type === '10' && billToSave.amount < 0) {
@@ -59,11 +68,13 @@ async function saveBill(event, models) {
       }
       const newBill = billToSave
 
-      const balanceIncrement = newBill.amount - oldBill.amount
-      const incomeIncrement =
-        (newBill.amount > 0 ? newBill.amount : 0) - (oldBill.amount > 0 ? oldBill.amount : 0)
-      const expenseIncrement =
-        (newBill.amount < 0 ? newBill.amount : 0) - (oldBill.amount < 0 ? oldBill.amount : 0)
+      const balanceIncrement = parseMoney(newBill.amount - oldBill.amount)
+      const incomeIncrement = parseMoney(
+        (newBill.amount > 0 ? newBill.amount : 0) - (oldBill.amount > 0 ? oldBill.amount : 0),
+      )
+      const expenseIncrement = parseMoney(
+        (newBill.amount < 0 ? newBill.amount : 0) - (oldBill.amount < 0 ? oldBill.amount : 0),
+      )
 
       // 2. 更新账户余额
       await updateAccount(
@@ -151,7 +162,7 @@ async function saveBills(event, models) {
       if (!datetime || !category || !amount || note === undefined || note === null) {
         throw new Error('参数不合法，datetime, category, amount, note 不能为空')
       }
-      const billToSave = { ...bill, note, amount: parseFloat(bill.amount) || 0 }
+      const billToSave = { ...bill, note, amount: parseMoney(bill.amount) }
       // 确保金额正负与类别匹配
       if (billToSave.category?.type === '10' && billToSave.amount < 0) {
         billToSave.amount = -billToSave.amount
@@ -167,14 +178,12 @@ async function saveBills(event, models) {
       ...new Set(billsToSave.map((bill) => bill.category).filter((id) => id)),
     ]
 
-     const balanceIncrement = billsToSave.reduce((sum, bill) => sum + bill.amount, 0)
-    const incomeIncrement = billsToSave.reduce(
-      (sum, bill) => sum + (bill.amount > 0 ? bill.amount : 0),
-      0,
+    const balanceIncrement = parseMoney(billsToSave.reduce((sum, bill) => sum + bill.amount, 0))
+    const incomeIncrement = parseMoney(
+      billsToSave.reduce((sum, bill) => sum + (bill.amount > 0 ? bill.amount : 0), 0),
     )
-    const expenseIncrement = billsToSave.reduce(
-      (sum, bill) => sum + (bill.amount < 0 ? bill.amount : 0),
-      0,
+    const expenseIncrement = parseMoney(
+      billsToSave.reduce((sum, bill) => sum + (bill.amount < 0 ? bill.amount : 0), 0),
     )
 
     const transaction = await db.startTransaction()
@@ -580,9 +589,9 @@ async function deleteBill(event, models) {
     const amountToDelete = billToDelete.amount
 
     // 2. 计算反向增量
-    const balanceIncrement = -amountToDelete
-    const incomeIncrement = amountToDelete > 0 ? -amountToDelete : 0
-    const expenseIncrement = amountToDelete < 0 ? -amountToDelete : 0
+    const balanceIncrement = parseMoney(-amountToDelete)
+    const incomeIncrement = parseMoney(amountToDelete > 0 ? -amountToDelete : 0)
+    const expenseIncrement = parseMoney(amountToDelete < 0 ? -amountToDelete : 0)
 
     // 3. 反向更新账户余额
     await updateAccount(
