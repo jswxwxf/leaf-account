@@ -2,6 +2,7 @@ const cloud = require('wx-server-sdk')
 const db = cloud.database()
 const _ = db.command
 const { BizError } = require('./common.js')
+const { isEmpty } = require('lodash')
 
 /**
  * 获取所有分类
@@ -48,9 +49,11 @@ async function addCategory(event, models) {
   const { category } = event.body
   const { OPENID } = cloud.getWXContext()
 
-  if (!category || !category.name) {
-    throw new Error('缺少分类名称')
+  const categoryName = category?.name?.trim()
+  if (!category || isEmpty(categoryName) || !category.type) {
+    throw new Error('分类名称和类型为必填项')
   }
+  category.name = categoryName
 
   // 检查是否存在同名分类（包括用户自己的和内置的）
   const {
@@ -73,7 +76,7 @@ async function addCategory(event, models) {
   }
 
   const result = await models.category.create({
-    data: { ...category, _openid: OPENID },
+    data: { ...category, _openid: OPENID, usedAt: Date.now() },
   })
   const { id } = result.data
   return { _id: id, ...category }
@@ -152,6 +155,17 @@ async function updateCategory(event, models) {
     throw new Error('缺少分类ID')
   }
 
+  if (typeof data.name === 'string') {
+    data.name = data.name.trim()
+    if (isEmpty(data.name)) {
+      throw new Error('分类名称不能为空')
+    }
+  }
+
+  if (data.type === '') {
+    throw new Error('分类类型不能为空')
+  }
+
   if (data.name) {
     // 检查是否存在同名分类（包括用户自己的和内置的，但排除当前正在更新的分类）
     const {
@@ -184,7 +198,7 @@ async function updateCategory(event, models) {
         _openid: { $eq: OPENID }, // 确保只能更新自己的分类
       },
     },
-    data,
+    data: { ...data, usedAt: Date.now() },
   })
 
   return {
@@ -199,3 +213,4 @@ module.exports = {
   deleteCategory,
   updateCategory,
 }
+

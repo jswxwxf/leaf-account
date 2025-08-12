@@ -1,6 +1,7 @@
 const cloud = require('wx-server-sdk')
 const db = cloud.database()
 const _ = db.command
+const { isEmpty } = require('lodash')
 
 /**
  * 获取所有标签
@@ -41,7 +42,14 @@ async function addTags(event, models) {
   if (!tags || !Array.isArray(tags) || tags.length === 0) {
     throw new Error('缺少标签数据')
   }
-  const tagsToSave = tags.map((tag) => ({ ...tag, _openid: OPENID }))
+
+  const tagsToSave = tags.map((tag) => {
+    const tagName = tag.name?.trim()
+    if (isEmpty(tagName) || !tag.type) {
+      throw new Error('标签的名称和类型为必填项')
+    }
+    return { ...tag, name: tagName, _openid: OPENID }
+  })
   const result = await models.tag.createMany({
     data: tagsToSave,
   })
@@ -74,11 +82,12 @@ async function addTag(event, models) {
   const { tag } = event.body
   const { OPENID } = cloud.getWXContext()
 
-  if (!tag || !tag.name) {
-    throw new Error('缺少标签名称')
+  const tagName = tag?.name?.trim()
+  if (!tag || isEmpty(tagName) || !tag.type) {
+    throw new Error('标签名称和类型为必填项')
   }
 
-  const tagToSave = { ...tag, _openid: OPENID }
+  const tagToSave = { ...tag, name: tagName, _openid: OPENID }
   const result = await models.tag.create({ data: tagToSave })
   return result
 }
@@ -95,8 +104,16 @@ async function updateTag(event, models) {
   if (!tag || !tag._id) {
     throw new Error('缺少标签 ID')
   }
-  if (!tag.name) {
-    throw new Error('缺少标签名称')
+
+  if (typeof tag.name === 'string') {
+    tag.name = tag.name.trim()
+    if (isEmpty(tag.name)) {
+      throw new Error('标签名称不能为空')
+    }
+  }
+
+  if (tag.type === '') {
+    throw new Error('标签类型不能为空')
   }
 
   const tagId = tag._id

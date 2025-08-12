@@ -17,13 +17,14 @@ async function saveBill(event, models) {
   if (!bill) {
     throw new Error('请求中缺少 bill 对象')
   }
-  const { datetime, category, amount, note } = bill
+  const { datetime, category, amount } = bill
+  const note = bill.note?.trim()
   if (!datetime || !category || !amount || note === undefined || note === null) {
     throw new Error('参数不合法，datetime, category, amount, note 不能为空')
   }
 
-  const originalBill = { ...bill } // 保留原始账单对象用于返回
-  const billToSave = { ...bill, amount: parseFloat(bill.amount) || 0 }
+  const originalBill = { ...bill, note } // 保留原始账单对象用于返回
+  const billToSave = { ...bill, note, amount: parseFloat(bill.amount) || 0 }
 
   // 确保金额正负与类别匹配
   if (billToSave.category?.type === '10' && billToSave.amount < 0) {
@@ -145,11 +146,12 @@ async function saveBills(event, models) {
   for (let i = 0; i < bills.length; i += BATCH_SIZE) {
     const batch = bills.slice(i, i + BATCH_SIZE)
     const billsToSave = batch.map((bill) => {
-      const { datetime, category, amount, note } = bill
+      const { datetime, category, amount } = bill
+      const note = bill.note?.trim()
       if (!datetime || !category || !amount || note === undefined || note === null) {
         throw new Error('参数不合法，datetime, category, amount, note 不能为空')
       }
-      const billToSave = { ...bill, amount: parseFloat(bill.amount) || 0 }
+      const billToSave = { ...bill, note, amount: parseFloat(bill.amount) || 0 }
       // 确保金额正负与类别匹配
       if (billToSave.category?.type === '10' && billToSave.amount < 0) {
         billToSave.amount = -billToSave.amount
