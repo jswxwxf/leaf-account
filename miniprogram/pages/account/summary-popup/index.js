@@ -60,6 +60,7 @@ defineComponent({
 
     const show = (query = {}) => {
       currentDate.value = query.createdAt || Date.now() // 每次打开时重置为今天
+      content.value = ''
       generateSummary()
       visible.value = true
     }
