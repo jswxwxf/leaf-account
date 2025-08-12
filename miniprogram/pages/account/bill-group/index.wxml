@@ -18,7 +18,7 @@
       <van-swipe-cell right-width="{{ 130 }}" disabled="{{ readonly }}">
         <van-cell custom-class="{{ utils.isToday(bill.createdAt) ? 'bill-item--today' : '' }}">
           <view class="flex items-center">
-            <view class="flex-1 text-left min-w-0">
+            <view class="flex-1 text-left min-w-0" @tap="handleCopyNote" data-bill="{{bill}}">
               <view class="text-base text-black">{{ bill.category.name }}</view>
               <view class="text-xs text-gray-500 overflow-hidden van-ellipsis">{{ bill.note }}</view>
             </view>

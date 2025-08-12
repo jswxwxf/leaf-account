@@ -24,9 +24,22 @@ defineComponent({
       triggerEvent('delete', bill)
     }
 
+    const handleCopyNote = async (e) => {
+      const { bill } = e.currentTarget.dataset
+      await wx.setClipboardData({
+        data: bill.note,
+      })
+      wx.showToast({
+        title: '备注已复制',
+        icon: 'none',
+        duration: 1500,
+      })
+    }
+
     return {
       handleEdit,
       handleDelete,
+      handleCopyNote,
     }
   },
 })
