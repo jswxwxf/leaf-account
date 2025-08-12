@@ -46,11 +46,19 @@
 
 3.  **配置云开发环境**
     - 登录[腾讯云开发控制台](https://console.cloud.tencent.com/tcb)，创建一个新的云开发环境。
-    - 将获取到的**环境 ID** 填入到 `miniprogram/app.js` 的 `wx.cloud.init` 方法中。
+    - 创建 miniprogram/envList.js 并将获取到的**环境 ID** 填入。如下所示：
+    ```javascript
+      const envList =     [{"envId":"xxxxx-xxxxxx","alias":"xxxxx"}];
+      const isMac = true;
+      module.exports = {
+        envList,
+        isMac
+      };
+    ```
 
 4.  **导入数据库和云函数**
-    - **数据库**: 在云开发控制台，创建 `bills`、`categories`、`tags` 等数据库集合。
-    - **云函数**: 在项目根目录的 `cloudfunctions` 文件夹上右键，选择“上传并部署：所有云函数”。
+    - **数据库**: 在云开发控制台，创建 `bill`、`category`、`tag` 等数据库集合。
+    - **云函数**: 在项目根目录的 `cloudfunctions\bill-cloud` 文件夹上右键，选择“上传并部署：所有云函数”。
 
 5.  **启动开发服务器**
     ```bash
@@ -58,7 +66,7 @@
     ```
 
 6.  **在微信开发者工具中打开**
-    - 打开微信开发者工具，导入 `dist` 目录。
+    - 打开微信开发者工具，导入项目根目录。
     - 刷新项目，开始开发。
 
 ## 项目结构
@@ -67,7 +75,7 @@
 .
 ├── dist/                  # Vite 构建后的小程序代码目录
 ├── cloudfunctions/        # 云函数目录
-├── src/
+├── miniprogram/
 │   ├── components/        # 可复用的组件
 │   ├── pages/             # 页面
 │   ├── utils/             # 工具函数
@@ -79,7 +87,7 @@
 ├── package.json           # 项目依赖
 ├── project.config.json    # 微信开发者工具项目配置
 ├── tailwind.config.js     # Tailwind CSS 配置
-└── vite.config.ts         # weapp-vite 配置
+└── vite.config.mts         # weapp-vite 配置
 ```
 
 ## 贡献
