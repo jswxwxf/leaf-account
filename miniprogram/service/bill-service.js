@@ -1,4 +1,4 @@
-import { groupBy, sumBy, map, orderBy } from 'lodash'
+import { groupBy, sumBy, map, orderBy, some } from 'lodash'
 import { getDayOfWeek, formatDate } from '@/utils/date.js'
 
 /**
@@ -27,8 +27,21 @@ export function groupBillsByDate(bills) {
   const grouped = groupBy(bills, (bill) => formatDate(bill.datetime, 'YYYY-MM-DD'))
 
   const mapped = map(grouped, (dailyRawBills, date) => {
-    const income = sumBy(dailyRawBills, (bill) => (bill.amount > 0 ? bill.amount : 0)) || 0
-    const expense = sumBy(dailyRawBills, (bill) => (bill.amount < 0 ? Math.abs(bill.amount) : 0)) || 0
+    const { income, expense } = dailyRawBills.reduce(
+      (acc, bill) => {
+        // 如果 bill.tags 存在并且包含 '非日常'，则跳过
+        if (bill.tags && some(bill.tags, { name: '非日常' })) {
+          return acc
+        }
+        if (bill.amount > 0) {
+          acc.income += bill.amount
+        } else if (bill.amount < 0) {
+          acc.expense += Math.abs(bill.amount)
+        }
+        return acc
+      },
+      { income: 0, expense: 0 },
+    )
 
     return {
       datetime: dailyRawBills[0].datetime,
