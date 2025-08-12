@@ -1,12 +1,87 @@
 # 小枫记账 (leaf-account)
 
-一个基于 `vue-mini` + `tailwindcss` 构建的微信小程序记账应用。
+[![Powered by CloudBase](https://img.shields.io/badge/Powered%20by-CloudBase-blue)](https://cloudbase.net/)
+
+一款基于 `weapp-vite` + `@vue-mini/core` + `Tailwind CSS` 构建的微信小程序记账应用，后端服务由**腾讯云开发 (CloudBase)** 提供支持。
 
 ## 简介
 
-本项目是一个简洁、易用的微信小程序记账应用，旨在帮助用户轻松记录日常开支。
+**小枫记账** 是一款旨在提供简洁、高效记账体验的微信小程序。用户可以通过它轻松记录日常的收入与支出，并通过图表功能对个人财务状况一目了然。
 
-技术栈:
+## 核心功能 (MVP)
 
-- **核心框架**: [`@vue-mini/core`](https://vuemini.org/)
-- **样式方案**: [`weapp-tailwindcss`](https://tw.icebreaker.top/)
+- **日常记账**: 快速记录每一笔收入和支出。
+- **账单分类**: 支持自定义消费分类，方便统计。
+- **标签系统**: 为账单添加多个标签，实现多维度管理。
+- **日历视图**: 在日历上清晰展示每日收支情况。
+- **统计图表**: 提供收支趋势图和分类占比图，帮助分析消费习惯。
+- **云端同步**: 所有数据安全地存储在云开发数据库中，实现多设备同步。
+
+## 技术栈
+
+- **前端**:
+  - **核心框架**: [`@vue-mini/core`](https://vuemini.org/)
+  - **构建工具**: [`weapp-vite`](https://ice-vite.netlify.app/)
+  - **样式方案**: [`Tailwind CSS`](https://tailwindcss.com/) (通过 `weapp-tailwindcss` 集成)
+  - **UI 组件库**: [`Vant Weapp`](https://youzan.github.io/vant-weapp)
+  - **编程语言**: `JavaScript`
+
+- **后端**:
+  - **云服务**: [腾讯云开发 (CloudBase)](https://cloudbase.net/)
+  - **数据库**: 云开发数据库 (NoSQL)
+  - **云函数**: 用于处理复杂的后端逻辑，如数据导入、统计等。
+
+## 快速上手
+
+1.  **克隆项目**
+    ```bash
+    git clone https://github.com/your-repo/leaf-account.git
+    cd leaf-account
+    ```
+
+2.  **安装依赖**
+    ```bash
+    npm install
+    ```
+
+3.  **配置云开发环境**
+    - 登录[腾讯云开发控制台](https://console.cloud.tencent.com/tcb)，创建一个新的云开发环境。
+    - 将获取到的**环境 ID** 填入到 `miniprogram/app.js` 的 `wx.cloud.init` 方法中。
+
+4.  **导入数据库和云函数**
+    - **数据库**: 在云开发控制台，创建 `bills`、`categories`、`tags` 等数据库集合。
+    - **云函数**: 在项目根目录的 `cloudfunctions` 文件夹上右键，选择“上传并部署：所有云函数”。
+
+5.  **启动开发服务器**
+    ```bash
+    npm run dev
+    ```
+
+6.  **在微信开发者工具中打开**
+    - 打开微信开发者工具，导入 `dist` 目录。
+    - 刷新项目，开始开发。
+
+## 项目结构
+
+```
+.
+├── dist/                  # Vite 构建后的小程序代码目录
+├── cloudfunctions/        # 云函数目录
+├── src/
+│   ├── components/        # 可复用的组件
+│   ├── pages/             # 页面
+│   ├── utils/             # 工具函数
+│   ├── api/               # API 请求封装
+│   ├── app.js             # 小程序入口逻辑
+│   ├── app.json           # 小程序全局配置
+│   └── app.less           # 全局样式
+├── .kilocode/             # AI 开发规则目录
+├── package.json           # 项目依赖
+├── project.config.json    # 微信开发者工具项目配置
+├── tailwind.config.js     # Tailwind CSS 配置
+└── vite.config.ts         # weapp-vite 配置
+```
+
+## 贡献
+
+欢迎提交 PR 和 Issue，一起完善这个项目！

@@ -28,7 +28,6 @@
   - 使用 `@vue-mini/core` 的组合式 API (`defineComponent`, `ref`, `reactive` 等) 进行逻辑开发。
   - 优先使用 `Tailwind CSS` (v3) 原子化类进行样式开发，保持 WXML 文件的整洁。
   - 仅在必要时使用 Less 编写复杂的或全局的样式。
-  - 充分利用 `TypeScript` 的类型系统来提高代码的健壮性。
 - **代码质量**:
   - 编写清晰、有意义的注释，解释“为什么”而不是“做什么”。
   - 在关键逻辑部分添加必要的错误处理。
@@ -58,6 +57,5 @@
 - **weapp-tailwindcss**: <https://tw.icebreaker.top/>
 - **weapp-vite**: <https://ice-vite.netlify.app/>
 - **Tailwind CSS**: <https://v3.tailwindcss.com/docs/>
-- **TypeScript**: <https://www.typescriptlang.org/docs/>
 
 ## 本指南旨在确保 AI 在本项目中的工作质量和一致性。
