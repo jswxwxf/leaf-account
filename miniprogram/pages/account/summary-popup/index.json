@@ -1,6 +1,9 @@
 {
   "$schema": "https://vite.icebreaker.top/component.json",
   "component": true,
-  "usingComponents": {},
-  "styleIsolation": "apply-shared"
+  "usingComponents": {
+    "calendar-field": "/components/calendar-field/index"
+  },
+  "styleIsolation": "apply-shared",
+  "navigationBarTitleText": "按记帐日汇总"
 }

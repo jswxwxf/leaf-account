@@ -1,54 +1,71 @@
-import { defineComponent, ref } from '@vue-mini/core'
+import { defineComponent, ref, computed, watch } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
 import { getAllBills } from '@/api/bill.js'
 import { formatDate } from '@/utils/date.js'
 import { formatMoney } from '@/utils/index.js'
+import { isEmpty } from 'lodash'
 
 defineComponent({
   setup() {
     const visible = ref(false)
     const content = ref('')
-    let _resolve
+    const currentDate = ref()
 
-    const show = async (query) => {
-      const createdDate = formatDate(query.createdDate, 'YYYY-MM-DD')
-      const res = await getAllBills({ createdDate })
-      const { totalIncome, totalExpense, summaryLines } = (res.data || []).reduce(
+    const generateSummary = async () => {
+      const query = { createdAt: formatDate(currentDate.value, 'YYYY-MM-DD') }
+      const res = await getAllBills(query)
+      const { daily, totalIncome, totalExpense } = (res.data || []).reduce(
         (acc, bill) => {
           const amount = bill.amount || 0
+          const date = formatDate(bill.datetime, 'YYYY-MM-DD')
+
+          if (!acc.daily[date]) {
+            acc.daily[date] = { income: 0, expense: 0, lines: [] }
+          }
+
+          const line = [bill.category?.name, formatMoney(amount), bill.note].join('\t')
+          acc.daily[date].lines.push('  ' + line)
+
           if (bill.category.type === '10') {
             acc.totalIncome += amount
+            acc.daily[date].income += amount
           } else {
             acc.totalExpense += amount
+            acc.daily[date].expense += amount
           }
-          const line = [
-            formatDate(bill.datetime, 'YYYY-MM-DD'),
-            bill.category?.name,
-            bill.note,
-            formatMoney(amount),
-          ].join('\t')
-          acc.summaryLines.push(line)
+
           return acc
         },
-        { totalIncome: 0, totalExpense: 0, summaryLines: [] },
+        { daily: {}, totalIncome: 0, totalExpense: 0 },
       )
 
-      const summaryText = [
-        ...summaryLines,
-        `\n收入: ${formatMoney(totalIncome)}`,
-        `支出: ${formatMoney(-totalExpense)}`,
-        `余额: ${formatMoney(res.account.balance)}`,
+      const summaryText = Object.entries(daily)
+        .map(([date, summary]) => {
+          const header = `${date} 收入: ${formatMoney(summary.income)} 支出: ${formatMoney(
+            summary.expense,
+          )}`
+          return [header + '\n', ...summary.lines].join('\n')
+        })
+        .join('\n\n')
+
+      content.value = [
+        isEmpty(summaryText) ? '还没有录入账单' : summaryText,
+        `\n\n总收入: ${formatMoney(totalIncome)}`,
+        `总支出: ${formatMoney(totalExpense)}`,
+        `总余额: ${formatMoney(res.account.balance)}`,
       ].join('\n')
-      content.value = summaryText
+    }
+
+    watch(currentDate, generateSummary)
+
+    const show = (query = {}) => {
+      currentDate.value = query.createdAt || Date.now() // 每次打开时重置为今天
+      generateSummary()
       visible.value = true
-      return new Promise((resolve) => {
-        _resolve = resolve
-      })
     }
 
     const hide = () => {
       visible.value = false
-      _resolve()
     }
 
     const handleClose = () => {
@@ -61,12 +78,18 @@ defineComponent({
       })
     }
 
+    const handleDateChange = (e) => {
+      currentDate.value = e.detail
+    }
+
     return {
       visible,
       content,
+      currentDate,
       show,
       handleClose,
       handleCopy,
+      handleDateChange,
     }
   },
 })

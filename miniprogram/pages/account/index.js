@@ -202,7 +202,7 @@ defineComponent({
     }
 
     const handleTodaySummary = async () => {
-      summaryPopup.value.show({ createdDate: new Date() })
+      summaryPopup.value.show({ createdAt: Date.now() })
     }
 
     const handleActionSelect = (e) => {

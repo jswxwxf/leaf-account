@@ -21,6 +21,10 @@ defineComponent({
       type: String,
       value: '请选择日期',
     },
+    border: {
+      type: Boolean,
+      value: true,
+    },
     ...formItemProps('datetime'),
   },
 

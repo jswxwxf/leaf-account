@@ -6,4 +6,5 @@
   max-date="{{ maxDate }}"
   default-date="{{ defaultDate }}"
   show-confirm="{{ false }}"
+  root-portal
 />
