@@ -1,0 +1,13 @@
+<view
+  class="absolute h-full right-0 flex bg-white {{ isFolded ? 'w-0' : 'w-full' }} transition-width duration-300 ease-in-out"
+>
+  <view wx:if="{{ imagePath }}" class="flex-1 h-full overflow-y-auto">
+    <image src="{{ imagePath }}" class="w-full" mode="widthFix" />
+  </view>
+  <view wx:if="{{ textContent }}" class="flex-1 h-full overflow-y-auto">
+    <view class="p-4"><text user-select class="whitespace-pre-wrap break-all">{{ textContent }}</text></view>
+  </view>
+  <van-button @click="toggleFold" type="primary" class="absolute right-0 opacity-50">
+    <van-icon name="{{ isFolded ? 'arrow-left' : 'arrow' }}" color="white" />
+  </van-button>
+</view>

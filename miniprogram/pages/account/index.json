@@ -12,7 +12,8 @@
     "tags-helper": "/components/tags-helper/index",
     "reconcile-popup": "./reconcile-popup/index",
     "summary-popup": "./summary-popup/index",
-    "text-popup": "./text-popup/index"
+    "text-popup": "./text-popup/index",
+    "check-view": "./check-view/index"
   },
   "styleIsolation": "apply-shared"
 }
