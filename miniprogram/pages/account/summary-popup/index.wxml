@@ -3,7 +3,7 @@
     <view class="flex w-full items-center justify-between px-2 py-1 drop-shadow-lg bg-white">
       <calendar-field label="记帐日期" border="{{ false }}" value="{{ currentDate }}" @change="handleDateChange" />
     </view>
-    <view class="flex-1 whitespace-pre-wrap bg-gray-100 p-4 overflow-auto">{{ content }}</view>
+    <view class="flex-1 whitespace-pre-wrap bg-gray-100 p-4 overflow-auto"><text user-select>{{ content }}</text></view>
     <view class="flex items-center justify-between p-2 bg-gray-200 shadow-lg">
       <van-button type="primary" @click="handleCopy" custom-class="flex-1 w-32">拷贝到剪贴板</van-button>
       <van-button type="default" @click="handleClose" custom-class="flex-1 w-32">关闭</van-button>
