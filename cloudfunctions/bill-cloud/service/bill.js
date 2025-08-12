@@ -462,7 +462,7 @@ async function getBills(event, models) {
       hasReachedEnd = true
     }
 
-    const weeklyWhereClause = {
+    const periodWhereClause = {
       $and: [
         // 使用展开运算符合并外部查询条件
         ...(where.$and || []),
@@ -472,7 +472,7 @@ async function getBills(event, models) {
     }
 
     const {
-      data: { records: weeklyBills },
+      data: { records: periodBills },
     } = await models.bill.list({
       select: {
         _id: true,
@@ -483,13 +483,13 @@ async function getBills(event, models) {
         tags: { _id: true, name: true, type: true },
         createdAt: true,
       },
-      filter: { where: weeklyWhereClause },
+      filter: { where: periodWhereClause },
       orderBy: [{ datetime: 'desc' }],
       pageSize: 1000, // 假设一周内账单不会超过1000条
     })
 
-    if (weeklyBills && weeklyBills.length > 0) {
-      accumulatedBills = accumulatedBills.concat(weeklyBills)
+    if (periodBills && periodBills.length > 0) {
+      accumulatedBills = accumulatedBills.concat(periodBills)
     }
 
     // 如果已经到达包含最早记录的最后一个周期，则退出循环
