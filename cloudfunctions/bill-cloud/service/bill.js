@@ -11,7 +11,14 @@ const _ = db.command
  * @returns {number} - 处理后的金额
  */
 function parseMoney(amount) {
-  return Math.round((parseFloat(amount) || 0) * 100) / 100
+  const num = parseFloat(amount)
+  if (isNaN(num)) {
+    return 0
+  }
+  // 使用 toFixed(2) 来进行正确的四舍五入并得到一个字符串
+  // 然后使用 Number() 将其转换回数字类型。
+  // 这是处理货币和需要精确小数位数的场景下的标准做法。
+  return Number(num.toFixed(2))
 }
 
 /**
@@ -339,7 +346,12 @@ async function getBillsSummary(event, models) {
     })
     .end()
 
-  return aggregateResult.list[0] || { totalIncome: 0, totalExpense: 0 }
+  const summary = aggregateResult.list[0] || { totalIncome: 0, totalExpense: 0 }
+
+  return {
+    totalIncome: parseMoney(summary.totalIncome),
+    totalExpense: parseMoney(summary.totalExpense),
+  }
 }
 
 /**
@@ -663,3 +675,4 @@ module.exports = {
   deleteBill,
   resetBills,
 }
+
