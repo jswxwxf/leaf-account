@@ -46,4 +46,4 @@
 <tags-helper />
 <calendar-helper />
 <reconcile-popup id="reconcile-popup" />
-<alert-popup id="alert-popup" />
+<summary-popup id="summary-popup" />

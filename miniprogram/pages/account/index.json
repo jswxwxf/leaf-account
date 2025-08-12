@@ -11,7 +11,7 @@
     "category-helper": "/components/category-helper/index",
     "tags-helper": "/components/tags-helper/index",
     "reconcile-popup": "./reconcile-popup/index",
-    "alert-popup": "/components/alert-popup/index"
+    "summary-popup": "./summary-popup/index"
   },
   "styleIsolation": "apply-shared"
 }

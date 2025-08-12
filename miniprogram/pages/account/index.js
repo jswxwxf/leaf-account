@@ -2,13 +2,11 @@ import { defineComponent, ref, provide, onReady, onUnload, watch } from '@vue-mi
 import Toast from '@vant/weapp/toast/toast.js'
 import Dialog from '@vant/weapp/dialog/dialog.js'
 import { reconcileAccount } from '@/api/account.js'
-import { upsertBill, deleteBill, saveBills, getAllBills } from '@/api/bill.js'
+import { upsertBill, deleteBill, saveBills } from '@/api/bill.js'
 import { newBill } from '@/service/bill-service.js'
 import store, { storeKey } from './store'
 import { useOcr } from '@/composables/use-ocr.js'
 import { useAi } from '@/composables/use-ai.js'
-import { formatDate } from '@/utils/date.js'
-import { formatMoney } from '@/utils/index.js'
 
 function useBillPopup(state, billPopupRef) {
   const { typeValue, monthValue, updateBills, updateAccountSummary } = state
@@ -80,7 +78,7 @@ defineComponent({
     const billPopup = ref(null)
     const batchPopup = ref(null)
     const reconcilePopup = ref(null)
-    const alertPopup = ref(null)
+    const summaryPopup = ref(null)
     const imagePath = ref('')
 
     const { billPopped, processBill } = useBillPopup(state, billPopup)
@@ -91,7 +89,7 @@ defineComponent({
       billPopup.value = selectComponent('#bill-popup')
       batchPopup.value = selectComponent('#batch-popup')
       reconcilePopup.value = selectComponent('#reconcile-popup')
-      alertPopup.value = selectComponent('#alert-popup')
+      summaryPopup.value = selectComponent('#summary-popup')
     })
 
     const scrollTop = ref(0)
@@ -204,35 +202,7 @@ defineComponent({
     }
 
     const handleTodaySummary = async () => {
-      const res = await getAllBills({ createdDate: formatDate(new Date(), 'YYYY-MM-DD') })
-      const { totalIncome, totalExpense, summaryLines } = (res.data || []).reduce(
-        (acc, bill) => {
-          const amount = bill.amount || 0
-          if (bill.category.type === '10') {
-            acc.totalIncome += amount
-          } else {
-            acc.totalExpense += amount
-          }
-          const line = [
-            formatDate(bill.datetime, 'YYYY-MM-DD'),
-            bill.category?.name,
-            bill.note,
-            formatMoney(amount),
-          ].join('\t')
-          acc.summaryLines.push(line)
-          return acc
-        },
-        { totalIncome: 0, totalExpense: 0, summaryLines: [] },
-      )
-
-      const summaryText = [
-        ...summaryLines,
-        `\n收入: ${formatMoney(totalIncome)}`,
-        `支出: ${formatMoney(-totalExpense)}`,
-        `余额: ${formatMoney(res.account.balance)}`,
-      ].join('\n')
-
-      alertPopup.value.show(summaryText)
+      summaryPopup.value.show({ createdDate: new Date() })
     }
 
     const handleActionSelect = (e) => {
