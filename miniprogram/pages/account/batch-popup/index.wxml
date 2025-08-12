@@ -114,10 +114,9 @@
       <view class="flex-1">
         <van-field
           value="{{ searchText }}"
-          placeholder="在此输入检索已加载帐单"
+          placeholder="在此输入检索已加载帐单备注"
           bind:change="updateSearchText"
           clearable
-          placeholder-style="color: var(--button-primary-background-color,#07c160)"
         />
       </view>
       <view class="flex justify-end items-center space-x-6">

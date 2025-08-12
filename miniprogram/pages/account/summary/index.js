@@ -9,7 +9,15 @@ defineComponent({
     },
   },
   setup(props, { triggerEvent }) {
-    const { typeValue, monthValue, totalExpense, totalIncome, totalBalance } = inject(storeKey)
+    const {
+      typeValue,
+      monthValue,
+      totalExpense,
+      totalIncome,
+      totalBalance,
+      searchText,
+      updateSearchText,
+    } = inject(storeKey)
 
     const typeOptions = ref([
       { text: '全部', value: '' },
@@ -56,6 +64,8 @@ defineComponent({
       handleDateChange,
       handleTypeChange,
       onBalanceTap,
+      searchText,
+      updateSearchText,
     }
   },
 })

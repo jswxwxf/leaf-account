@@ -18,6 +18,7 @@
         <block wx:for="{{ dailyBills }}" wx:key="_id">
           <bill-group
             item="{{ item }}"
+            @copy="handleCopyBill"
             @edit="handleEditBill"
             @delete="handleDeleteBill"
             readonly="{{ billPopped }}"

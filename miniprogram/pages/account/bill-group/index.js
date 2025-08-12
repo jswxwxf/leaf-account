@@ -15,6 +15,12 @@ defineComponent({
   setup(props, { triggerEvent }) {
     const { searchText } = inject(storeKey)
 
+    const handleCopy = (e) => {
+      if (props.readonly) return
+      const { bill } = e.currentTarget.dataset
+      triggerEvent('copy', bill)
+    }
+
     const handleEdit = (e) => {
       if (props.readonly) return
       const { bill } = e.currentTarget.dataset
@@ -41,11 +47,12 @@ defineComponent({
 
     const filteredBills = computed(() => {
       return props.item.bills.filter((bill) => {
-        return bill.note.includes(searchText.value)
+        return bill.note.includes(searchText.value.trim())
       })
     })
 
     return {
+      handleCopy,
       handleEdit,
       handleDelete,
       handleCopyNote,

@@ -1,10 +1,10 @@
 {
   "pages": [
     "pages/account/index",
-"pages/tag/index",
-    "pages/stats/index",
+    "pages/book/index",
     "pages/setting/index",
-    "pages/category/index"
+    "pages/category/index",
+    "pages/tag/index"
   ],
   "window": {
     "backgroundColor": "#F6F6F6",
@@ -17,9 +17,9 @@
     "list": [
       {
         "pagePath": "pages/account/index",
-        "text": "帐本",
-        "iconPath": "assets/images/ep-notebook.png",
-        "selectedIconPath": "assets/images/ep-notebook-selected.png"
+        "text": "流水帐",
+        "iconPath": "assets/images/ep-document.png",
+        "selectedIconPath": "assets/images/ep-document-selected.png"
       },
       {
         "pagePath": "pages/setting/index",

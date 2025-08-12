@@ -145,6 +145,17 @@ defineComponent({
       processBill(e.detail)
     }
 
+    const handleCopyBill = (e) => {
+      const billCopy = {
+        datetime: Date.now(),
+        category: e.detail.category,
+        amount: e.detail.amount,
+        note: e.detail.note,
+        tags: e.detail.tags,
+      }
+      processBill(billCopy)
+    }
+
     const handleDeleteBill = async (e) => {
       const bill = e.detail
       await Dialog.confirm({
@@ -261,6 +272,7 @@ defineComponent({
       handleActionSelect,
       handleAddBill,
       handleEditBill,
+      handleCopyBill,
       handleDeleteBill,
       handleReconcile,
     }

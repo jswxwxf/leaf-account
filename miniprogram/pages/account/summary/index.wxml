@@ -2,8 +2,11 @@
 
 <view class="relative overflow-hidden text-white pt-4 pb-3 px-4 shadow-md" hidden="{{ hidden }}">
   <image src="../../../assets/images/leaf.jpg" mode="aspectFill" class="absolute inset-0 w-full h-full" />
-  <view class="relative" style="--dropdown-menu-background-color: rgba(0, 0, 0, 0.5); --dropdown-menu-title-text-color: white;">
-    <van-dropdown-menu active-color="#5A9E62">
+  <view
+    class="relative"
+    style="--dropdown-menu-background-color: rgba(0, 0, 0, 0.5); --dropdown-menu-title-text-color: white"
+  >
+    <van-dropdown-menu active-color="#5A9E62" style="--dropdown-menu-height: 45px;">
       <van-dropdown-item value="{{ typeValue }}" options="{{ typeOptions }}" bind:change="handleTypeChange" />
       <van-dropdown-item
         value="{{ monthValue }}"
@@ -12,7 +15,20 @@
         bind:change="handleDateChange"
       />
     </van-dropdown-menu>
-    <view class="flex justify-between items-center mt-4">
+    <van-field
+      value="{{ searchText }}"
+      placeholder="在此输入检索已加载帐单备注"
+      bind:change="updateSearchText"
+      clearable
+      custom-class="!bg-transparent"
+      custom-style="--cell-background-color: rgba(0, 0, 0, 0.3); --field-input-text-color: white"
+      placeholder-style="color: rgba(255, 255, 255, 0.7);"
+    >
+      <view slot="right-icon">
+        <van-icon name="right-icon" name="search" color="white" />
+      </view>
+    </van-field>
+    <view class="flex justify-between items-center">
       <view class="text-sm bg-black/30 px-3 py-1 van-ellipsis">
         支 {{monthValue === '' ? 'N/A' : '¥' + utils.formatMoney(-totalExpense) }}
       </view>
