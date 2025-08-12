@@ -6,7 +6,7 @@
       <view slot="title" class="flex justify-between items-center">
         <view class="flex items-center {{ utils.isWeekend(item.datetime) ? 'text-orange-500' : 'text-gray-500' }}">
           <text class="font-bold text-base">{{ utils.formatDateTime(item.datetime, 'YYYY年MM月DD日') }}</text>
-          <text class="text-sm ml-2">{{ utils.getDayOfWeek(item.datetime) }}</text>
+          <text class="text-sm ml-2">{{ utils.getDayOfWeek(item.datetime) }} {{ item.bills.length }} 笔</text>
         </view>
         <view class="text-xs text-gray-500">
           <text class="mr-4">出 {{ item.expense }}</text>
