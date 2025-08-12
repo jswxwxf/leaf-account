@@ -108,13 +108,19 @@
 
     <!-- Footer: stays at the bottom, original structure preserved -->
     <view class="flex items-center py-4 border-t border-solid border-gray-100 px-4">
-      <view class="flex-1">
+      <view>
         <van-button type="primary" size="small" @tap="handleConfirm" custom-class="w-20">确定</van-button>
       </view>
-      <view class="flex-1 text-center text-sm text-gray-500">
-        <!-- 提示信息 -->
+      <view class="flex-1">
+        <van-field
+          value="{{ searchText }}"
+          placeholder="在此输入检索已加载帐单"
+          bind:change="updateSearchText"
+          clearable
+          placeholder-style="color: var(--button-primary-background-color,#07c160)"
+        />
       </view>
-      <view class="flex-1 flex justify-end items-center space-x-6">
+      <view class="flex justify-end items-center space-x-6">
         <view class="i-ep-close text-2xl" @tap="handleClose" />
       </view>
     </view>

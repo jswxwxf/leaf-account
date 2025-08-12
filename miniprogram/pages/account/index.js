@@ -9,7 +9,7 @@ import { useOcr } from '@/composables/use-ocr.js'
 import { useAi } from '@/composables/use-ai.js'
 
 function useBillPopup(state, billPopupRef) {
-  const { typeValue, monthValue, updateBills, updateAccountSummary } = state
+  const { typeValue, monthValue, searchText, updateBills, updateAccountSummary } = state
 
   const billPopped = ref(false)
 
@@ -23,6 +23,7 @@ function useBillPopup(state, billPopupRef) {
       billToUpsert = await billPopupRef.value.show(initialBill)
     } finally {
       billPopped.value = false
+      searchText.value = ''
     }
 
     if (billToUpsert) {
@@ -71,8 +72,15 @@ function useProcessPhoto() {
 defineComponent({
   setup(props, { selectComponent }) {
     const state = store()
-    const { typeValue, monthValue, totalBalance, removeBills, updateBills, updateAccountSummary } =
-      state
+    const {
+      typeValue,
+      monthValue,
+      totalBalance,
+      searchText,
+      removeBills,
+      updateBills,
+      updateAccountSummary,
+    } = state
     provide(storeKey, state)
 
     const billPopup = ref(null)
@@ -163,6 +171,7 @@ defineComponent({
         billPopped.value = false
         imagePath.value = ''
         textContent.value = ''
+        searchText.value = ''
       }
 
       if (bills && bills.length > 0) {

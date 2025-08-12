@@ -24,6 +24,13 @@ export default function store() {
   const totalExpense = ref(0)
   const totalBalance = ref(0)
 
+  // 前端搜索
+  const searchText = ref('')
+
+  function updateSearchText(e) {
+    searchText.value = e.detail
+  }
+
   // 获取账单数据
   async function fetchBills(query = {}, isLoadMore = false) {
     loading.value = true
@@ -155,6 +162,8 @@ export default function store() {
     loading,
     hasMore,
     loadMore,
+    searchText,
+    updateSearchText,
   }
 }
 

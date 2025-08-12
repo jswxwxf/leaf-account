@@ -1,10 +1,13 @@
-import { defineComponent, nextTick, ref } from '@vue-mini/core'
+import { defineComponent, inject, nextTick, ref } from '@vue-mini/core'
 import { isEmpty } from 'lodash'
 import { parseDate } from '@/utils/date.js'
 import { newBill } from '@/service/bill-service.js'
+import { storeKey } from '../store'
 
 defineComponent({
   setup(props, { selectAllComponents }) {
+    const { searchText, updateSearchText } = inject(storeKey)
+
     const visible = ref(false)
     const list = ref([])
     const billForms = ref([])
@@ -102,6 +105,8 @@ defineComponent({
       handleAddRow,
       handleDeleteRow,
       handleCopyRow,
+      searchText,
+      updateSearchText,
     }
   },
 })

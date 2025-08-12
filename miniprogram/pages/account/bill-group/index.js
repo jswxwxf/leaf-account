@@ -1,4 +1,5 @@
-import { defineComponent } from '@vue-mini/core'
+import { computed, defineComponent, inject } from '@vue-mini/core'
+import { storeKey } from '../store'
 
 defineComponent({
   properties: {
@@ -12,6 +13,8 @@ defineComponent({
     },
   },
   setup(props, { triggerEvent }) {
+    const { searchText } = inject(storeKey)
+
     const handleEdit = (e) => {
       if (props.readonly) return
       const { bill } = e.currentTarget.dataset
@@ -36,10 +39,17 @@ defineComponent({
       })
     }
 
+    const filteredBills = computed(() => {
+      return props.item.bills.filter((bill) => {
+        return bill.note.includes(searchText.value)
+      })
+    })
+
     return {
       handleEdit,
       handleDelete,
       handleCopyNote,
+      filteredBills,
     }
   },
 })

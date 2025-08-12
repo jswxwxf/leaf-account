@@ -1,7 +1,10 @@
-import { defineComponent, ref, onReady } from '@vue-mini/core'
+import { defineComponent, ref, onReady, inject } from '@vue-mini/core'
+import { storeKey } from '../store'
 
 defineComponent({
   setup(props, { selectComponent }) {
+    const { searchText, updateSearchText } = inject(storeKey)
+
     const visible = ref(false)
     const bill = ref({})
     const billForm = ref()
@@ -44,13 +47,15 @@ defineComponent({
       bill.value[field] = value
     }
 
-    return {
-      visible,
-      bill,
-      show,
-      handleClose,
-      handleConfirm,
-      handleFormChange,
-    }
+   return {
+     visible,
+     bill,
+     searchText,
+     show,
+     handleClose,
+     handleConfirm,
+     handleFormChange,
+     updateSearchText,
+   }
   },
 })
