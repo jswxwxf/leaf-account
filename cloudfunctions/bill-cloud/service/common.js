@@ -72,7 +72,24 @@ class BizError extends Error {
   }
 }
 
+/**
+ * 将金额四舍五入到两位小数。
+ * @param {number|string} amount - 金额
+ * @returns {number} - 处理后的金额
+ */
+function parseMoney(amount) {
+  const num = parseFloat(amount)
+  if (isNaN(num)) {
+    return 0
+  }
+  // 使用 toFixed(2) 来进行正确的四舍五入并得到一个字符串
+  // 然后使用 Number() 将其转换回数字类型。
+  // 这是处理货币和需要精确小数位数的场景下的标准做法。
+  return Number(num.toFixed(2))
+}
+
 module.exports = {
   updateAccount,
   BizError,
+  parseMoney,
 }

@@ -135,12 +135,36 @@ async function updateTag(event, models) {
   return { updated: count }
 }
 
+/**
+ * 根据 ID 列表获取标签详情
+ * @param {object} event - 云函数的原始 event 对象
+ * @param {object} models - 数据模型实例
+ */
+async function getTagsByIds(event, models) {
+  const { ids } = event.query
+
+  if (!ids || ids.length === 0) {
+    return []
+  }
+
+  const {
+    data: { records: tags },
+  } = await models.tag.list({
+    filter: { where: { _id: { $in: ids } } },
+    select: { _id: true, name: true, type: true },
+    pageSize: 1000,
+  })
+
+  return tags
+}
+
 module.exports = {
   getTags,
   addTags,
   addTag,
   updateTag,
   deleteTag,
+  getTagsByIds,
 }
 
 /**

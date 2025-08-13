@@ -1,25 +1,10 @@
 const cloud = require('wx-server-sdk')
 const { getCategoryIds } = require('./category.js')
-const { updateAccount } = require('./common.js')
+const { getTagsByIds } = require('./tag.js')
+const { updateAccount, parseMoney } = require('./common.js')
 
 const db = cloud.database()
 const _ = db.command
-
-/**
- * 将金额四舍五入到两位小数。
- * @param {number|string} amount - 金额
- * @returns {number} - 处理后的金额
- */
-function parseMoney(amount) {
-  const num = parseFloat(amount)
-  if (isNaN(num)) {
-    return 0
-  }
-  // 使用 toFixed(2) 来进行正确的四舍五入并得到一个字符串
-  // 然后使用 Number() 将其转换回数字类型。
-  // 这是处理货币和需要精确小数位数的场景下的标准做法。
-  return Number(num.toFixed(2))
-}
 
 /**
  * 保存账单（创建或更新），并同步更新账户余额。
@@ -33,7 +18,7 @@ async function saveBill(event, models) {
   if (!bill) {
     throw new Error('请求中缺少 bill 对象')
   }
-  const { datetime, category, amount } = bill
+  const { datetime, category, amount, tags } = bill
   const note = bill.note?.trim()
   if (!datetime || !category || !amount || note === undefined || note === null) {
     throw new Error('参数不合法，datetime, category, amount, note 不能为空')
@@ -51,6 +36,10 @@ async function saveBill(event, models) {
 
   const categoryId = billToSave.category?._id
   billToSave.category = categoryId
+  // 提取 tags 的 _id 数组
+  if (Array.isArray(billToSave.tags)) {
+    billToSave.tags = billToSave.tags.map((tag) => tag._id).filter(Boolean)
+  }
 
    // 启动数据库事务
    const transaction = await db.startTransaction()
@@ -178,6 +167,9 @@ async function saveBills(event, models) {
       }
       delete billToSave._id
       billToSave.category = billToSave.category?._id
+      if (Array.isArray(billToSave.tags)) {
+        billToSave.tags = billToSave.tags.map((tag) => tag._id).filter(Boolean)
+      }
       return billToSave
     })
 
@@ -275,7 +267,7 @@ async function getBillsByIds(event, models) {
       datetime: true,
       note: true,
       category: { _id: true, name: true, type: true },
-      tags: { _id: true, name: true, type: true },
+      tags: true,
       createdAt: true,
     },
     filter: {
@@ -289,7 +281,8 @@ async function getBillsByIds(event, models) {
       },
     },
   })
-  return bills
+
+  return populateTagsForBills(bills, models)
 }
 
 /**
@@ -480,7 +473,7 @@ async function getBills(event, models) {
         datetime: true,
         note: true,
         category: { _id: true, name: true, type: true },
-        tags: { _id: true, name: true, type: true },
+        tags: true,
         createdAt: true,
       },
       filter: { where: periodWhereClause },
@@ -502,8 +495,9 @@ async function getBills(event, models) {
     loopCount++
   }
 
+  const populatedBills = await populateTagsForBills(accumulatedBills, models)
   return {
-    data: accumulatedBills,
+    data: populatedBills,
     nextStartDate: hasReachedEnd ? null : currentDate.toISOString().split('T')[0],
   }
 }
@@ -557,7 +551,7 @@ async function getAllBills(event, models) {
       datetime: true,
       note: true,
       category: { _id: true, name: true, type: true },
-      tags: { _id: true, name: true, type: true },
+      tags: true,
       createdAt: true,
     },
     filter: { where },
@@ -565,7 +559,7 @@ async function getAllBills(event, models) {
     pageSize: 1000, // 设置一个较大的数值以获取所有记录
   })
 
-  return records
+  return populateTagsForBills(records, models)
 }
 
 /**
@@ -663,6 +657,30 @@ async function resetBills(event, models) {
     await transaction.rollback()
     throw new Error(`重置账目失败: ${e.message}`)
   }
+}
+
+/**
+ * 为账单列表手动填充 tags 数据
+ * @param {Array<object>} bills - 账单对象数组
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<Array<object>>} - 填充了 tags 的账单对象数组
+ */
+async function populateTagsForBills(bills, models) {
+  if (bills.length > 0) {
+    const allTagIds = [...new Set(bills.flatMap((bill) => bill.tags || []).filter(Boolean))]
+
+    if (allTagIds.length > 0) {
+      const tags = await getTagsByIds({ query: { ids: allTagIds } }, models)
+      const tagsMap = new Map(tags.map((tag) => [tag._id, tag]))
+
+      bills.forEach((bill) => {
+        if (Array.isArray(bill.tags)) {
+          bill.tags = bill.tags.map((tagId) => tagsMap.get(tagId)).filter(Boolean)
+        }
+      })
+    }
+  }
+  return bills
 }
 
 module.exports = {
