@@ -21,7 +21,7 @@
       bind:change="updateSearchText"
       clearable
       custom-class="!bg-transparent"
-      custom-style="--cell-background-color: rgba(0, 0, 0, 0.3); --field-input-text-color: white"
+      custom-style="--cell-background-color: rgba(0, 0, 0, 0.3); --field-input-text-color: white; --cell-font-size: 14px;"
       placeholder-style="color: rgba(255, 255, 255, 0.7);"
     >
       <view slot="right-icon">
