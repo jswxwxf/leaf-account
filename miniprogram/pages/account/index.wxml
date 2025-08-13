@@ -21,7 +21,7 @@
             @copy="handleCopyBill"
             @edit="handleEditBill"
             @delete="handleDeleteBill"
-            readonly="{{ billPopped }}"
+            disabled="{{ billPopped }}"
           />
         </block>
         <!-- Loading and No More States -->

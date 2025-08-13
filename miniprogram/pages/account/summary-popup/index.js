@@ -41,7 +41,7 @@ defineComponent({
 
       const summaryText = Object.entries(daily)
         .map(([date, summary]) => {
-          const header = `${date} 收入: ${formatMoney(summary.income)} 支出: ${formatMoney(
+          const header = `${date} 收: ${formatMoney(summary.income)} 支: ${formatMoney(
             summary.expense,
           )}`
           return [header + '\n', ...summary.lines].join('\n')
@@ -50,18 +50,18 @@ defineComponent({
 
       content.value = [
         isEmpty(summaryText) ? '还没有录入账单' : summaryText,
-        `\n\n总收入: ${formatMoney(totalIncome)}`,
-        `总支出: ${formatMoney(totalExpense)}`,
-        `总余额: ${formatMoney(res.account.balance)}`,
+        `\n\n总收: ${formatMoney(totalIncome)}`,
+        `总支: ${formatMoney(totalExpense)}`,
+        `总余: ${formatMoney(res.account.balance)}`,
       ].join('\n')
     }
 
     watch(currentDate, generateSummary)
 
-    const show = (query = {}) => {
-      currentDate.value = query.createdAt || Date.now() // 每次打开时重置为今天
+    const show = async (query = {}) => {
+      currentDate.value = query.createdAt || Date.now()
       content.value = ''
-      generateSummary()
+      await generateSummary()
       visible.value = true
     }
 

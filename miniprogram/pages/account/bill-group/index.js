@@ -7,7 +7,7 @@ defineComponent({
       type: Object,
       value: {},
     },
-    readonly: {
+    disabled: {
       type: Boolean,
       value: false,
     },
@@ -16,19 +16,18 @@ defineComponent({
     const { searchText } = inject(storeKey)
 
     const handleCopy = (e) => {
-      if (props.readonly) return
+      if (props.disabled) return
       const { bill } = e.currentTarget.dataset
       triggerEvent('copy', bill)
     }
 
     const handleEdit = (e) => {
-      if (props.readonly) return
+      if (props.disabled) return
       const { bill } = e.currentTarget.dataset
       triggerEvent('edit', bill)
     }
 
     const handleDelete = (e) => {
-      if (props.readonly) return
       const { bill } = e.currentTarget.dataset
       triggerEvent('delete', bill)
     }
