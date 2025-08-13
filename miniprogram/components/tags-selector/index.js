@@ -83,6 +83,8 @@ defineComponent({
       tags.value = res.data || []
     }
 
+    fetchTags()
+
     const show = (value = []) => {
       visible.value = true
       selectedTags.value = [...value]

@@ -73,6 +73,8 @@ defineComponent({
       categories.value = res.data || []
     }
 
+    fetchCategories()
+
     const show = () => {
       visible.value = true
       resetNewCategory()
