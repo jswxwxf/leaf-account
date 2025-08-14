@@ -22,6 +22,12 @@
         "selectedIconPath": "assets/images/ep-document-selected.png"
       },
       {
+        "pagePath": "pages/cabinet/index",
+        "text": "帐本",
+        "iconPath": "assets/images/ep-notebook.png",
+        "selectedIconPath": "assets/images/ep-notebook-selected.png"
+      },
+      {
         "pagePath": "pages/setting/index",
         "text": "设置",
         "iconPath": "assets/images/ep-setting.png",

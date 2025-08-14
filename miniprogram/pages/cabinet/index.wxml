@@ -1,2 +1,32 @@
-<view>hello weapp-vite!</view>
-<view>from miniprogram/pages/stats/index</view>
+<wxs src="../../utils/utils.wxs" module="utils" />
+
+<view class="p-3 bg-slate-700">
+  <!-- 列表样式：纵向铺排，每项全宽，无卡片阴影/大圆角 -->
+  <view wx:for="{{ books }}" wx:key="id" class="relative overflow-hidden text-white mb-3 shadow-lg shadow-cyan-500/20">
+    <!-- 背景图：使用 image + aspectFill，避免 background-image -->
+    <image src="{{ item.img }}" mode="aspectFill" class="absolute inset-0 w-full h-full" />
+    <!-- 渐变遮罩，提升前景可读性且更高级 -->
+    <view class="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-black/40"></view>
+
+    <!-- 前景内容：左侧标题+金额，右侧竖向按钮 -->
+    <view class="relative h-full px-4 py-3 flex items-center justify-between">
+      <view class="flex flex-col items-start gap-1">
+        <view class="flex items-center gap-2">
+          <view class="text-base font-medium leading-tight van-ellipsis bg-black/30 py-1 px-2 w-28">{{ item.title }}</view>
+          <van-button size="mini" custom-class="cabinet-btn">改名</van-button>
+        </view>
+        <view class="inline-flex items-center gap-2 text-xs bg-black/30 py-1 px-2">
+          <view>收 ¥{{ utils.formatMoney(item.totalIncome) }}</view>
+          <view>支 ¥{{ utils.formatMoney(-item.totalExpense) }}</view>
+          <view>余 ¥{{ utils.formatMoney(item.balance) }}</view>
+        </view>
+      </view>
+
+      <view class="grid grid-rows-3 gap-1">
+        <van-button size="mini" custom-class="cabinet-btn">记帐</van-button>
+        <van-button size="mini" custom-class="cabinet-btn">转出</van-button>
+        <van-button size="mini" custom-class="cabinet-btn">转入</van-button>
+      </view>
+    </view>
+  </view>
+</view>
