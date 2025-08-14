@@ -128,7 +128,7 @@ defineComponent({
       // await wx.cloud.callFunction({
       //   name: 'data-init',
       //   data: {
-      //     task: 'init-category'
+      //     task: 'init-account'
       //   },
       //   success: (res) => {
       //     console.log('data-init called successfully', res.res)
