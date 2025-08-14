@@ -1,6 +1,6 @@
 <wxs src="../../utils/utils.wxs" module="utils" />
 
-<view class="p-3 bg-slate-700">
+<view class="p-3">
   <!-- 列表样式：纵向铺排，每项全宽，无卡片阴影/大圆角 -->
   <view wx:for="{{ books }}" wx:key="id" class="relative overflow-hidden text-white mb-3 shadow-lg shadow-cyan-500/20">
     <!-- 背景图：使用 image + aspectFill，避免 background-image -->
