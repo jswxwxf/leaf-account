@@ -1,6 +1,7 @@
 import { ref, computed, onShow, watch } from '@vue-mini/core'
 import { sumBy, orderBy } from 'lodash'
 import { getBills } from '@/api/bill.js'
+import { getAccount } from '@/api/account.js'
 import { groupBillsByDate } from '@/service/bill-service.js'
 import { getCurrentMonth, formatDate } from '@/utils/date.js'
 
@@ -15,14 +16,20 @@ export default function store() {
   // 按天分组的账单
   const dailyBills = computed(() => groupBillsByDate(rawBills.value))
 
+  // 当前账本信息
+  const currentAccount = ref({})
+
   // 筛选器值
   const typeValue = ref('')
-  const monthValue = ref(getCurrentMonth())
+  const monthValue = ref('')
 
   // 总计
   const totalIncome = ref(0)
   const totalExpense = ref(0)
   const totalBalance = ref(0)
+
+  // 错误状态
+  const error = ref(null)
 
   // 前端搜索
   const searchText = ref('')
@@ -31,12 +38,20 @@ export default function store() {
     searchText.value = e.detail
   }
 
+  function resetQuery() {
+    typeValue.value = ''
+    monthValue.value = getCurrentMonth()
+  }
+
+  resetQuery()
+
   // 获取账单数据
   async function fetchBills(query = {}, isLoadMore = false) {
-    loading.value = true
+    if (!currentAccount.value._id) return
 
+    loading.value = true
     try {
-      const res = await getBills(query)
+      const res = await getBills({ ...query, accountId: currentAccount.value._id })
 
       // 如果请求失败，res 为 null，或 res.data 不是数组，则中止后续操作
       if (!res || !Array.isArray(res.data)) {
@@ -77,6 +92,23 @@ export default function store() {
     await fetchBills(query, false)
   }
 
+  async function loadAccount() {
+    const name = getApp().globalData.account.value.name
+    error.value = null
+
+    try {
+      const { data: accountInfo } = await getAccount(name)
+      currentAccount.value = accountInfo
+      totalBalance.value = accountInfo.balance
+      totalIncome.value = accountInfo.totalIncome
+      totalExpense.value = accountInfo.totalExpense
+    } catch (err) {
+      error.value = err.message || '加载账本失败，请稍后重试'
+      currentAccount.value = {}
+      rawBills.value = []
+    }
+  }
+
   // 刷新数据
   function loadData() {
     const query = {
@@ -91,8 +123,18 @@ export default function store() {
     loadData()
   })
 
+  watch(getApp().globalData.account, async (value) => {
+    currentAccount.value = value
+    resetQuery()
+    await loadAccount()
+    loadData()
+  })
+
   // 初始化时获取数据
-  loadData()
+  ;(async function (params) {
+    await loadAccount()
+    loadData()
+  })()
 
   // 页面显示时刷新数据
   onShow(() => {
@@ -109,7 +151,7 @@ export default function store() {
     let needsReSort = false
 
     bills.forEach((bill) => {
-      const newBill = { ...bill }
+      const newBill = { ...bill, accountId: currentAccount.value._id }
       // 纠正金额正负号，确保其与类别匹配，以供UI正确渲染
       if (newBill.category.type === '10' && newBill.amount < 0) {
         newBill.amount = -newBill.amount
@@ -149,10 +191,8 @@ export default function store() {
   }
 
   return {
-    updateAccountSummary,
-    updateBills,
-    removeBills,
-    loadData,
+    error,
+    currentAccount,
     dailyBills,
     typeValue,
     monthValue,
@@ -160,9 +200,13 @@ export default function store() {
     totalIncome,
     totalBalance,
     loading,
-    hasMore,
-    loadMore,
     searchText,
+    hasMore,
+    loadData,
+    loadMore,
+    updateAccountSummary,
+    updateBills,
+    removeBills,
     updateSearchText,
   }
 }

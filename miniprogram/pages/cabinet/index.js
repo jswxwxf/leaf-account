@@ -1,23 +1,36 @@
-import { defineComponent, ref, onReady } from '@vue-mini/core'
+import { defineComponent, ref, onShow } from '@vue-mini/core'
 import { getAccounts } from '@/api/account.js'
 
 defineComponent({
   setup() {
-    const books = ref([])
+    const accounts = ref([])
 
     const fetchAccounts = async () => {
       const res = await getAccounts()
-      books.value = res.data
+      accounts.value = res.data
+    }
+
+    const handleAccountTap = (e) => {
+      const account = e.detail
+      wx.setTabBarItem({
+        index: 0,
+        text: account.title, // 修改后的文字
+      })
+      getApp().globalData.account.value = account
+      wx.switchTab({
+        url: `/pages/account/index`,
+      })
     }
 
     fetchAccounts()
 
-    onReady(() => {
+    onShow(() => {
       fetchAccounts()
     })
 
     return {
-      books,
+      accounts,
+      handleAccountTap,
     }
   },
 })

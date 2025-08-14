@@ -1,10 +1,16 @@
-import { createApp } from '@vue-mini/core'
+import { createApp, ref } from '@vue-mini/core'
 import { envList } from './envList'
 import '@/utils/lodash-fix.js'
 import '@/app.less'
+import { getAccount } from './api/account'
 
 // app.js
 createApp({
+  globalData: {
+    account: ref({
+      name: 'leaf-maple',
+    }),
+  },
   setup() {
     wx.cloud.init({
       env: envList[0].envId,

@@ -13,7 +13,16 @@ const REQUIRE_LOGIN_ROUTES = [
   '/post/tags',
   '/get/account',
   '/get/accounts',
-  '/put/account/reconcile'
+  '/put/account/reconcile',
+]
+const REQUIRE_ACCOUNT_ID_ROUTES = [
+  '/upsert/bill',
+  '/batch/bills',
+  '/delete/bill',
+  '/get/bills',
+  '/get/bills/all',
+  '/get/bills/summary',
+  '/put/account/reconcile',
 ]
 const WITH_ACCOUNT_ROUTES = ['/upsert/bill', '/get/bills', '/get/bills/all', '/batch/bills', '/delete/bill']
 const WITH_SUMMARY_ROUTES = ['/upsert/bill', '/get/bills', '/batch/bills', '/delete/bill']
@@ -27,6 +36,20 @@ const requireLogin = (event) => async (ctx, next) => {
     const { OPENID } = cloud.getWXContext()
     if (!OPENID) {
       ctx.body = { code: 401, success: false, message: '用户未登录' }
+      return // 中断执行
+    }
+  }
+  await next()
+}
+
+/**
+ * 校验 accountId 中间件
+ * @param {object} event - 云函数 event 对象
+ */
+const requireAccountId = (event) => async (ctx, next) => {
+  if (REQUIRE_ACCOUNT_ID_ROUTES.includes(event.$url)) {
+    if (!event.query?.accountId) {
+      ctx.body = { code: 400, success: false, message: '请求中缺少 accountId 参数' }
       return // 中断执行
     }
   }
@@ -53,9 +76,9 @@ const withAccount = (models, event) => async (ctx, next) => {
  */
 const withSummary = (models, event) => async (ctx, next) => {
   await next() // 先执行后续路由
-  const month = event.query?.month
-  if (WITH_SUMMARY_ROUTES.includes(event.$url) && ctx.body && ctx.body.success && month) {
-    const summary = await getBillsSummary({ ...event, query: { ...event.query, month } }, models)
+  const { month, accountId } = event.query || {}
+  if (WITH_SUMMARY_ROUTES.includes(event.$url) && ctx.body && ctx.body.success && month && accountId) {
+    const summary = await getBillsSummary({ ...event, query: { ...event.query, month, accountId } }, models)
     ctx.body.summary = {
       totalIncome: summary.totalIncome || 0,
       totalExpense: Math.abs(summary.totalExpense || 0),
@@ -71,6 +94,7 @@ const withSummary = (models, event) => async (ctx, next) => {
  */
 function useMiddlewares(app, event, models) {
   app.use(requireLogin(event))
+  app.use(requireAccountId(event))
   app.use(withAccount(models, event))
   app.use(withSummary(models, event))
 }

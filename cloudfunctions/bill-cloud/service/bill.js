@@ -1,7 +1,7 @@
 const cloud = require('wx-server-sdk')
 const { getCategoryIds } = require('./category.js')
 const { getTagsByIds } = require('./tag.js')
-const { updateAccount, parseMoney } = require('./common.js')
+const { updateAccount, parseMoney, populateTagsForBills } = require('./common.js')
 
 const db = cloud.database()
 const _ = db.command
@@ -13,6 +13,7 @@ const _ = db.command
  */
 async function saveBill(event, models) {
   const { bill } = event.body
+  const { accountId } = event.query || {}
   const { OPENID } = cloud.getWXContext()
 
   if (!bill) {
@@ -74,7 +75,7 @@ async function saveBill(event, models) {
 
       // 2. 更新账户余额
       await updateAccount(
-        { balanceIncrement, incomeIncrement, expenseIncrement },
+        { balanceIncrement, incomeIncrement, expenseIncrement, accountId },
         models,
         transaction,
       )
@@ -93,7 +94,7 @@ async function saveBill(event, models) {
 
       // 1. 更新账户余额
       await updateAccount(
-        { balanceIncrement, incomeIncrement, expenseIncrement },
+        { balanceIncrement, incomeIncrement, expenseIncrement, accountId },
         models,
         transaction,
       )
@@ -102,6 +103,7 @@ async function saveBill(event, models) {
       const createResult = await transaction.collection('bill').add({
         data: {
           ...billToSave,
+          account: accountId,
           _openid: OPENID,
           createdAt: Date.now(),
           createdBy: OPENID,
@@ -140,6 +142,7 @@ async function saveBill(event, models) {
  */
 async function saveBills(event, models) {
   const { bills } = event.body
+  const { accountId } = event.query || {}
   const { OPENID } = cloud.getWXContext()
 
   if (!Array.isArray(bills) || bills.length === 0) {
@@ -190,7 +193,7 @@ async function saveBills(event, models) {
       // 1. 更新账户余额
       if (balanceIncrement !== 0) {
         await updateAccount(
-          { balanceIncrement, incomeIncrement, expenseIncrement },
+          { balanceIncrement, incomeIncrement, expenseIncrement, accountId },
           models,
           transaction,
         )
@@ -202,6 +205,7 @@ async function saveBills(event, models) {
         const result = await transaction.collection('bill').add({
           data: {
             ...bill,
+            account: accountId,
             _openid: OPENID,
             createdAt: Date.now(),
             createdBy: OPENID,
@@ -290,12 +294,12 @@ async function getBillsByIds(event, models) {
  * @param {object} event - 云函数的原始 event 对象
  */
 async function getBillsSummary(event, models) {
-  const { month, type } = event.query || {}
+  const { month, type, accountId } = event.query || {}
   const { OPENID } = cloud.getWXContext()
 
   // 权限：只能获取自己的或公共的
   const whereClause = {
-    $and: [{ _openid: { $eq: OPENID } }],
+    $and: [{ _openid: { $eq: OPENID } }, { account: { $eq: accountId } }],
   }
 
   if (month) {
@@ -371,7 +375,7 @@ async function getMinDate(models, where = {}) {
  * @param {object} models - 数据模型实例
  */
 async function getBills(event, models) {
-  const { month, type, startDate: startDateStr } = event.query || {}
+  const { month, type, startDate: startDateStr, accountId } = event.query || {}
   const { OPENID } = cloud.getWXContext()
 
   // 权限：只能获取自己的或公共的
@@ -379,6 +383,9 @@ async function getBills(event, models) {
     $and: [
       {
         _openid: { $eq: OPENID },
+      },
+      {
+        account: { $eq: accountId },
       },
     ],
   }
@@ -508,13 +515,16 @@ async function getBills(event, models) {
  * @param {object} models - 数据模型实例
  */
 async function getAllBills(event, models) {
-  const { type, createdAt } = event.query || {}
+  const { type, createdAt, accountId } = event.query || {}
   const { OPENID } = cloud.getWXContext()
 
   const where = {
     $and: [
       {
         _openid: { $eq: OPENID },
+      },
+      {
+        account: { $eq: accountId },
       },
     ],
   }
@@ -569,6 +579,7 @@ async function getAllBills(event, models) {
  */
 async function deleteBill(event, models) {
   const { id } = event
+  const { accountId } = event.query || {}
   const { OPENID } = cloud.getWXContext()
 
   if (!id) {
@@ -601,7 +612,7 @@ async function deleteBill(event, models) {
 
     // 3. 反向更新账户余额
     await updateAccount(
-      { balanceIncrement, incomeIncrement, expenseIncrement },
+      { balanceIncrement, incomeIncrement, expenseIncrement, accountId },
       models,
       transaction,
     )
@@ -634,20 +645,14 @@ async function resetBills(event, models) {
     // 1. 删除所有相关账单
     const deleteResult = await transaction.collection('bill').where({ _openid: OPENID }).remove()
 
-    // 2. 重置账户信息
-    await transaction
-      .collection('account')
-      .doc(OPENID)
-      .set({
-        data: {
-          _openid: OPENID,
-          balance: 0,
-          totalIncome: 0,
-          totalExpense: 0,
-          name: 'default',
-          updatedAt: Date.now(),
-        },
-      })
+    // 2. 删除所有账户
+    await transaction.collection('account').where({ _openid: OPENID }).remove()
+
+    // 3. 删除所有用户自定义分类
+    await transaction.collection('category').where({ _openid: OPENID }).remove()
+
+    // 4. 删除所有用户自定义标签
+    await transaction.collection('tag').where({ _openid: OPENID }).remove()
 
     await transaction.commit()
     return {
@@ -657,30 +662,6 @@ async function resetBills(event, models) {
     await transaction.rollback()
     throw new Error(`重置账目失败: ${e.message}`)
   }
-}
-
-/**
- * 为账单列表手动填充 tags 数据
- * @param {Array<object>} bills - 账单对象数组
- * @param {object} models - 数据模型实例
- * @returns {Promise<Array<object>>} - 填充了 tags 的账单对象数组
- */
-async function populateTagsForBills(bills, models) {
-  if (bills.length > 0) {
-    const allTagIds = [...new Set(bills.flatMap((bill) => bill.tags || []).filter(Boolean))]
-
-    if (allTagIds.length > 0) {
-      const tags = await getTagsByIds({ query: { ids: allTagIds } }, models)
-      const tagsMap = new Map(tags.map((tag) => [tag._id, tag]))
-
-      bills.forEach((bill) => {
-        if (Array.isArray(bill.tags)) {
-          bill.tags = bill.tags.map((tagId) => tagsMap.get(tagId)).filter(Boolean)
-        }
-      })
-    }
-  }
-  return bills
 }
 
 module.exports = {

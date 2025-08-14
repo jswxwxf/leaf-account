@@ -1,44 +1,56 @@
 <view class="h-screen bg-gray-100 flex flex-col">
-  <account-summary hidden="{{ billPopped }}" @balance-tap="handleReconcile" />
+  <!-- 全屏错误提示 -->
+  <view wx:if="{{ error }}" class="flex-1 flex flex-col items-center justify-center text-center p-4">
+    <view class="text-red-500 text-lg mb-2">加载失败</view>
+    <button class="mt-4" type="primary" size="mini" @tap="loadData(true)">重试</button>
+  </view>
 
-  <bill-popup id="bill-popup" />
-  <batch-popup id="batch-popup" />
+  <!-- 正常页面内容 -->
+  <block wx:else>
+    <account-summary hidden="{{ billPopped }}" @balance-tap="handleReconcile" />
 
-  <!-- Bill List -->
-  <view class="flex-1 relative">
-    <scroll-view
-      scroll-y
-      class="absolute inset-0"
-      scroll-y
-      lower-threshold="100"
-      @scrolltolower="loadMore"
-      scroll-top="{{ scrollTop }}"
-    >
-      <view class="pb-16 pt-2 relative">
-        <block wx:for="{{ dailyBills }}" wx:key="_id">
-          <bill-group
-            item="{{ item }}"
-            @copy="handleCopyBill"
-            @edit="handleEditBill"
-            @delete="handleDeleteBill"
-            disabled="{{ billPopped }}"
-          />
-        </block>
-        <!-- Loading and No More States -->
-        <view class="py-4 text-center text-gray-500 text-sm">
-          <view wx:if="{{ loading }}">正在加载...</view>
-          <view wx:if="{{ !hasMore && dailyBills.length > 0 }}">没有更多了</view>
-          <view wx:if="{{ !loading && dailyBills.length === 0 }}">暂无数据</view>
+    <bill-popup id="bill-popup" />
+    <batch-popup id="batch-popup" />
+
+    <!-- Bill List -->
+    <view class="flex-1 relative">
+      <scroll-view
+        scroll-y
+        class="absolute inset-0"
+        lower-threshold="100"
+        @scrolltolower="loadMore"
+        scroll-top="{{ scrollTop }}"
+      >
+        <view class="pb-16 pt-2 relative">
+          <block wx:for="{{ dailyBills }}" wx:key="_id">
+            <bill-group
+              item="{{ item }}"
+              @copy="handleCopyBill"
+              @edit="handleEditBill"
+              @delete="handleDeleteBill"
+              disabled="{{ billPopped }}"
+            />
+          </block>
+          <!-- Loading and No More States -->
+          <view class="py-4 text-center text-gray-500 text-sm">
+            <view wx:if="{{ loading }}">正在加载...</view>
+            <view wx:if="{{ !hasMore && dailyBills.length > 0 }}">没有更多了</view>
+            <view wx:if="{{ !loading && dailyBills.length === 0 }}">暂无数据</view>
+          </view>
         </view>
-      </view>
-    </scroll-view>
-    <check-view wx:if="{{ billPopped && (imagePath || textContent) }}" image-path="{{ imagePath }}" text-content="{{ textContent }}" />
-  </view>
+      </scroll-view>
+      <check-view
+        wx:if="{{ billPopped && (imagePath || textContent) }}"
+        image-path="{{ imagePath }}"
+        text-content="{{ textContent }}"
+      />
+    </view>
 
-  <!-- Fixed Add Button -->
-  <view class="fixed bottom-16 right-4">
-    <add-button hidden="{{ billPopped }}" @click="handleAddBill" @select="handleActionSelect" />
-  </view>
+    <!-- Fixed Add Button -->
+    <view class="fixed bottom-16 right-4">
+      <add-button hidden="{{ billPopped }}" @click="handleAddBill" @select="handleActionSelect" />
+    </view>
+  </block>
 </view>
 
 <van-toast id="van-toast" />

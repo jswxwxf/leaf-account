@@ -1,0 +1,38 @@
+<wxs src="../../../utils/utils.wxs" module="utils" />
+
+<view class="relative overflow-hidden text-white mb-3 shadow-lg shadow-cyan-500/20">
+  <!-- 背景图：使用 image + aspectFill，避免 background-image -->
+  <image
+    src="{{ '../../../assets/images/' + account.name + '.jpg' }}"
+    mode="aspectFill"
+    class="absolute inset-0 w-full h-full {{ !account.isOpened ? 'grayscale' : '' }}"
+  />
+  <!-- 渐变遮罩，提升前景可读性且更高级 -->
+  <view class="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-black/40"></view>
+
+  <!-- 前景内容：左侧标题+金额，右侧竖向按钮 -->
+  <view class="relative h-full px-4 py-3 flex items-center justify-between">
+    <view class="flex flex-col items-start gap-1">
+      <view class="flex items-center gap-2">
+        <view
+          class="text-base font-medium leading-tight van-ellipsis bg-black/30 py-1 px-2 w-36 {{ !account.isOpened ? 'text-gray-400' : '' }}"
+        >
+          {{ account.title }}
+          <text class="text-sm">{{ !account.isOpened ?' | 未启用': '' }}</text>
+        </view>
+        <van-button size="mini" custom-class="cabinet-btn">改名</van-button>
+      </view>
+      <view class="inline-flex items-center gap-2 text-xs bg-black/30 py-1 px-2">
+        <view>收 ¥{{ utils.formatMoney(account.totalIncome) }}</view>
+        <view>支 ¥{{ utils.formatMoney(-account.totalExpense) }}</view>
+        <view>余 ¥{{ utils.formatMoney(account.balance) }}</view>
+      </view>
+    </view>
+
+    <view class="grid grid-rows-3 gap-1">
+      <van-button size="mini" custom-class="cabinet-btn" @tap="handleTap">记帐</van-button>
+      <van-button size="mini" custom-class="cabinet-btn">转出</van-button>
+      <van-button size="mini" custom-class="cabinet-btn">转入</van-button>
+    </view>
+  </view>
+</view>

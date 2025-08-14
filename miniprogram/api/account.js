@@ -18,7 +18,7 @@ import { get, post } from './request-cloud.js'
 export function getAccount(name = 'leaf-maple') {
   return get('bill-cloud', {
     $url: '/get/account',
-    name,
+    query: { name },
   })
 }
 
@@ -37,9 +37,12 @@ export function getAccounts() {
  * @param {number} actualBalance - 实际余额
  * @returns {Promise<Account>}
  */
-export function reconcileAccount(actualBalance) {
+export function reconcileAccount(actualBalance, accountId) {
   return post('bill-cloud', {
     $url: '/put/account/reconcile',
-    actualBalance,
+    query: {
+      actualBalance,
+      accountId,
+    },
   })
 }

@@ -2,7 +2,5 @@
   "$schema": "https://vite.icebreaker.top/component.json",
   "component": true,
   "styleIsolation": "shared",
-  "usingComponents": {
-    "account-box": "./account-box/index"
-  }
+  "usingComponents": {}
 }

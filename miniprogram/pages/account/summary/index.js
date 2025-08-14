@@ -10,6 +10,7 @@ defineComponent({
   },
   setup(props, { triggerEvent }) {
     const {
+      currentAccount,
       typeValue,
       monthValue,
       totalExpense,
@@ -54,6 +55,7 @@ defineComponent({
     }
 
     return {
+      currentAccount,
       typeOptions,
       monthOptions,
       typeValue,

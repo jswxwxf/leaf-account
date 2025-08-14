@@ -21,7 +21,9 @@ defineComponent({
           title: '操作成功',
           message: res.message,
         })
-        wx.switchTab({ url: '/pages/account/index' })
+        wx.reLaunch({
+          url: '/pages/account/index',
+        })
       } finally {
         wx.hideLoading()
       }

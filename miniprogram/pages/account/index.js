@@ -1,4 +1,4 @@
-import { defineComponent, ref, provide, onReady, onUnload, watch } from '@vue-mini/core'
+import { defineComponent, ref, provide, onReady, onUnload, watch, onLoad } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
 import Dialog from '@vant/weapp/dialog/dialog.js'
 import { reconcileAccount } from '@/api/account.js'
@@ -9,7 +9,8 @@ import { useOcr } from '@/composables/use-ocr.js'
 import { useAi } from '@/composables/use-ai.js'
 
 function useBillPopup(state, billPopupRef) {
-  const { typeValue, monthValue, searchText, updateBills, updateAccountSummary } = state
+  const { currentAccount, typeValue, monthValue, searchText, updateBills, updateAccountSummary } =
+    state
 
   const billPopped = ref(false)
 
@@ -30,6 +31,7 @@ function useBillPopup(state, billPopupRef) {
       const res = await upsertBill(billToUpsert, {
         month: monthValue.value,
         type: typeValue.value,
+        accountId: currentAccount.value._id,
       })
       updateBills([res.data])
       updateAccountSummary(res)
@@ -73,6 +75,7 @@ defineComponent({
   setup(props, { selectComponent }) {
     const state = store()
     const {
+      currentAccount,
       typeValue,
       monthValue,
       totalBalance,
@@ -104,15 +107,18 @@ defineComponent({
     })
 
     const scrollTop = ref(0)
-    // 监听月份变化，自动滚动到顶部
-    watch(monthValue, () => {
+    const scrollToTop = () => {
       // 通过先设置为一个极小值再设置为0，确保能触发滚动
       scrollTop.value = 0.1
       scrollTop.value = 0
-    })
+    }
+
+    // 监听月份或类型变化，自动滚动到顶部
+    watch([monthValue, typeValue], scrollToTop)
 
     const handleAddBill = async () => {
-      processBill(newBill())
+      await processBill(newBill())
+      scrollToTop()
       // await wx.cloud.callFunction({
       //   name: 'data-importer',
       //   data: {},
@@ -145,7 +151,7 @@ defineComponent({
       processBill(e.detail)
     }
 
-    const handleCopyBill = (e) => {
+    const handleCopyBill = async (e) => {
       const billCopy = {
         datetime: Date.now(),
         category: e.detail.category,
@@ -153,7 +159,8 @@ defineComponent({
         note: e.detail.note,
         tags: e.detail.tags,
       }
-      processBill(billCopy)
+      await processBill(billCopy)
+      scrollToTop()
     }
 
     const handleDeleteBill = async (e) => {
@@ -163,7 +170,11 @@ defineComponent({
         message: `确定要删除这笔 "${bill.category.name}" 的账单吗？`,
         confirmButtonText: '删除',
       })
-      const res = await deleteBill(bill._id, { month: monthValue.value, type: typeValue.value })
+      const res = await deleteBill(bill._id, {
+        month: monthValue.value,
+        type: typeValue.value,
+        accountId: currentAccount.value._id,
+      })
       updateAccountSummary(res)
       removeBills([bill]) // 从 store 中移除
       Toast.success('删除成功')
@@ -186,9 +197,14 @@ defineComponent({
       }
 
       if (bills && bills.length > 0) {
-        const res = await saveBills(bills, { month: monthValue.value, type: typeValue.value })
+        const res = await saveBills(bills, {
+          month: monthValue.value,
+          type: typeValue.value,
+          accountId: currentAccount.value._id,
+        })
         updateAccountSummary(res)
         updateBills(res.data)
+        scrollToTop()
       }
     }
 
@@ -229,14 +245,14 @@ defineComponent({
 
     const handleReconcile = async () => {
       const res = await reconcilePopup.value.show(totalBalance.value)
-      await reconcileAccount(res.actualBalance)
+      await reconcileAccount(res.actualBalance, currentAccount.value._id)
       // 重新加载账单
       state.loadData()
       Toast.success('对账成功')
     }
 
     const handleTodaySummary = async () => {
-      summaryPopup.value.show({ createdAt: Date.now() })
+      summaryPopup.value.show({ createdAt: Date.now(), account: currentAccount.value })
     }
 
     const handleActionSelect = (e) => {

@@ -12,8 +12,28 @@ const _ = db.command
  * @param {object} [options] - 其他选项
  * @param {boolean} [options.withId=false] - 是否返回 _id 字段
  */
-async function getAccount(event, models, { withId = false, name = 'leaf-maple' } = {}) {
+async function getAccount(event, models) {
+  const { name = 'leaf-maple', accountId } = event.query || {}
   const { OPENID } = cloud.getWXContext()
+
+  // 如果传入 accountId，则优先使用 ID 查询
+  if (accountId) {
+    const accountRes = await models.account.get({
+      filter: {
+        where: {
+          _id: { $eq: accountId },
+          _openid: { $eq: OPENID }, // 确保只能获取自己的
+        },
+      },
+    })
+    if (accountRes.data) {
+      const account = accountRes.data
+      delete account._openid
+      return account
+    }
+    // 如果按 ID 找不到，抛出错误
+    throw new BizError(`找不到 ID 为 ${accountId} 的账本，或没有权限访问。`)
+  }
 
   // 1. 尝试查找用户自己的账本
   const userAccountRes = await models.account.list({
@@ -29,9 +49,6 @@ async function getAccount(event, models, { withId = false, name = 'leaf-maple' }
 
   if (userAccountRes.data && userAccountRes.data.records.length > 0) {
     const account = userAccountRes.data.records[0]
-    if (!withId) {
-      delete account._id
-    }
     delete account._openid
     return account
   }
@@ -53,6 +70,10 @@ async function getAccount(event, models, { withId = false, name = 'leaf-maple' }
     const publicAccount = publicAccountRes.data.records[0]
     const newAccountData = {
       ...publicAccount,
+      createdAt: Date.now(),
+      createdBy: OPENID,
+      updatedAt: Date.now(),
+      updatedBy: OPENID,
       _openid: OPENID,
     }
     delete newAccountData._id // 删除旧的 _id 以创建新记录
@@ -63,11 +84,12 @@ async function getAccount(event, models, { withId = false, name = 'leaf-maple' }
 
     // 返回新创建的账本
     const createdAccount = await models.account.get({
-      id: createRes.data._id,
+      filter: {
+        where: {
+          _id: { $eq: createRes.data.id },
+        },
+      },
     })
-    if (!withId) {
-      delete createdAccount.data._id
-    }
     delete createdAccount.data._openid
     return createdAccount.data
   }
@@ -77,7 +99,7 @@ async function getAccount(event, models, { withId = false, name = 'leaf-maple' }
 }
 
 async function reconcileAccount(event, models) {
-  const { actualBalance } = event
+  const { actualBalance, accountId } = event
   const { OPENID } = cloud.getWXContext()
 
   if (typeof actualBalance !== 'number') {
@@ -85,7 +107,10 @@ async function reconcileAccount(event, models) {
   }
 
   // 1. 获取当前系统余额
-  const currentAccount = await getAccount(event, models, { name: 'leaf-maple' })
+  const currentAccount = await getAccount(
+    { ...event, query: { ...event.query, accountId } },
+    models,
+  )
   const systemBalance = currentAccount.balance
   const difference = actualBalance - systemBalance
 
@@ -133,6 +158,9 @@ async function reconcileAccount(event, models) {
   // 4. 创建一个新的 event 对象来调用 saveBill
   const saveBillEvent = {
     ...event, // 继承父 event 的上下文
+    query: {
+      accountId,
+    },
     body: {
       bill: reconcileBill,
     },
@@ -144,7 +172,7 @@ async function reconcileAccount(event, models) {
 
   // 6. 返回更新后的账户信息
   // 此时账户信息已经被 saveBill 更新，所以重新获取一次
-  return getAccount(event, models, { name: 'leaf-maple' })
+  return getAccount({ ...event, query: { ...event.query, accountId } }, models)
 }
 
 async function getAccounts(event, models) {
@@ -157,9 +185,10 @@ async function getAccounts(event, models) {
         _openid: { $eq: OPENID },
       },
     },
+    orderBy: [{ createdAt: 'asc' }],
     pageSize: 100, // 假设用户账本不会超过 100 个
   })
-  const privateAccounts = (privateAccountsRes.data.records || []).map(acc => {
+  const privateAccounts = (privateAccountsRes.data.records || []).map((acc) => {
     delete acc._openid
     return { ...acc, isOpened: true }
   })
@@ -171,18 +200,17 @@ async function getAccounts(event, models) {
         _openid: { $empty: true },
       },
     },
+    orderBy: [{ createdAt: 'asc' }],
     pageSize: 100, // 假设公共账本不会超过 100 个
   })
-  const publicAccounts = (publicAccountsRes.data.records || []).map(acc => {
+  const publicAccounts = (publicAccountsRes.data.records || []).map((acc) => {
     delete acc._openid
     return { ...acc, isOpened: false }
   })
 
   // 3. 过滤掉用户已经拥有的公共账本
-  const privateAccountNames = new Set(privateAccounts.map(a => a.name))
-  const availablePublicAccounts = publicAccounts.filter(
-    (pa) => !privateAccountNames.has(pa.name)
-  )
+  const privateAccountNames = new Set(privateAccounts.map((a) => a.name))
+  const availablePublicAccounts = publicAccounts.filter((pa) => !privateAccountNames.has(pa.name))
 
   // 4. 合并并返回
   return [...privateAccounts, ...availablePublicAccounts]

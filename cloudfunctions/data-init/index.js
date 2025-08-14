@@ -62,7 +62,7 @@ async function initCategory() {
 async function initAccount() {
   const collection = db.collection('account')
   const accountsToCreate = [
-    { title: '枫叶帐本', name: 'leaf-maple', totalIncome: 0, totalExpense: 0, balance: 0 },
+    { title: '流水帐', name: 'leaf-maple', totalIncome: 0, totalExpense: 0, balance: 0 },
     { title: '银杏帐本', name: 'leaf-ginkgo', totalIncome: 0, totalExpense: 0, balance: 0 },
     { title: '莲叶帐本', name: 'leaf-lotus', totalIncome: 0, totalExpense: 0, balance: 0 },
     { title: '芭蕉帐本', name: 'leaf-banana', totalIncome: 0, totalExpense: 0, balance: 0 },

@@ -1,4 +1,5 @@
 const cloud = require('wx-server-sdk')
+const { getTagsByIds } = require('./tag.js')
 
 const db = cloud.database()
 const _ = db.command
@@ -14,54 +15,40 @@ const _ = db.command
  * @param {object} [dbOrTransaction] - 数据库或事务实例，如果未提供，则使用默认的 db 实例
  */
 async function updateAccount(event, models, dbOrTransaction) {
-  const { balanceIncrement, incomeIncrement, expenseIncrement } = event
+  const { balanceIncrement, incomeIncrement, expenseIncrement, accountId } = event
   const { OPENID } = cloud.getWXContext()
   const dbInstance = dbOrTransaction || db
 
-  if (!OPENID) {
-    throw new Error('必须提供 OPENID 以更新账户')
+  const accountCollection = dbInstance.collection('account')
+
+  // 构建查询条件
+  const where = {
+    _id: accountId,
+    _openid: OPENID, // 确保用户只能更新自己的账户
   }
 
-  const account = dbInstance.collection('account')
-
   // 1. 查询账户是否存在
-  const { data: accounts } = await account.where({ _openid: OPENID }).limit(1).get()
+  const { data: accounts } = await accountCollection.where(where).limit(1).get()
 
-  let result
-  if (accounts && accounts.length > 0) {
-    // 2. 如果存在，则更新
-    const updateData = {}
-    if (balanceIncrement) updateData.balance = _.inc(balanceIncrement)
-    if (incomeIncrement) updateData.totalIncome = _.inc(incomeIncrement)
-    if (expenseIncrement) updateData.totalExpense = _.inc(expenseIncrement)
+  if (!accounts || accounts.length === 0) {
+    throw new Error(`找不到 ID 为 ${accountId} 的账户，或没有权限操作。`)
+  }
 
-    if (Object.keys(updateData).length === 0) return // 如果没有要更新的，直接返回
+  // 2. 更新账户
+  const updateData = {}
+  if (balanceIncrement) updateData.balance = _.inc(balanceIncrement)
+  if (incomeIncrement) updateData.totalIncome = _.inc(incomeIncrement)
+  if (expenseIncrement) updateData.totalExpense = _.inc(expenseIncrement)
 
-    updateData.updatedAt = Date.now()
-    updateData.updatedBy = OPENID
+  if (Object.keys(updateData).length === 0) return // 如果没有要更新的，直接返回
 
-    result = await account.where({ _openid: OPENID }).update({ data: updateData })
-    if (result.stats.updated === 0) {
-      throw new Error('更新用户账户失败')
-    }
-  } else {
-    // 3. 如果不存在，则创建
-    result = await account.add({
-      data: {
-        _openid: OPENID,
-        name: 'default',
-        balance: balanceIncrement || 0,
-        totalIncome: incomeIncrement || 0,
-        totalExpense: expenseIncrement || 0,
-        createdAt: Date.now(),
-        createdBy: OPENID,
-        updatedAt: Date.now(),
-        updatedBy: OPENID,
-      },
-    })
-    if (!result._id) {
-      throw new Error('创建用户账户失败')
-    }
+  updateData.updatedAt = Date.now()
+  updateData.updatedBy = OPENID
+
+  const result = await accountCollection.where(where).update({ data: updateData })
+
+  if (result.stats.updated === 0) {
+    throw new Error('更新用户账户失败')
   }
 }
 
@@ -88,8 +75,33 @@ function parseMoney(amount) {
   return Number(num.toFixed(2))
 }
 
+/**
+ * 为账单列表手动填充 tags 数据
+ * @param {Array<object>} bills - 账单对象数组
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<Array<object>>} - 填充了 tags 的账单对象数组
+ */
+async function populateTagsForBills(bills, models) {
+  if (bills.length > 0) {
+    const allTagIds = [...new Set(bills.flatMap((bill) => bill.tags || []).filter(Boolean))]
+
+    if (allTagIds.length > 0) {
+      const tags = await getTagsByIds({ query: { ids: allTagIds } }, models)
+      const tagsMap = new Map(tags.map((tag) => [tag._id, tag]))
+
+      bills.forEach((bill) => {
+        if (Array.isArray(bill.tags)) {
+          bill.tags = bill.tags.map((tagId) => tagsMap.get(tagId)).filter(Boolean)
+        }
+      })
+    }
+  }
+  return bills
+}
+
 module.exports = {
   updateAccount,
   BizError,
   parseMoney,
+  populateTagsForBills,
 }

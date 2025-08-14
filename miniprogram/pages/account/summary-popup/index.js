@@ -10,9 +10,13 @@ defineComponent({
     const visible = ref(false)
     const content = ref('')
     const currentDate = ref()
+    const currentAccount = ref()
 
     const generateSummary = async () => {
-      const query = { createdAt: formatDate(currentDate.value, 'YYYY-MM-DD') }
+      const query = {
+        createdAt: formatDate(currentDate.value, 'YYYY-MM-DD'),
+        accountId: currentAccount.value._id,
+      }
       const res = await getAllBills(query)
       const { daily, totalIncome, totalExpense } = (res.data || []).reduce(
         (acc, bill) => {
@@ -60,6 +64,7 @@ defineComponent({
 
     const show = async (query = {}) => {
       currentDate.value = query.createdAt || Date.now()
+      currentAccount.value = query.account || {}
       content.value = ''
       await generateSummary()
       visible.value = true
