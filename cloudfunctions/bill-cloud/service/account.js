@@ -1,5 +1,6 @@
 const cloud = require('wx-server-sdk')
 const { saveBill } = require('./bill.js')
+const { BizError } = require('./common.js')
 
 const db = cloud.database()
 const _ = db.command
@@ -11,49 +12,68 @@ const _ = db.command
  * @param {object} [options] - 其他选项
  * @param {boolean} [options.withId=false] - 是否返回 _id 字段
  */
-async function getAccount(event, models, { withId = false } = {}) {
+async function getAccount(event, models, { withId = false, name = 'leaf-maple' } = {}) {
   const { OPENID } = cloud.getWXContext()
 
-  if (!OPENID) {
-    return {
-      name: 'default',
-      balance: 0,
-      totalIncome: 0,
-      totalExpense: 0,
-    }
-  }
-
-  const accountRes = await models.account.list({
-    select: {
-      name: true,
-      balance: true,
-      totalIncome: true,
-      totalExpense: true,
-    },
+  // 1. 尝试查找用户自己的账本
+  const userAccountRes = await models.account.list({
     filter: {
       where: {
         _openid: { $eq: OPENID },
+        name: { $eq: name },
       },
     },
     page: 1,
     pageSize: 1,
   })
 
-  if (accountRes.data && accountRes.data.records.length > 0) {
-    const account = accountRes.data.records[0]
+  if (userAccountRes.data && userAccountRes.data.records.length > 0) {
+    const account = userAccountRes.data.records[0]
     if (!withId) {
       delete account._id
     }
+    delete account._openid
     return account
   }
 
-  // 如果用户还没有账户记录，返回一个默认的初始状态
-  return {
-    name: 'default',
-    balance: 0,
-    totalIncome: 0,
-    totalExpense: 0,
+  // 2. 如果找不到，尝试查找公共账本
+  const publicAccountRes = await models.account.list({
+    filter: {
+      where: {
+        _openid: { $empty: true },
+        name: { $eq: name },
+      },
+    },
+    page: 1,
+    pageSize: 1,
+  })
+
+  // 3. 如果找到公共账本，为用户复制一份
+  if (publicAccountRes.data && publicAccountRes.data.records.length > 0) {
+    const publicAccount = publicAccountRes.data.records[0]
+    const newAccountData = {
+      ...publicAccount,
+      _openid: OPENID,
+    }
+    delete newAccountData._id // 删除旧的 _id 以创建新记录
+
+    const createRes = await models.account.create({
+      data: newAccountData,
+    })
+
+    // 返回新创建的账本
+    const createdAccount = await models.account.get({
+      id: createRes.data._id,
+    })
+    if (!withId) {
+      delete createdAccount.data._id
+    }
+    delete createdAccount.data._openid
+    return createdAccount.data
   }
+
+  // 4. 如果都找不到，抛出错误
+  throw new BizError(`名为 "${name}" 的账本不存在，请检查账本名称或联系管理员。`)
 }
 
 async function reconcileAccount(event, models) {
@@ -65,7 +85,7 @@ async function reconcileAccount(event, models) {
   }
 
   // 1. 获取当前系统余额
-  const currentAccount = await getAccount(event, models)
+  const currentAccount = await getAccount(event, models, { name: 'leaf-maple' })
   const systemBalance = currentAccount.balance
   const difference = actualBalance - systemBalance
 
@@ -124,10 +144,52 @@ async function reconcileAccount(event, models) {
 
   // 6. 返回更新后的账户信息
   // 此时账户信息已经被 saveBill 更新，所以重新获取一次
-  return getAccount(event, models)
+  return getAccount(event, models, { name: 'leaf-maple' })
+}
+
+async function getAccounts(event, models) {
+  const { OPENID } = cloud.getWXContext()
+
+  // 1. 获取用户的所有私有账本
+  const privateAccountsRes = await models.account.list({
+    filter: {
+      where: {
+        _openid: { $eq: OPENID },
+      },
+    },
+    pageSize: 100, // 假设用户账本不会超过 100 个
+  })
+  const privateAccounts = (privateAccountsRes.data.records || []).map(acc => {
+    delete acc._openid
+    return { ...acc, isOpened: true }
+  })
+
+  // 2. 获取所有公共账本
+  const publicAccountsRes = await models.account.list({
+    filter: {
+      where: {
+        _openid: { $empty: true },
+      },
+    },
+    pageSize: 100, // 假设公共账本不会超过 100 个
+  })
+  const publicAccounts = (publicAccountsRes.data.records || []).map(acc => {
+    delete acc._openid
+    return { ...acc, isOpened: false }
+  })
+
+  // 3. 过滤掉用户已经拥有的公共账本
+  const privateAccountNames = new Set(privateAccounts.map(a => a.name))
+  const availablePublicAccounts = publicAccounts.filter(
+    (pa) => !privateAccountNames.has(pa.name)
+  )
+
+  // 4. 合并并返回
+  return [...privateAccounts, ...availablePublicAccounts]
 }
 
 module.exports = {
   getAccount,
+  getAccounts,
   reconcileAccount,
 }

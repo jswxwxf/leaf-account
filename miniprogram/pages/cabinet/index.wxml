@@ -2,9 +2,9 @@
 
 <view class="p-3">
   <!-- 列表样式：纵向铺排，每项全宽，无卡片阴影/大圆角 -->
-  <view wx:for="{{ books }}" wx:key="id" class="relative overflow-hidden text-white mb-3 shadow-lg shadow-cyan-500/20">
+  <view wx:for="{{ books }}" wx:key="_id" class="relative overflow-hidden text-white mb-3 shadow-lg shadow-cyan-500/20">
     <!-- 背景图：使用 image + aspectFill，避免 background-image -->
-    <image src="{{ item.img }}" mode="aspectFill" class="absolute inset-0 w-full h-full" />
+    <image src="{{ '../../assets/images/' + item.name + '.jpg' }}" mode="aspectFill" class="absolute inset-0 w-full h-full {{ !item.isOpened ? 'grayscale' : '' }}" />
     <!-- 渐变遮罩，提升前景可读性且更高级 -->
     <view class="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-black/40"></view>
 

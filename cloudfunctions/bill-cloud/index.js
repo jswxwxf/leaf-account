@@ -23,7 +23,7 @@ const {
   resetBills,
   getAllBills,
 } = require('./service/bill.js')
-const { getAccount, reconcileAccount } = require('./service/account.js')
+const { getAccount, getAccounts, reconcileAccount } = require('./service/account.js')
 const { getCategories, addCategory, deleteCategory, updateCategory } = require('./service/category.js')
 const { getTags, addTags, addTag, updateTag, deleteTag } = require('./service/tag.js')
 
@@ -116,6 +116,24 @@ exports.main = (event, context) => {
   })
 
   /**
+   * @desc 获取所有可用账本列表
+   * @returns {object[]} data - 账本对象数组
+   */
+  app.router('/get/accounts', async (ctx) => {
+    try {
+      const data = await getAccounts(event, models)
+      ctx.body = { code: 200, success: true, message: '获取成功', data }
+    } catch (e) {
+      console.error('/get/accounts error:', e)
+      if (e.isBiz) {
+        ctx.body = { code: 400, success: false, message: e.message }
+      } else {
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
+    }
+  })
+
+  /**
    * @desc 获取账本信息
    * @returns {object} data - 账本信息
    */
@@ -125,7 +143,11 @@ exports.main = (event, context) => {
       ctx.body = { code: 200, success: true, message: '获取成功', data }
     } catch (e) {
       console.error('/get/account error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      if (e.isBiz) {
+        ctx.body = { code: 400, success: false, message: e.message }
+      } else {
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
     }
   })
 
@@ -138,7 +160,11 @@ exports.main = (event, context) => {
       ctx.body = { code: 200, success: true, message: '对账成功', data }
     } catch (e) {
       console.error('/put/account/reconcile error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      if (e.isBiz) {
+        ctx.body = { code: 400, success: false, message: e.message }
+      } else {
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
     }
   })
 

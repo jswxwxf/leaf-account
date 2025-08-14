@@ -12,11 +12,23 @@ import { get, post } from './request-cloud.js'
 
 /**
  * 获取用户账户信息
+ * @param {string} [name='default'] - 账本名称
  * @returns {Promise<Account>}
  */
-export function getAccount() {
+export function getAccount(name = 'leaf-maple') {
   return get('bill-cloud', {
     $url: '/get/account',
+    name,
+  })
+}
+
+/**
+ * 获取所有可用账本列表
+ * @returns {Promise<Account[]>}
+ */
+export function getAccounts() {
+  return get('bill-cloud', {
+    $url: '/get/accounts',
   })
 }
 

@@ -98,7 +98,6 @@ async function initAccount() {
   // 3. 批量插入新的账本数据
   const accountsWithMeta = accountsToCreateFiltered.map((a) => ({
     ...a,
-    _openid: '', // 共享数据
     createdAt: Date.now(),
     updatedAt: Date.now(),
     createdBy: 'administrator',
