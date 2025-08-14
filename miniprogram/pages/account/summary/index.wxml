@@ -1,7 +1,7 @@
 <wxs src="../../../utils/utils.wxs" module="utils" />
 
 <view class="relative overflow-hidden text-white pt-4 pb-3 px-4 shadow-md" hidden="{{ hidden }}">
-  <image src="../../../assets/images/leaf.jpg" mode="aspectFill" class="absolute inset-0 w-full h-full" />
+  <image src="../../../assets/images/leaf-maple.jpg" mode="aspectFill" class="absolute inset-0 w-full h-full" />
   <view
     class="relative"
     style="--dropdown-menu-background-color: rgba(0, 0, 0, 0.5); --dropdown-menu-title-text-color: white"
@@ -21,7 +21,7 @@
       bind:change="updateSearchText"
       clearable
       custom-class="!bg-transparent"
-      custom-style="--cell-background-color: rgba(0, 0, 0, 0.3); --field-input-text-color: white; --cell-font-size: 14px;"
+      custom-style="--cell-background-color: rgba(0, 0, 0, 0.5); --field-input-text-color: white; --cell-font-size: 14px;"
       placeholder-style="color: rgba(255, 255, 255, 0.7);"
     >
       <view slot="right-icon">
