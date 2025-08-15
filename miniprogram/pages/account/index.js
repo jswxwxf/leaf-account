@@ -9,8 +9,14 @@ import { useOcr } from '@/composables/use-ocr.js'
 import { useAi } from '@/composables/use-ai.js'
 
 function useBillPopup(state, billPopupRef) {
-  const { currentAccount, typeValue, monthValue, searchText, updateBills, updateAccountSummary } =
-    state
+  const {
+    currentAccount,
+    typeValue,
+    monthValue,
+    searchText,
+    updateBills,
+    updateAccountSummary,
+  } = state
 
   const billPopped = ref(false)
 
@@ -78,6 +84,8 @@ defineComponent({
       currentAccount,
       typeValue,
       monthValue,
+      totalIncome,
+      totalExpense,
       totalBalance,
       searchText,
       removeBills,
@@ -252,7 +260,12 @@ defineComponent({
     }
 
     const handleTodaySummary = async () => {
-      summaryPopup.value.show({ createdAt: Date.now(), account: currentAccount.value })
+      summaryPopup.value.show({
+        createdAt: Date.now(),
+        account: currentAccount.value,
+        totalIncome: totalIncome.value,
+        totalExpense: totalExpense.value,
+      })
     }
 
     const handleActionSelect = (e) => {

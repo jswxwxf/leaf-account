@@ -11,6 +11,8 @@ defineComponent({
     const content = ref('')
     const currentDate = ref()
     const currentAccount = ref()
+    const totalIncome = ref()
+    const totalExpense = ref()
 
     const generateSummary = async () => {
       const query = {
@@ -18,7 +20,7 @@ defineComponent({
         accountId: currentAccount.value._id,
       }
       const res = await getAllBills(query)
-      const { daily, totalIncome, totalExpense } = (res.data || []).reduce(
+      const { daily, sumIncome, sumExpense } = (res.data || []).reduce(
         (acc, bill) => {
           const amount = bill.amount || 0
           const date = formatDate(bill.datetime, 'YYYY-MM-DD')
@@ -31,16 +33,16 @@ defineComponent({
           acc.daily[date].lines.push('  ' + line)
 
           if (bill.category.type === '10') {
-            acc.totalIncome += amount
+            acc.sumIncome += amount
             acc.daily[date].income += amount
           } else {
-            acc.totalExpense += amount
+            acc.sumExpense += amount
             acc.daily[date].expense += amount
           }
 
           return acc
         },
-        { daily: {}, totalIncome: 0, totalExpense: 0 },
+        { daily: {}, sumIncome: 0, sumExpense: 0 },
       )
 
       const summaryText = Object.entries(daily)
@@ -54,8 +56,8 @@ defineComponent({
 
       content.value = [
         isEmpty(summaryText) ? '还没有录入账单' : summaryText,
-        `\n\n总收: ${formatMoney(totalIncome)}`,
-        `总支: ${formatMoney(totalExpense)}`,
+        `\n\n总收: ${formatMoney(totalIncome.value)}`,
+        `总支: ${formatMoney(totalExpense.value)}`,
         `总余: ${formatMoney(res.account.balance)}`,
       ].join('\n')
     }
@@ -65,6 +67,8 @@ defineComponent({
     const show = async (query = {}) => {
       currentDate.value = query.createdAt || Date.now()
       currentAccount.value = query.account || {}
+      totalIncome.value = query.totalIncome ?? 0
+      totalExpense.value = query.totalExpense ?? 0
       content.value = ''
       await generateSummary()
       visible.value = true
