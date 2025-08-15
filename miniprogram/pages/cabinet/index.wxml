@@ -2,6 +2,8 @@
 
 <view class="p-3">
   <block wx:for="{{ accounts }}" wx:key="_id">
-    <account-box account="{{ item }}" @tapped="handleAccountTap" />
+    <account-box account="{{ item }}" @tapped="handleAccountTap" @rename="handleRename" data-index="{{ index }}" />
   </block>
 </view>
+
+<account-popup id="account-popup" />

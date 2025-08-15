@@ -26,6 +26,7 @@ const {
 const { getAccount, getAccounts, reconcileAccount } = require('./service/account.js')
 const { getCategories, addCategory, deleteCategory, updateCategory } = require('./service/category.js')
 const { getTags, addTags, addTag, updateTag, deleteTag } = require('./service/tag.js')
+const { updateAccount } = require('./service/common.js')
 
 exports.main = (event, context) => {
   const app = new TcbRouter({ event })
@@ -160,6 +161,23 @@ exports.main = (event, context) => {
       ctx.body = { code: 200, success: true, message: '对账成功', data }
     } catch (e) {
       console.error('/put/account/reconcile error:', e)
+      if (e.isBiz) {
+        ctx.body = { code: 400, success: false, message: e.message }
+      } else {
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
+    }
+  })
+
+  /**
+   * @desc 更新账本信息（如标题）
+   */
+  app.router('/put/account', async (ctx) => {
+    try {
+      const data = await updateAccount(event, models)
+      ctx.body = { code: 200, success: true, message: '更新成功', data }
+    } catch (e) {
+      console.error('/put/account error:', e)
       if (e.isBiz) {
         ctx.body = { code: 400, success: false, message: e.message }
       } else {

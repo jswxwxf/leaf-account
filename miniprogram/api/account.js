@@ -46,3 +46,19 @@ export function reconcileAccount(actualBalance, accountId) {
     },
   })
 }
+
+/**
+ * 更新账本信息
+ * @param {string} accountId - 账本ID
+ * @param {object} data - 要更新的数据，例如 { title: '新的标题' }
+ * @returns {Promise<any>}
+ */
+export function updateAccount(accountId, data) {
+  return post('bill-cloud', {
+    $url: '/put/account',
+    body: data,
+    query: {
+      accountId,
+    },
+  })
+}

@@ -75,7 +75,10 @@ async function saveBill(event, models) {
 
       // 2. 更新账户余额
       await updateAccount(
-        { balanceIncrement, incomeIncrement, expenseIncrement, accountId },
+        {
+          query: { accountId },
+          body: { balanceIncrement, incomeIncrement, expenseIncrement },
+        },
         models,
         transaction,
       )
@@ -94,7 +97,10 @@ async function saveBill(event, models) {
 
       // 1. 更新账户余额
       await updateAccount(
-        { balanceIncrement, incomeIncrement, expenseIncrement, accountId },
+        {
+          query: { accountId },
+          body: { balanceIncrement, incomeIncrement, expenseIncrement },
+        },
         models,
         transaction,
       )
@@ -193,7 +199,10 @@ async function saveBills(event, models) {
       // 1. 更新账户余额
       if (balanceIncrement !== 0) {
         await updateAccount(
-          { balanceIncrement, incomeIncrement, expenseIncrement, accountId },
+          {
+            query: { accountId },
+            body: { balanceIncrement, incomeIncrement, expenseIncrement },
+          },
           models,
           transaction,
         )
@@ -612,7 +621,10 @@ async function deleteBill(event, models) {
 
     // 3. 反向更新账户余额
     await updateAccount(
-      { balanceIncrement, incomeIncrement, expenseIncrement, accountId },
+      {
+        query: { accountId },
+        body: { balanceIncrement, incomeIncrement, expenseIncrement },
+      },
       models,
       transaction,
     )

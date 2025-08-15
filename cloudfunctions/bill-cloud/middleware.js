@@ -14,6 +14,7 @@ const REQUIRE_LOGIN_ROUTES = [
   '/get/account',
   '/get/accounts',
   '/put/account/reconcile',
+  '/put/account',
 ]
 const REQUIRE_ACCOUNT_ID_ROUTES = [
   '/upsert/bill',
@@ -23,6 +24,7 @@ const REQUIRE_ACCOUNT_ID_ROUTES = [
   '/get/bills/all',
   '/get/bills/summary',
   '/put/account/reconcile',
+  '/put/account',
 ]
 const WITH_ACCOUNT_ROUTES = ['/upsert/bill', '/get/bills', '/get/bills/all', '/batch/bills', '/delete/bill']
 const WITH_SUMMARY_ROUTES = ['/upsert/bill', '/get/bills', '/batch/bills', '/delete/bill']

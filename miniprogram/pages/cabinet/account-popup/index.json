@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "usingComponents": {
+    "bill-form": "/components/bill-form/index",
+    "bill-field": "/components/bill-field/index"
+  },
+  "styleIsolation": "apply-shared"
+}

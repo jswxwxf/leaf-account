@@ -20,7 +20,7 @@
           {{ account.title }}
           <text class="text-sm">{{ !account.isOpened ?' | 未启用': '' }}</text>
         </view>
-        <van-button size="mini" custom-class="cabinet-btn">改名</van-button>
+        <van-button wx:if="{{ account.isOpened }}" size="mini" custom-class="cabinet-btn" @tap="handleRename">改名</van-button>
       </view>
       <view class="inline-flex items-center gap-2 text-xs bg-black/30 py-1 px-2">
         <view>收 ¥{{ utils.formatMoney(account.totalIncome) }}</view>

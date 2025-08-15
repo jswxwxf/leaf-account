@@ -4,6 +4,13 @@ const { getTagsByIds } = require('./tag.js')
 const db = cloud.database()
 const _ = db.command
 
+class BizError extends Error {
+  constructor(message) {
+    super(message)
+    this.isBiz = true
+  }
+}
+
 /**
  * 原子化地更新用户的账户汇总信息。
  * 如果账户不存在，则会自动创建。
@@ -15,7 +22,12 @@ const _ = db.command
  * @param {object} [dbOrTransaction] - 数据库或事务实例，如果未提供，则使用默认的 db 实例
  */
 async function updateAccount(event, models, dbOrTransaction) {
-  const { balanceIncrement, incomeIncrement, expenseIncrement, accountId } = event
+  const { accountId } = event.query || {}
+  const { balanceIncrement, incomeIncrement, expenseIncrement } = event.body || {}
+  let { title } = event.body || {}
+  if (typeof title === 'string') {
+    title = title.trim()
+  }
   const { OPENID } = cloud.getWXContext()
   const dbInstance = dbOrTransaction || db
 
@@ -39,8 +51,9 @@ async function updateAccount(event, models, dbOrTransaction) {
   if (balanceIncrement) updateData.balance = _.inc(balanceIncrement)
   if (incomeIncrement) updateData.totalIncome = _.inc(incomeIncrement)
   if (expenseIncrement) updateData.totalExpense = _.inc(expenseIncrement)
+  if (title) updateData.title = title
 
-  if (Object.keys(updateData).length === 0) return // 如果没有要更新的，直接返回
+  if (Object.keys(updateData).length === 0) return accounts[0] // 如果没有要更新的，直接返回当前账户信息
 
   updateData.updatedAt = Date.now()
   updateData.updatedBy = OPENID
@@ -50,13 +63,8 @@ async function updateAccount(event, models, dbOrTransaction) {
   if (result.stats.updated === 0) {
     throw new Error('更新用户账户失败')
   }
-}
-
-class BizError extends Error {
-  constructor(message) {
-    super(message)
-    this.isBiz = true
-  }
+  const { data: newAccounts } = await accountCollection.where(where).limit(1).get()
+  return newAccounts[0]
 }
 
 /**
@@ -101,7 +109,7 @@ async function populateTagsForBills(bills, models) {
 
 module.exports = {
   updateAccount,
-  BizError,
   parseMoney,
   populateTagsForBills,
+  BizError,
 }

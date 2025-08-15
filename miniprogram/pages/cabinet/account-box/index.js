@@ -1,4 +1,5 @@
-import { defineComponent } from '@vue-mini/core'
+import { defineComponent, ref } from '@vue-mini/core'
+import { updateAccount } from '@/api/account.js'
 
 defineComponent({
   properties: {
@@ -12,8 +13,13 @@ defineComponent({
       triggerEvent('tapped', props.account)
     }
 
+    const handleRename = async () => {
+      triggerEvent('rename', props.account)
+    }
+
     return {
       handleTap,
+      handleRename,
     }
   },
 })
