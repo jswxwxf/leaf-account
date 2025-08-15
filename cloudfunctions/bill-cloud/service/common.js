@@ -31,7 +31,7 @@ async function updateAccount(event, models, dbOrTransaction) {
   const { OPENID } = cloud.getWXContext()
   const dbInstance = dbOrTransaction || db
 
-  const accountCollection = dbInstance.collection('account')
+  const account = dbInstance.collection('account')
 
   // 构建查询条件
   const where = {
@@ -40,7 +40,7 @@ async function updateAccount(event, models, dbOrTransaction) {
   }
 
   // 1. 查询账户是否存在
-  const { data: accounts } = await accountCollection.where(where).limit(1).get()
+  const { data: accounts } = await account.where(where).limit(1).get()
 
   if (!accounts || accounts.length === 0) {
     throw new Error(`找不到 ID 为 ${accountId} 的账户，或没有权限操作。`)
@@ -58,13 +58,19 @@ async function updateAccount(event, models, dbOrTransaction) {
   updateData.updatedAt = Date.now()
   updateData.updatedBy = OPENID
 
-  const result = await accountCollection.where(where).update({ data: updateData })
+  const result = await account.where(where).update({ data: updateData })
 
   if (result.stats.updated === 0) {
     throw new Error('更新用户账户失败')
   }
-  const { data: newAccounts } = await accountCollection.where(where).limit(1).get()
-  return newAccounts[0]
+  const { data: newAccounts } = await account.where(where).limit(1).get()
+  if (newAccounts && newAccounts.length > 0) {
+    const account = newAccounts[0]
+    delete account._openid
+    account.isOpened = true // 既然能更新，说明是用户自己的私有账本
+    return account
+  }
+  throw new Error('更新用户账户失败')
 }
 
 /**

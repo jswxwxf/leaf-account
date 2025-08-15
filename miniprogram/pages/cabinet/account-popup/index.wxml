@@ -1,6 +1,6 @@
 <van-popup show="{{ visible }}" position="bottom" safe-area-inset-bottom="{{ false }}" closeable @close="onClose">
   <view class="flex items-center justify-center p-4 relative">
-    <view class="font-bold text-base">修改账本名称</view>
+    <view class="font-bold text-base">{{ title }}</view>
   </view>
   <bill-form id="form">
     <view class="p-4">
@@ -15,7 +15,7 @@
       />
     </view>
     <view class="flex items-center justify-evenly p-2 pb-6">
-      <van-button type="primary" @click="onConfirm" custom-class="flex-1 w-32">确定</van-button>
+      <van-button type="primary" @click="onConfirm" custom-class="flex-1 w-32">{{ confirmButtonText }}</van-button>
       <van-button @click="onClose" custom-class="flex-1 w-32">取消</van-button>
     </view>
   </bill-form>
