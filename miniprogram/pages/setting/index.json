@@ -2,5 +2,6 @@
   "$schema": "https://vite.icebreaker.top/component.json",
   "component": true,
   "usingComponents": {},
-  "styleIsolation": "apply-shared"
+  "styleIsolation": "apply-shared",
+  "navigationBarTitleText": "设置"
 }

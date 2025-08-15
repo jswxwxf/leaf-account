@@ -69,7 +69,6 @@ async function initAccount() {
     { title: '桑叶帐本', name: 'leaf-mulberry', totalIncome: 0, totalExpense: 0, balance: 0 },
     { title: '松叶帐本', name: 'leaf-pine', totalIncome: 0, totalExpense: 0, balance: 0 },
     { title: '芦苇帐本', name: 'leaf-reed', totalIncome: 0, totalExpense: 0, balance: 0 },
-    { title: '柳叶帐本', name: 'leaf-willow', totalIncome: 0, totalExpense: 0, balance: 0 },
     { title: '梧桐帐本', name: 'leaf-phoenix', totalIncome: 0, totalExpense: 0, balance: 0 },
   ]
 

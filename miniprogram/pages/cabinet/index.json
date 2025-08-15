@@ -4,5 +4,6 @@
   "styleIsolation": "shared",
   "usingComponents": {
     "account-box": "./account-box/index"
-  }
+  },
+  "navigationBarTitleText": "切换帐本"
 }

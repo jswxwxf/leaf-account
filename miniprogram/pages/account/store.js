@@ -102,6 +102,9 @@ export default function store() {
       totalBalance.value = accountInfo.balance
       totalIncome.value = accountInfo.totalIncome
       totalExpense.value = accountInfo.totalExpense
+      wx.setNavigationBarTitle({
+        title: `小叶记帐 - ${accountInfo.title}`,
+      })
     } catch (err) {
       error.value = err.message || '加载账本失败，请稍后重试'
       currentAccount.value = {}
