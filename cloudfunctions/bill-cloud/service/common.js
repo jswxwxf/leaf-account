@@ -203,6 +203,10 @@ async function saveBill(billToSave, accountId, models, transaction) {
       .update({ data: { usedAt: Date.now() } })
   }
 
+  const now = Date.now()
+  if (!originalBill.createdAt) {
+    originalBill.createdAt = now
+  }
   return { ...originalBill, _id: savedBillId }
 }
 
@@ -282,16 +286,26 @@ async function saveTransfer(event, models) {
     }
 
     // 3. 保存两笔账单
-    const savedBill = await saveBill(
-      isTransferOut ? billOut : billIn,
-      sourceAccountId,
-      models,
-      transaction,
-    )
-    await saveBill(isTransferOut ? billIn : billOut, destinationAccountId, models, transaction)
+    const savedBillOut = await saveBill(billOut, sourceAccountId, models, transaction)
+    const savedBillIn = await saveBill(billIn, destinationAccountId, models, transaction)
+
+    // 4. 互相更新，保存对方的 ID
+    await transaction
+      .collection('bill')
+      .doc(savedBillOut._id)
+      .update({ data: { relatedBill: savedBillIn._id } })
+    await transaction
+      .collection('bill')
+      .doc(savedBillIn._id)
+      .update({ data: { relatedBill: savedBillOut._id } })
 
     await transaction.commit()
-    return savedBill // 返回用户操作的原始账单
+
+    // 5. 返回用户操作的原始账单，并附上关联ID
+    const primaryBill = isTransferOut ? savedBillOut : savedBillIn
+    const secondaryBill = isTransferOut ? savedBillIn : savedBillOut
+
+    return { ...primaryBill, relatedBill: secondaryBill._id }
   } catch (e) {
     await transaction.rollback()
     throw new Error(`转账失败: ${e.message}`)

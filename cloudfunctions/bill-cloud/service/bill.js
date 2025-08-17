@@ -487,7 +487,7 @@ async function getAllBills(event, models) {
  */
 async function deleteBill(event, models) {
   const { id } = event
-  const { accountId } = event.query || {}
+  const { accountId } = event.query || {} // 这是主账单的账户ID
   const { OPENID } = cloud.getWXContext()
 
   if (!id) {
@@ -499,42 +499,64 @@ async function deleteBill(event, models) {
     // 1. 获取要删除的账单信息
     const billRes = await transaction.collection('bill').doc(id).get()
     if (!billRes.data) {
-      // 如果账单不存在，可能已经被删除，直接提交事务并认为操作成功
       await transaction.commit()
-      return true
+      return true // 账单不存在，可能已被删除
     }
     const billToDelete = billRes.data
 
-    // 权限校验：确保用户只能删除自己的账单
+    // 2. 权限校验
     if (billToDelete._openid && billToDelete._openid !== OPENID) {
-      // 禁止删除，但为了不给恶意用户提示，静默处理
-      await transaction.commit() // 提交空事务
-      return false // 返回失败
+      await transaction.commit()
+      return false // 无权限
     }
+
+    // 3. 删除主账单及其影响
     const amountToDelete = billToDelete.amount
-
-    // 2. 计算反向增量
-    const balanceIncrement = parseMoney(-amountToDelete)
-    const incomeIncrement = parseMoney(amountToDelete > 0 ? -amountToDelete : 0)
-    const expenseIncrement = parseMoney(amountToDelete < 0 ? -amountToDelete : 0)
-
-    // 3. 反向更新账户余额
     await updateAccount(
       {
         query: { accountId },
-        body: { balanceIncrement, incomeIncrement, expenseIncrement },
+        body: {
+          balanceIncrement: parseMoney(-amountToDelete),
+          incomeIncrement: parseMoney(amountToDelete > 0 ? -amountToDelete : 0),
+          expenseIncrement: parseMoney(amountToDelete < 0 ? -amountToDelete : 0),
+        },
       },
       models,
       transaction,
     )
+    await transaction.collection('bill').doc(id).remove()
 
-    // 4. 删除账单
-    const deleteResult = await transaction.collection('bill').doc(id).remove()
-    if (deleteResult.stats.removed === 0) {
-      throw new Error('删除账单失败')
+    // 4. 如果是转账，则联动删除关联账单
+    if (billToDelete.relatedBill) {
+      const relatedBillRes = await transaction.collection('bill').doc(billToDelete.relatedBill).get()
+      if (relatedBillRes.data) {
+        const relatedBill = relatedBillRes.data
+        const relatedAmount = relatedBill.amount
+        const relatedAccountId = relatedBill.account
+
+        // 权限校验：确保关联账单也属于该用户
+        if (relatedBill._openid && relatedBill._openid !== OPENID) {
+          throw new Error('没有权限删除关联账单')
+        }
+
+        // 反向更新关联账户
+        await updateAccount(
+          {
+            query: { accountId: relatedAccountId },
+            body: {
+              balanceIncrement: parseMoney(-relatedAmount),
+              incomeIncrement: parseMoney(relatedAmount > 0 ? -relatedAmount : 0),
+              expenseIncrement: parseMoney(relatedAmount < 0 ? -relatedAmount : 0),
+            },
+          },
+          models,
+          transaction,
+        )
+        // 删除关联账单
+        await transaction.collection('bill').doc(billToDelete.relatedBill).remove()
+      }
     }
 
-    // 提交事务
     await transaction.commit()
     return true
   } catch (e) {
