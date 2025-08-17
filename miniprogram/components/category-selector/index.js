@@ -2,6 +2,7 @@ import { defineComponent, ref, onMounted, onReady } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
 import { getCategories, addCategory } from '@/api/category.js'
 import { newCategory } from '@/service/category-service.js'
+import { showAccountSelector } from '@/utils/index.js'
 
 function useNewCategory() {
   const theNewCategory = ref(newCategory())
@@ -95,8 +96,22 @@ defineComponent({
       _reject(new Error('用户取消'))
     }
 
-    const handleSelect = (event) => {
-      const { item } = event.currentTarget.dataset
+    const handleSelect = async (event) => {
+      let { item } = event.currentTarget.dataset
+      if (item.name === '转账') {
+        const account = await showAccountSelector()
+        // account 可能为空是因为如果只有一个账户，选择器可能不会弹出
+        if (account) {
+          item = { ...item, account, note: `向 ${account.title} 转账` }
+        }
+      }
+      if (item.name === '收转账') {
+        const account = await showAccountSelector()
+        // account 可能为空是因为如果只有一个账户，选择器可能不会弹出
+        if (account) {
+          item = { ...item, account, note: `从 ${account.title} 转入` }
+        }
+      }
       hide()
       _resolve(item)
     }

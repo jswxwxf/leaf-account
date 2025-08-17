@@ -1,7 +1,13 @@
 const cloud = require('wx-server-sdk')
 const { getCategoryIds } = require('./category.js')
 const { getTagsByIds } = require('./tag.js')
-const { updateAccount, parseMoney, populateTagsForBills } = require('./common.js')
+const {
+  updateAccount,
+  parseMoney,
+  populateTagsForBills,
+  saveTransfer,
+  saveBill: _saveBill,
+} = require('./common.js')
 
 const db = cloud.database()
 const _ = db.command
@@ -14,129 +20,24 @@ const _ = db.command
 async function saveBill(event, models) {
   const { bill } = event.body
   const { accountId } = event.query || {}
-  const { OPENID } = cloud.getWXContext()
 
-  if (!bill) {
-    throw new Error('请求中缺少 bill 对象')
-  }
-  const { datetime, category, amount, tags } = bill
-  const note = bill.note?.trim()
-  if (!datetime || !category || !amount || note === undefined || note === null) {
-    throw new Error('参数不合法，datetime, category, amount, note 不能为空')
+  if (!bill || !bill.category) {
+    throw new Error('请求中缺少 bill 或 category 对象')
   }
 
-  const originalBill = { ...bill, note } // 保留原始账单对象用于返回
-  const billToSave = { ...bill, note, amount: parseMoney(bill.amount) }
-
-  // 确保金额正负与类别匹配
-  if (billToSave.category?.type === '10' && billToSave.amount < 0) {
-    billToSave.amount = -billToSave.amount
-  } else if (billToSave.category?.type === '20' && billToSave.amount > 0) {
-    billToSave.amount = -billToSave.amount
+  // 如果是转账或收转账，则调用专门的转账函数
+  if (bill.category.name === '转账' || bill.category.name === '收转账') {
+    return saveTransfer(event, models)
   }
 
-  const categoryId = billToSave.category?._id
-  billToSave.category = categoryId
-  // 提取 tags 的 _id 数组
-  if (Array.isArray(billToSave.tags)) {
-    billToSave.tags = billToSave.tags.map((tag) => tag._id).filter(Boolean)
-  }
-
-   // 启动数据库事务
-   const transaction = await db.startTransaction()
+  // 对于普通账单，开启独立事务
+  const transaction = await db.startTransaction()
   try {
-    let savedBill
-
-    if (billToSave._id) {
-      // --- 更新逻辑 ---
-      const billId = billToSave._id
-      delete billToSave._id
-
-      // 1. 获取旧账单信息以计算差额
-      const oldBillRes = await transaction.collection('bill').doc(billId).get()
-      if (!oldBillRes.data) {
-        throw new Error(`找不到 ID 为 ${billId} 的账单`)
-      }
-      const oldBill = oldBillRes.data
-
-      // 权限校验：确保用户只能修改自己的账单
-      if (oldBill._openid && oldBill._openid !== OPENID) {
-        throw new Error(`没有权限修改账单 ${billId}`)
-      }
-      const newBill = billToSave
-
-      const balanceIncrement = parseMoney(newBill.amount - oldBill.amount)
-      const incomeIncrement = parseMoney(
-        (newBill.amount > 0 ? newBill.amount : 0) - (oldBill.amount > 0 ? oldBill.amount : 0),
-      )
-      const expenseIncrement = parseMoney(
-        (newBill.amount < 0 ? newBill.amount : 0) - (oldBill.amount < 0 ? oldBill.amount : 0),
-      )
-
-      // 2. 更新账户余额
-      await updateAccount(
-        {
-          query: { accountId },
-          body: { balanceIncrement, incomeIncrement, expenseIncrement },
-        },
-        models,
-        transaction,
-      )
-
-      // 3. 更新账单
-      await transaction
-        .collection('bill')
-        .doc(billId)
-        .update({ data: { ...newBill, updatedAt: Date.now(), updatedBy: OPENID } })
-      savedBill = { ...originalBill, _id: billId }
-    } else {
-      // --- 新增逻辑 ---
-      const balanceIncrement = billToSave.amount
-      const incomeIncrement = balanceIncrement > 0 ? balanceIncrement : 0
-      const expenseIncrement = balanceIncrement < 0 ? balanceIncrement : 0
-
-      // 1. 更新账户余额
-      await updateAccount(
-        {
-          query: { accountId },
-          body: { balanceIncrement, incomeIncrement, expenseIncrement },
-        },
-        models,
-        transaction,
-      )
-
-      // 2. 创建新账单
-      const createResult = await transaction.collection('bill').add({
-        data: {
-          ...billToSave,
-          account: accountId,
-          _openid: OPENID,
-          createdAt: Date.now(),
-          createdBy: OPENID,
-          updatedAt: Date.now(),
-          updatedBy: OPENID,
-        },
-      })
-      if (!createResult._id) {
-        throw new Error('创建新账单失败')
-      }
-      savedBill = { ...originalBill, _id: createResult._id, createdAt: Date.now() }
-    }
-
-   if (categoryId) {
-     await transaction
-       .collection('category')
-       .doc(categoryId)
-       .update({ data: { usedAt: Date.now() } })
-   }
-
-    // 提交事务
+    const savedBill = await _saveBill(bill, accountId, models, transaction)
     await transaction.commit()
     return savedBill
   } catch (e) {
-    // 回滚事务
     await transaction.rollback()
-    // 抛出错误以便上层捕获
     throw new Error(`保存账单失败: ${e.message}`)
   }
 }
@@ -182,9 +83,7 @@ async function saveBills(event, models) {
       return billToSave
     })
 
-    const categoryIds = [
-      ...new Set(billsToSave.map((bill) => bill.category).filter((id) => id)),
-    ]
+    const categoryIds = [...new Set(billsToSave.map((bill) => bill.category).filter((id) => id))]
 
     const balanceIncrement = parseMoney(billsToSave.reduce((sum, bill) => sum + bill.amount, 0))
     const incomeIncrement = parseMoney(
@@ -231,18 +130,18 @@ async function saveBills(event, models) {
 
       allBillIds.push(...newBillIds)
 
-     if (categoryIds.length > 0) {
-       await transaction
-         .collection('category')
-         .where({
-           _id: _.in(categoryIds),
-         })
-         .update({
-           data: {
-             usedAt: Date.now(),
-           },
-         })
-     }
+      if (categoryIds.length > 0) {
+        await transaction
+          .collection('category')
+          .where({
+            _id: _.in(categoryIds),
+          })
+          .update({
+            data: {
+              usedAt: Date.now(),
+            },
+          })
+      }
 
       // 3. 提交事务
       await transaction.commit()
@@ -686,4 +585,3 @@ module.exports = {
   deleteBill,
   resetBills,
 }
-

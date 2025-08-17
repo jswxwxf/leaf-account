@@ -27,6 +27,15 @@ export function showCalendar(currentDate) {
   return calendarSelector.value.show(currentDate)
 }
 
+export const accountSelector = ref(null)
+
+export function showAccountSelector() {
+  if (!accountSelector.value) {
+    return Promise.reject(new Error('Account selector not initialized'))
+  }
+  return accountSelector.value.show()
+}
+
 export const theToast = ref(null)
 
 export function showToast(message) {

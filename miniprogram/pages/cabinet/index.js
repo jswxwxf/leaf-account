@@ -1,19 +1,18 @@
-import { defineComponent, ref, onShow, onReady } from '@vue-mini/core'
+import { defineComponent, ref, onShow, onReady, provide } from '@vue-mini/core'
 import { getAccount, getAccounts, updateAccount } from '@/api/account.js'
+import store, { storeKey } from './store'
 
 defineComponent({
   setup(props, { selectComponent }) {
+    const state = store()
+    provide(storeKey, state)
+    const { accounts } = state
+
     const accountPopup = ref(null)
-    const accounts = ref([])
 
     onReady(() => {
       accountPopup.value = selectComponent('#account-popup')
     })
-
-    const fetchAccounts = async () => {
-      const res = await getAccounts()
-      accounts.value = res.data
-    }
 
     const doUpdateAccount = async (oldAccount, dataToUpdate, index) => {
       // 如果名称没有改变，则不执行任何操作
@@ -69,12 +68,6 @@ defineComponent({
         icon: 'success',
       })
     }
-
-    fetchAccounts()
-
-    onShow(() => {
-      fetchAccounts()
-    })
 
     return {
       accounts,

@@ -1,18 +1,16 @@
-import { defineComponent, ref, computed, watch } from '@vue-mini/core'
+import { defineComponent, ref, computed, watch, inject } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
 import { getAllBills } from '@/api/bill.js'
 import { formatDate } from '@/utils/date.js'
-import { formatMoney } from '@/utils/index.js'
-import { isEmpty } from 'lodash'
+import { generateSummaryText } from '@/service/bill-service.js'
+import { storeKey } from '../store'
 
 defineComponent({
   setup() {
+    const { currentAccount, totalIncome, totalExpense } = inject(storeKey)
     const visible = ref(false)
     const content = ref('')
     const currentDate = ref()
-    const currentAccount = ref()
-    const totalIncome = ref()
-    const totalExpense = ref()
 
     const generateSummary = async () => {
       const query = {
@@ -20,55 +18,18 @@ defineComponent({
         accountId: currentAccount.value._id,
       }
       const res = await getAllBills(query)
-      const { daily, sumIncome, sumExpense } = (res.data || []).reduce(
-        (acc, bill) => {
-          const amount = bill.amount || 0
-          const date = formatDate(bill.datetime, 'YYYY-MM-DD')
-
-          if (!acc.daily[date]) {
-            acc.daily[date] = { income: 0, expense: 0, lines: [] }
-          }
-
-          const line = [bill.category?.name, formatMoney(amount), bill.note].join('\t')
-          acc.daily[date].lines.push('  ' + line)
-
-          if (bill.category.type === '10') {
-            acc.sumIncome += amount
-            acc.daily[date].income += amount
-          } else {
-            acc.sumExpense += amount
-            acc.daily[date].expense += amount
-          }
-
-          return acc
-        },
-        { daily: {}, sumIncome: 0, sumExpense: 0 },
+      content.value = generateSummaryText(
+        res.data,
+        totalIncome.value,
+        totalExpense.value,
+        res.account.balance,
       )
-
-      const summaryText = Object.entries(daily)
-        .map(([date, summary]) => {
-          const header = `${date} 收: ${formatMoney(summary.income)} 支: ${formatMoney(
-            summary.expense,
-          )}`
-          return [header + '\n', ...summary.lines].join('\n')
-        })
-        .join('\n\n')
-
-      content.value = [
-        isEmpty(summaryText) ? '还没有录入账单' : summaryText,
-        `\n\n总收: ${formatMoney(totalIncome.value)}`,
-        `总支: ${formatMoney(totalExpense.value)}`,
-        `总余: ${formatMoney(res.account.balance)}`,
-      ].join('\n')
     }
 
     watch(currentDate, generateSummary)
 
     const show = async (query = {}) => {
       currentDate.value = query.createdAt || Date.now()
-      currentAccount.value = query.account || {}
-      totalIncome.value = query.totalIncome ?? 0
-      totalExpense.value = query.totalExpense ?? 0
       content.value = ''
       await generateSummary()
       visible.value = true

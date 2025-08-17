@@ -168,6 +168,8 @@ async function reconcileAccount(event, models) {
 
   // 5. 调用 saveBill 来创建账单并自动更新账户余额
   // saveBill 内部处理事务，无需在这里手动开启
+  // 延迟加载，避免循环依赖
+  const { saveBill } = require('./bill.js')
   await saveBill(saveBillEvent, models)
 
   // 6. 返回更新后的账户信息
@@ -176,9 +178,10 @@ async function reconcileAccount(event, models) {
 }
 
 async function getAccounts(event, models) {
+  const { opened } = event.query || {}
   const { OPENID } = cloud.getWXContext()
 
-  // 1. 获取用户的所有私有账本
+  // 获取用户的所有私有账本
   const privateAccountsRes = await models.account.list({
     filter: {
       where: {
@@ -193,7 +196,12 @@ async function getAccounts(event, models) {
     return { ...acc, isOpened: true }
   })
 
-  // 2. 获取所有公共账本
+  // 如果只想看已启用的
+  if (opened === 'true' || opened === true) {
+    return privateAccounts
+  }
+
+  // 获取所有公共账本
   const publicAccountsRes = await models.account.list({
     filter: {
       where: {
@@ -208,11 +216,18 @@ async function getAccounts(event, models) {
     return { ...acc, isOpened: false }
   })
 
-  // 3. 过滤掉用户已经拥有的公共账本
+  // 过滤掉用户已经拥有的公共账本
   const privateAccountNames = new Set(privateAccounts.map((a) => a.name))
-  const availablePublicAccounts = publicAccounts.filter((pa) => !privateAccountNames.has(pa.name))
+  const availablePublicAccounts = publicAccounts.filter(
+    (pa) => !privateAccountNames.has(pa.name),
+  )
 
-  // 4. 合并并返回
+  // 如果只想看未启用的
+  if (opened === 'false' || opened === false) {
+    return availablePublicAccounts
+  }
+
+  // 默认：合并并返回
   return [...privateAccounts, ...availablePublicAccounts]
 }
 

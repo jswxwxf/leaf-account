@@ -26,9 +26,10 @@ export function getAccount(name = 'leaf-maple') {
  * 获取所有可用账本列表
  * @returns {Promise<Account[]>}
  */
-export function getAccounts() {
+export function getAccounts(query) {
   return get('bill-cloud', {
     $url: '/get/accounts',
+    query,
   })
 }
 

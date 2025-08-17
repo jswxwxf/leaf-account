@@ -1,5 +1,6 @@
-import { groupBy, sumBy, map, orderBy, some } from 'lodash'
-import { getDayOfWeek, formatDate } from '@/utils/date.js'
+import { formatDate, getDayOfWeek } from '@/utils/date.js'
+import { groupBy, isEmpty, map, orderBy, some, sumBy } from 'lodash'
+import { formatMoney } from '@/utils/index.js'
 
 /**
  * 生成一个新的账单对象的初始值
@@ -55,4 +56,53 @@ export function groupBillsByDate(bills) {
 
   // 按日期倒序排列所有分组
   return orderBy(mapped, 'datetime', 'desc')
+}
+
+/**
+ * 生成日度账单汇总文本
+ * @param {import('@/api/bill.js').Bill[]} bills - 原始账单列表
+ * @param {number} totalIncome - 总收入
+ * @param {number} totalExpense - 总支出
+ * @param {number} balance - 账户余额
+ * @returns {string}
+ */
+export function generateSummaryText(bills, totalIncome, totalExpense, balance) {
+  const { daily } = (bills || []).reduce(
+    (acc, bill) => {
+      const amount = bill.amount || 0
+      const date = formatDate(bill.datetime, 'YYYY-MM-DD')
+
+      if (!acc.daily[date]) {
+        acc.daily[date] = { income: 0, expense: 0, lines: [] }
+      }
+
+      const line = [bill.category?.name, formatMoney(amount), bill.note].join('\t')
+      acc.daily[date].lines.push('  ' + line)
+
+      if (bill.category.type === '10') {
+        acc.daily[date].income += amount
+      } else {
+        acc.daily[date].expense += amount
+      }
+
+      return acc
+    },
+    { daily: {} },
+  )
+
+  const summaryText = Object.entries(daily)
+    .map(([date, summary]) => {
+      const header = `${date} 收: ${formatMoney(summary.income)} 支: ${formatMoney(
+        summary.expense,
+      )}`
+      return [header + '\n', ...summary.lines].join('\n')
+    })
+    .join('\n\n')
+
+  return [
+    isEmpty(summaryText) ? '还没有录入账单' : summaryText,
+    `\n\n总收: ${formatMoney(totalIncome)}`,
+    `总支: ${formatMoney(totalExpense)}`,
+    `总余: ${formatMoney(balance)}`,
+  ].join('\n')
 }

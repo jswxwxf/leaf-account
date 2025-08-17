@@ -20,7 +20,9 @@
           {{ account.title }}
           <text class="text-sm">{{ !account.isOpened ?' | 未启用': '' }}</text>
         </view>
-        <van-button wx:if="{{ account.isOpened }}" size="mini" custom-class="cabinet-btn" @tap="handleRename">改名</van-button>
+        <van-button wx:if="{{ account.isOpened }}" size="mini" custom-class="cabinet-btn" @tap="handleRename">
+          改名
+        </van-button>
       </view>
       <view class="inline-flex items-center gap-2 text-xs bg-black/30 py-1 px-2">
         <view>收 ¥{{ utils.formatMoney(account.totalIncome) }}</view>
@@ -30,9 +32,9 @@
     </view>
 
     <view class="grid grid-rows-3 gap-1">
-      <van-button size="mini" custom-class="cabinet-btn" @tap="handleTap">记帐</van-button>
-      <van-button size="mini" custom-class="cabinet-btn">转出</van-button>
-      <van-button size="mini" custom-class="cabinet-btn">转入</van-button>
+      <van-button size="mini" custom-class="cabinet-btn" @tap="handleTap">{{ account.isOpened ? '记帐' : '启用' }}</van-button>
+      <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !enableTransfer }}">转出</van-button>
+      <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !enableTransfer }}">转入</van-button>
     </view>
   </view>
 </view>

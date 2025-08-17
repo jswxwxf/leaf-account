@@ -1,0 +1,10 @@
+<van-action-sheet
+  show="{{ visible }}"
+  actions="{{ accounts }}"
+  title="请选择账本"
+  @close="onClose"
+  @cancel="onClose"
+  @select="onSelect"
+  cancel-text="取消"
+  safe-area-inset-bottom="{{ false }}"
+/>

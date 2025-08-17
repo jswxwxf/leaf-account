@@ -45,17 +45,20 @@ defineComponent({
       const { field } = e.currentTarget.dataset
       let value = e.detail
       bill.value[field] = value
+      if (value.note) {
+        bill.value.note = value.note
+      }
     }
 
-   return {
-     visible,
-     bill,
-     searchText,
-     show,
-     handleClose,
-     handleConfirm,
-     handleFormChange,
-     updateSearchText,
-   }
+    return {
+      visible,
+      bill,
+      searchText,
+      show,
+      handleClose,
+      handleConfirm,
+      handleFormChange,
+      updateSearchText,
+    }
   },
 })

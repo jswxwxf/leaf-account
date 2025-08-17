@@ -59,6 +59,7 @@
 <category-helper />
 <tags-helper />
 <calendar-helper />
+<account-helper />
 <reconcile-popup id="reconcile-popup" />
 <summary-popup id="summary-popup" />
 <text-popup id="text-popup" />
