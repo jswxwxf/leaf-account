@@ -43,7 +43,11 @@ exports.main = (event, context) => {
       ctx.body = { code: 200, success: true, message: '保存成功', data }
     } catch (e) {
       console.error('/upsert/bill error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      if (e.isBiz) {
+        ctx.body = { code: 400, success: false, message: e.message }
+      } else {
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
     }
   })
 

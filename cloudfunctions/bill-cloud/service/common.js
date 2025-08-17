@@ -254,6 +254,13 @@ async function saveTransfer(event, models) {
 
     if (!sourceAccount) throw new Error('转账失败：找不到源账户')
     if (!destinationAccount) throw new Error('转账失败：找不到目标账户')
+
+    // 检查转出账户余额
+    const transferAmount = Math.abs(parseMoney(amount))
+    if (sourceAccount.balance < transferAmount) {
+      throw new BizError('账户余额不足，无法转账')
+    }
+
     if (!transferOutCategory.data || transferOutCategory.data.records.length === 0)
       throw new Error('转账失败：找不到内置分类“转账”')
     if (!transferInCategory.data || transferInCategory.data.records.length === 0)
@@ -263,8 +270,6 @@ async function saveTransfer(event, models) {
     const transferInCat = transferInCategory.data.records[0]
 
     // 2. 构建转出和转入账单
-    const transferAmount = Math.abs(parseMoney(amount))
-
     const billOut = {
       ...bill,
       amount: -transferAmount,
@@ -308,6 +313,9 @@ async function saveTransfer(event, models) {
     return { ...primaryBill, relatedBill: secondaryBill._id }
   } catch (e) {
     await transaction.rollback()
+    if (e.isBiz) {
+      throw e // 如果是业务异常，直接抛出
+    }
     throw new Error(`转账失败: ${e.message}`)
   }
 }
