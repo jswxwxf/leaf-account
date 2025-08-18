@@ -276,7 +276,7 @@ async function saveTransfer(event, models) {
       category: transferOutCat,
       account: sourceAccountId,
       relatedAccount: destinationAccountId, // 保存对方账户信息
-      note: note || `向 ${destinationAccount.title} 转账`,
+      note: isTransferOut ? note : `向 ${destinationAccount.title} 转账`,
     }
 
     const billIn = {
@@ -286,7 +286,7 @@ async function saveTransfer(event, models) {
       category: transferInCat,
       account: destinationAccountId,
       relatedAccount: sourceAccountId, // 保存对方账户信息
-      note: note || `从 ${sourceAccount.title} 转入`,
+      note: isTransferOut ? `从 ${sourceAccount.title} 转入` : note,
       tags: [], // 转入记录不带标签
     }
 
