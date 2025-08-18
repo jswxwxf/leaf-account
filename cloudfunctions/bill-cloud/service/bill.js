@@ -26,7 +26,7 @@ async function saveBill(event, models) {
 
   // 如果是转账或收转账，则调用专门的转账函数
   // 如果是转账，则走特殊逻辑
-  if (bill.isTransfer) {
+  if (bill.category.name === '转账' || bill.category.name === '收转账') {
     const { saveTransfer: _saveTransfer } = require('./common.js')
     return _saveTransfer(event, models)
   }

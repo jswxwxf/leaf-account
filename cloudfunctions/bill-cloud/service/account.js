@@ -99,7 +99,8 @@ async function getAccount(event, models) {
 }
 
 async function reconcileAccount(event, models) {
-  const { actualBalance, accountId } = event
+  const { accountId } = event.query
+  const { actualBalance } = event.body
   const { OPENID } = cloud.getWXContext()
 
   if (typeof actualBalance !== 'number') {
@@ -218,9 +219,7 @@ async function getAccounts(event, models) {
 
   // 过滤掉用户已经拥有的公共账本
   const privateAccountNames = new Set(privateAccounts.map((a) => a.name))
-  const availablePublicAccounts = publicAccounts.filter(
-    (pa) => !privateAccountNames.has(pa.name),
-  )
+  const availablePublicAccounts = publicAccounts.filter((pa) => !privateAccountNames.has(pa.name))
 
   // 如果只想看未启用的
   if (opened === 'false' || opened === false) {

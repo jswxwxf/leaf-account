@@ -41,8 +41,10 @@ export function getAccounts(query) {
 export function reconcileAccount(actualBalance, accountId) {
   return post('bill-cloud', {
     $url: '/put/account/reconcile',
-    query: {
+    body: {
       actualBalance,
+    },
+    query: {
       accountId,
     },
   })
