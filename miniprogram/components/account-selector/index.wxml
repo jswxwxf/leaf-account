@@ -15,7 +15,6 @@
     show="{{ visible }}"
     position="bottom"
     custom-style="height: 60%;"
-    round
     @close="onClose"
     safe-area-inset-bottom="{{ false }}"
   >
@@ -50,7 +49,7 @@
           />
         </view>
         <view class="mt-4">
-          <van-button type="primary" block round @click="onConfirm">确定</van-button>
+          <van-button type="primary" block @click="onConfirm">确定</van-button>
         </view>
       </view>
     </bill-form>
