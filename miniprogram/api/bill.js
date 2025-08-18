@@ -1,4 +1,5 @@
 import { get, post } from './request-cloud.js'
+import { getMonthRange } from '@/utils/date.js'
 
 /**
  * @typedef {object} Bill
@@ -16,9 +17,18 @@ import { get, post } from './request-cloud.js'
  * @returns {Promise<Bill[]>}
  */
 export function getBills(query = {}) {
+  const finalQuery = { ...query }
+
+  if (finalQuery.month) {
+    const { startTime, endTime } = getMonthRange(finalQuery.month)
+    finalQuery.startTime = startTime
+    finalQuery.endTime = endTime
+    delete finalQuery.month
+  }
+
   return get('bill-cloud', {
     $url: '/get/bills',
-    query,
+    query: finalQuery,
   })
 }
 
@@ -40,9 +50,18 @@ export function getAllBills(query = {}) {
  * @returns {Promise<any>}
  */
 export function upsertBill(bill, query = {}) {
+  const finalQuery = { ...query }
+
+  if (finalQuery.month) {
+    const { startTime, endTime } = getMonthRange(finalQuery.month)
+    finalQuery.startTime = startTime
+    finalQuery.endTime = endTime
+    delete finalQuery.month
+  }
+
   return post('bill-cloud', {
     $url: '/upsert/bill',
-    query,
+    query: finalQuery,
     body: { bill },
   })
 }
@@ -53,9 +72,17 @@ export function upsertBill(bill, query = {}) {
  * @returns {Promise<any>}
  */
 export function saveBills(bills, query = {}) {
+  const finalQuery = { ...query }
+
+  if (finalQuery.month) {
+    const { startTime, endTime } = getMonthRange(finalQuery.month)
+    finalQuery.startTime = startTime
+    finalQuery.endTime = endTime
+    delete finalQuery.month
+  }
   return post('bill-cloud', {
     $url: '/batch/bills',
-    query,
+    query: finalQuery,
     body: { bills },
   })
 }
@@ -83,9 +110,17 @@ export function saveTransfer(body, query = {}) {
  * @returns {Promise<any>}
  */
 export function deleteBill(id, query = {}) {
+  const finalQuery = { ...query }
+
+  if (finalQuery.month) {
+    const { startTime, endTime } = getMonthRange(finalQuery.month)
+    finalQuery.startTime = startTime
+    finalQuery.endTime = endTime
+    delete finalQuery.month
+  }
   return post('bill-cloud', {
     $url: '/delete/bill',
-    query,
+    query: finalQuery,
     id,
   })
 }

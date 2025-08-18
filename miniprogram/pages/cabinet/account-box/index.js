@@ -1,6 +1,5 @@
 import { computed, defineComponent, inject } from '@vue-mini/core'
 import { showTransferPopup } from '@/utils/index.js'
-import { upsertBill } from '@/api/bill.js'
 import { storeKey } from '../store'
 
 defineComponent({

@@ -1,4 +1,5 @@
 const cloud = require('wx-server-sdk')
+const dayjs = require('dayjs')
 const { getCategoryIds } = require('./category.js')
 const { getTagsByIds } = require('./tag.js')
 const {
@@ -203,7 +204,7 @@ async function getBillsByIds(event, models) {
  * @param {object} event - 云函数的原始 event 对象
  */
 async function getBillsSummary(event, models) {
-  const { month, type, accountId } = event.query || {}
+  const { startTime, endTime, type, accountId } = event.query || {}
   const { OPENID } = cloud.getWXContext()
 
   // 权限：只能获取自己的或公共的
@@ -211,16 +212,8 @@ async function getBillsSummary(event, models) {
     $and: [{ _openid: { $eq: OPENID } }, { account: { $eq: accountId } }],
   }
 
-  if (month) {
-    const [year, monthNum] = month.split('-').map(Number)
-    const monthStart = new Date(year, monthNum - 1, 1)
-    const monthEnd = new Date(year, monthNum, 0)
-    monthEnd.setHours(23, 59, 59, 999)
-
-    whereClause.$and.push(
-      { datetime: { $gte: monthStart.getTime() } },
-      { datetime: { $lte: monthEnd.getTime() } },
-    )
+  if (startTime && endTime) {
+    whereClause.$and.push({ datetime: { $gte: startTime } }, { datetime: { $lte: endTime } })
   }
 
   if (type) {
@@ -273,7 +266,7 @@ async function getMinDate(models, where = {}) {
     pageSize: 1,
   })
   if (res.data && res.data.records.length > 0) {
-    return new Date(res.data.records[0].datetime)
+    return res.data.records[0].datetime
   }
   return null
 }
@@ -284,99 +277,78 @@ async function getMinDate(models, where = {}) {
  * @param {object} models - 数据模型实例
  */
 async function getBills(event, models) {
-  const { month, type, startDate: startDateStr, accountId } = event.query || {}
+  const { startTime, endTime, type, startDate: startDateTs, accountId } = event.query || {}
   const { OPENID } = cloud.getWXContext()
 
-  // 权限：只能获取自己的或公共的
+  // 1. 构建基础查询条件，确保用户只能访问自己的账本
   const where = {
-    $and: [
-      {
-        _openid: { $eq: OPENID },
-      },
-      {
-        account: { $eq: accountId },
-      },
-    ],
-  }
-  let currentDate
-
-  if (month) {
-    const [year, monthNum] = month.split('-').map(Number)
-    const monthStart = new Date(year, monthNum - 1, 1)
-    const monthEnd = new Date(year, monthNum, 0)
-    monthEnd.setHours(23, 59, 59, 999)
-    where.$and.push(
-      { datetime: { $gte: monthStart.getTime() } },
-      { datetime: { $lte: monthEnd.getTime() } },
-    )
-
-    // 如果是当月，从今天开始，否则从月底开始
-    const today = new Date()
-    if (year === today.getFullYear() && monthNum - 1 === today.getMonth()) {
-      currentDate = startDateStr ? new Date(startDateStr) : today
-    } else {
-      currentDate = startDateStr ? new Date(startDateStr) : monthEnd
-    }
-  } else {
-    currentDate = startDateStr ? new Date(startDateStr) : new Date()
+    $and: [{ _openid: { $eq: OPENID } }, { account: { $eq: accountId } }],
   }
 
+  // 2. 应用时间范围和类型筛选
+  if (startTime && endTime) {
+    where.$and.push({ datetime: { $gte: startTime } }, { datetime: { $lte: endTime } })
+  }
   if (type) {
     const categoryIds = await getCategoryIds({ query: { type } }, models)
-
     if (categoryIds.length > 0) {
       where.$and.push({ category: { $in: categoryIds } })
     } else {
-      // 如果没有找到该类型的分类，直接返回空结果
+      // 如果没有找到匹配的分类，直接返回空，避免无效查询
       return { data: [], nextStartDate: null }
     }
   }
 
-  if (where.$and.length === 0) {
-    delete where.$and
-  }
-
-  const minDate = await getMinDate(models, where)
-
-  if (!minDate) {
+  // 3. 获取符合筛选条件的账单中最早的日期，用于后续判断分页是否已到达末尾
+  const minDateTs = await getMinDate(models, where)
+  if (!minDateTs) {
+    // 如果没有任何账单，直接返回空
     return { data: [], nextStartDate: null }
   }
 
-  const MIN_RECORDS = 20
-  const FETCH_WINDOW_DAYS = 7
-  const MAX_LOOP = 30 // 设置一个合理的循环上限以避免意外的死循环
+  // 4. 确定本次分页加载的起始时间戳
+  let currentDateTs
+  if (startTime && endTime) {
+    // 如果是按月查询，则从指定的 startDate (翻页时) 或月份的最后一天 (首次加载) 开始
+    currentDateTs = startDateTs || endTime
+  } else {
+    // 如果是查询所有账单，则从指定的 startDate (翻页时) 或当前时间 (首次加载) 开始
+    currentDateTs = startDateTs || Date.now()
+  }
+
+  // 5. 循环获取数据，直到满足最小记录数或已加载完所有数据
+  const MIN_RECORDS = 20 // 每次加载至少要获取的记录数
+  const FETCH_WINDOW_DAYS = 7 // 每次向前追溯查询的时间窗口天数
+  const MAX_LOOP = 30 // 设置合理的循环上限，防止意外的无限循环
   let accumulatedBills = []
   let loopCount = 0
   let hasReachedEnd = false
 
   while (accumulatedBills.length < MIN_RECORDS && loopCount < MAX_LOOP) {
-    const periodEnd = new Date(currentDate)
-    periodEnd.setHours(23, 59, 59, 999)
+    // 确定当前查询周期的时间范围
+    const periodEndDate = dayjs(currentDateTs).endOf('day')
 
-    // 如果当前搜索周期的结束时间已经早于最早的记录时间，说明已经到底了
-    if (periodEnd.getTime() < minDate.getTime()) {
+    // 优化：如果周期的结束时间已经早于所有记录的最早时间，说明已经到底，无需继续查询
+    if (periodEndDate.valueOf() < minDateTs) {
       hasReachedEnd = true
       break
     }
 
-    const periodStart = new Date(currentDate)
-    periodStart.setDate(periodStart.getDate() - (FETCH_WINDOW_DAYS - 1)) // 设置 FETCH_WINDOW_DAYS 天的时间窗口
-    periodStart.setHours(0, 0, 0, 0)
+    const periodStartDate = dayjs(currentDateTs).subtract(FETCH_WINDOW_DAYS - 1, 'day').startOf('day')
 
-    // 如果计算出的周期开始时间早于最早记录时间，则调整为最早记录时间，并标记这是最后一个周期
-    if (periodStart.getTime() < minDate.getTime()) {
-      periodStart.setTime(minDate.getTime())
-      // 确保从一天的开始计算
-      periodStart.setHours(0, 0, 0, 0)
+    // 如果计算出的周期开始时间早于最早记录时间，则将其调整为最早记录时间，并标记为最后一次循环
+    let finalPeriodStartTs = periodStartDate.valueOf()
+    if (finalPeriodStartTs < minDateTs) {
+      finalPeriodStartTs = dayjs(minDateTs).startOf('day').valueOf()
       hasReachedEnd = true
     }
 
+    // 组合最终的查询条件并从数据库获取数据
     const periodWhereClause = {
       $and: [
-        // 使用展开运算符合并外部查询条件
         ...(where.$and || []),
-        { datetime: { $gte: periodStart.getTime() } },
-        { datetime: { $lte: periodEnd.getTime() } },
+        { datetime: { $gte: finalPeriodStartTs } },
+        { datetime: { $lte: periodEndDate.valueOf() } },
       ],
     }
 
@@ -394,27 +366,29 @@ async function getBills(event, models) {
       },
       filter: { where: periodWhereClause },
       orderBy: [{ datetime: 'desc' }],
-      pageSize: 1000, // 假设一周内账单不会超过1000条
+      pageSize: 1000, // 在一个窗口期内，假设记录数不会超过1000
     })
 
     if (periodBills && periodBills.length > 0) {
       accumulatedBills = accumulatedBills.concat(periodBills)
     }
 
-    // 如果已经到达包含最早记录的最后一个周期，则退出循环
+    // 如果已标记为最后一次循环，则退出
     if (hasReachedEnd) {
       break
     }
 
-    // 准备下一个 FETCH_WINDOW_DAYS 天周期的迭代
-    currentDate.setDate(currentDate.getDate() - FETCH_WINDOW_DAYS)
+    // 准备下一次迭代的开始时间戳
+    currentDateTs = dayjs(currentDateTs).subtract(FETCH_WINDOW_DAYS, 'day').valueOf()
     loopCount++
   }
 
+  // 6. 为获取到的账单填充完整的标签信息，并返回给客户端
   const populatedBills = await populateTagsForBills(accumulatedBills, models)
   return {
     data: populatedBills,
-    nextStartDate: hasReachedEnd ? null : currentDate.toISOString().split('T')[0],
+    // 如果已到达末尾，nextStartDate 为 null，否则返回下一次开始查询的时间戳
+    nextStartDate: hasReachedEnd ? null : currentDateTs,
   }
 }
 
@@ -449,16 +423,10 @@ async function getAllBills(event, models) {
 
   // 根据 createdDate 计算时间范围
   if (createdAt) {
-    const startDate = new Date(createdAt)
-    startDate.setHours(0, 0, 0, 0) // 设置为当天的开始
+    const startDate = dayjs(createdAt).startOf('day').valueOf()
+    const endDate = dayjs(createdAt).endOf('day').valueOf()
 
-    const endDate = new Date(createdAt)
-    endDate.setHours(23, 59, 59, 999) // 设置为当天的结束
-
-    where.$and.push(
-      { createdAt: { $gte: startDate.getTime() } },
-      { createdAt: { $lte: endDate.getTime() } },
-    )
+    where.$and.push({ createdAt: { $gte: startDate } }, { createdAt: { $lte: endDate } })
   }
 
   const {

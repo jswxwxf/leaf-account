@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@cloudbase/wx-cloud-client-sdk": "^1.6.1",
+    "dayjs": "^1.11.13",
     "lodash": "^4.17.21",
     "tcb-router": "^1.1.2",
     "wx-server-sdk": "~2.6.3"

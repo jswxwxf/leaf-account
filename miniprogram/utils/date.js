@@ -74,3 +74,15 @@ export function parseDate(dateString) {
   // 如果所有格式都解析失败，则返回当前时间作为最终的保障。
   return Date.now()
 }
+
+/**
+ * 获取指定月份的开始和结束时间戳
+ * @param {string} monthString - 月份字符串 (YYYY-MM)
+ * @returns {{startTime: number, endTime: number}}
+ */
+export function getMonthRange(monthString) {
+  const date = dayjs(monthString, 'YYYY-MM')
+  const startTime = date.startOf('month').valueOf()
+  const endTime = date.endOf('month').valueOf()
+  return { startTime, endTime }
+}

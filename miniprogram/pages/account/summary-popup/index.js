@@ -14,7 +14,7 @@ defineComponent({
 
     const generateSummary = async () => {
       const query = {
-        createdAt: formatDate(currentDate.value, 'YYYY-MM-DD'),
+        createdAt: currentDate.value,
         accountId: currentAccount.value._id,
       }
       const res = await getAllBills(query)
