@@ -22,10 +22,10 @@ export default defineComponent({
       // simple 模式下，action-sheet 需要 name 字段
       if (mode.value === 'simple') {
         accounts.value = res.data
-          .filter((item) => item._id !== accountToFilter._id)
+          .filter((item) => item.name !== accountToFilter.name)
           .map((item) => ({ ...item, name: item.title }))
       } else {
-        accounts.value = res.data.filter((item) => item._id !== accountToFilter._id)
+        accounts.value = res.data.filter((item) => item.name !== accountToFilter.name)
       }
     }
 
