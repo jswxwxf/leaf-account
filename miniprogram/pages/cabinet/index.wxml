@@ -7,4 +7,4 @@
 </view>
 
 <account-popup id="account-popup" />
-<account-helper />
+<transfer-helper />

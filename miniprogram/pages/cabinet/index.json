@@ -5,7 +5,7 @@
   "usingComponents": {
     "account-box": "./account-box/index",
     "account-popup": "./account-popup/index",
-    "account-helper": "/components/account-helper/index"
+    "transfer-helper": "/components/transfer-helper/index",
   },
   "navigationBarTitleText": "切换帐本"
 }

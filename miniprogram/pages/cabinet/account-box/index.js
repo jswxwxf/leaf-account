@@ -1,5 +1,5 @@
 import { computed, defineComponent, inject } from '@vue-mini/core'
-import { showAccountSelector } from '@/utils/index.js'
+import { showTransferPopup } from '@/utils/index.js'
 import { upsertBill } from '@/api/bill.js'
 import { storeKey } from '../store'
 
@@ -26,8 +26,7 @@ defineComponent({
     }
 
     const handleTransfer = async (type) => {
-      const { account: targetAccount, amount } = await showAccountSelector({
-        mode: 'full',
+      const { account: targetAccount, amount } = await showTransferPopup({
         currentAccount: props.account,
       })
       triggerEvent('transfer', { currentAccount: props.account, targetAccount, type, amount })

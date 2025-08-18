@@ -36,6 +36,15 @@ export function showAccountSelector(options) {
   return accountSelector.value.show(options)
 }
 
+export const transferPopup = ref(null)
+
+export function showTransferPopup(options) {
+  if (!transferPopup.value) {
+    return Promise.reject(new Error('Transfer popup not initialized'))
+  }
+  return transferPopup.value.show(options)
+}
+
 export const theToast = ref(null)
 
 export function showToast(message) {
