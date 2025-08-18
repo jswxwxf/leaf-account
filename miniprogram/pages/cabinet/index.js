@@ -1,12 +1,13 @@
 import { defineComponent, ref, onShow, onReady, provide } from '@vue-mini/core'
 import { getAccount, getAccounts, updateAccount } from '@/api/account.js'
+import { saveTransfer } from '@/api/bill.js'
 import store, { storeKey } from './store'
 
 defineComponent({
   setup(props, { selectComponent }) {
     const state = store()
     provide(storeKey, state)
-    const { accounts } = state
+    const { accounts, fetchAccounts } = state
 
     const accountPopup = ref(null)
 
@@ -69,10 +70,19 @@ defineComponent({
       })
     }
 
+    const handleTransfer = async (e) => {
+      const { currentAccount, targetAccount, type, amount } = e.detail
+      await saveTransfer({ targetAccount, type, amount }, { accountId: currentAccount._id })
+      wx.showToast({ title: '转账成功', icon: 'success' })
+      // 重新获取账本列表，更新余额
+      fetchAccounts()
+    }
+
     return {
       accounts,
       handleActivate,
       handleRename,
+      handleTransfer,
     }
   },
 })

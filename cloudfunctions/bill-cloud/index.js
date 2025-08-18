@@ -22,6 +22,7 @@ const {
   getBillsSummary,
   resetBills,
   getAllBills,
+  saveTransfer,
 } = require('./service/bill.js')
 const { getAccount, getAccounts, reconcileAccount } = require('./service/account.js')
 const { getCategories, addCategory, deleteCategory, updateCategory } = require('./service/category.js')
@@ -43,6 +44,23 @@ exports.main = (event, context) => {
       ctx.body = { code: 200, success: true, message: '保存成功', data }
     } catch (e) {
       console.error('/upsert/bill error:', e)
+      if (e.isBiz) {
+        ctx.body = { code: 400, success: false, message: e.message }
+      } else {
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
+    }
+  })
+
+  /**
+   * @desc 新增转账
+   */
+  app.router('/post/transfer', async (ctx) => {
+    try {
+      const data = await saveTransfer(event, models)
+      ctx.body = { code: 200, success: true, message: '转账成功', data }
+    } catch (e) {
+      console.error('/post/transfer error:', e)
       if (e.isBiz) {
         ctx.body = { code: 400, success: false, message: e.message }
       } else {

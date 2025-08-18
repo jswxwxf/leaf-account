@@ -1,5 +1,6 @@
-import { computed, defineComponent, inject, ref } from '@vue-mini/core'
-import { updateAccount } from '@/api/account.js'
+import { computed, defineComponent, inject } from '@vue-mini/core'
+import { showAccountSelector } from '@/utils/index.js'
+import { upsertBill } from '@/api/bill.js'
 import { storeKey } from '../store'
 
 defineComponent({
@@ -10,7 +11,7 @@ defineComponent({
     },
   },
   setup(props, { triggerEvent }) {
-    const { accounts } = inject(storeKey)
+    const { accounts, fetchAccounts } = inject(storeKey)
 
     const enableTransfer = computed(() => {
       return accounts.value.filter((a) => a.isOpened).length >= 2 && props.account.isOpened
@@ -24,10 +25,23 @@ defineComponent({
       triggerEvent('rename', props.account)
     }
 
+    const handleTransfer = async (type) => {
+      const { account: targetAccount, amount } = await showAccountSelector({
+        mode: 'full',
+        currentAccount: props.account,
+      })
+      triggerEvent('transfer', { currentAccount: props.account, targetAccount, type, amount })
+    }
+
+    const handleTransferOut = () => handleTransfer(20) // 20 for expense
+    const handleTransferIn = () => handleTransfer(10) // 10 for income
+
     return {
       enableTransfer,
       handleTap,
       handleRename,
+      handleTransferOut,
+      handleTransferIn,
     }
   },
 })

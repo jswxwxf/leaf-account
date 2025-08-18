@@ -22,7 +22,6 @@ export function getBills(query = {}) {
   })
 }
 
-
 /**
  * 获取所有账单
  * @param {object} query - 查询参数
@@ -58,6 +57,23 @@ export function saveBills(bills, query = {}) {
     $url: '/batch/bills',
     query,
     body: { bills },
+  })
+}
+
+/**
+ * 保存转账记录
+ * @param {object} data
+ * @param {object} data.targetAccount - 目标账户
+ * @param {number} data.amount - 金额
+ * @param {('10'|'20')} data.type - 类型：10-转入，20-转出
+ * @param {object} query - 查询参数，如 accountId (源账户ID)
+ * @returns {Promise<any>}
+ */
+export function saveTransfer(body, query = {}) {
+  return post('bill-cloud', {
+    $url: '/post/transfer',
+    query,
+    body,
   })
 }
 

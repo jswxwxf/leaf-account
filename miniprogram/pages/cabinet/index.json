@@ -4,7 +4,8 @@
   "styleIsolation": "shared",
   "usingComponents": {
     "account-box": "./account-box/index",
-    "account-popup": "./account-popup/index"
+    "account-popup": "./account-popup/index",
+    "account-helper": "/components/account-helper/index"
   },
   "navigationBarTitleText": "切换帐本"
 }

@@ -29,11 +29,11 @@ export function showCalendar(currentDate) {
 
 export const accountSelector = ref(null)
 
-export function showAccountSelector() {
+export function showAccountSelector(options) {
   if (!accountSelector.value) {
     return Promise.reject(new Error('Account selector not initialized'))
   }
-  return accountSelector.value.show()
+  return accountSelector.value.show(options)
 }
 
 export const theToast = ref(null)

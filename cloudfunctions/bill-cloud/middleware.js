@@ -7,6 +7,7 @@ const { BizError } = require('./service/common.js')
 // --- 中间件应用的路由列表 ---
 const REQUIRE_LOGIN_ROUTES = [
   '/upsert/bill',
+  '/post/transfer',
   '/batch/bills',
   '/delete/bill',
   '/post/category',
@@ -18,6 +19,7 @@ const REQUIRE_LOGIN_ROUTES = [
 ]
 const REQUIRE_ACCOUNT_ID_ROUTES = [
   '/upsert/bill',
+  '/post/transfer',
   '/batch/bills',
   '/delete/bill',
   '/get/bills',

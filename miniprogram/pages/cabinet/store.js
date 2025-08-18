@@ -17,6 +17,7 @@ export default function store() {
 
   return {
     accounts,
+    fetchAccounts,
   }
 }
 

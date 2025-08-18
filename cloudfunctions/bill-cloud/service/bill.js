@@ -5,7 +5,6 @@ const {
   updateAccount,
   parseMoney,
   populateTagsForBills,
-  saveTransfer,
   saveBill: _saveBill,
 } = require('./common.js')
 
@@ -26,8 +25,10 @@ async function saveBill(event, models) {
   }
 
   // 如果是转账或收转账，则调用专门的转账函数
-  if (bill.category.name === '转账' || bill.category.name === '收转账') {
-    return saveTransfer(event, models)
+  // 如果是转账，则走特殊逻辑
+  if (bill.isTransfer) {
+    const { saveTransfer: _saveTransfer } = require('./common.js')
+    return _saveTransfer(event, models)
   }
 
   // 对于普通账单，开启独立事务
@@ -597,6 +598,52 @@ async function resetBills(event, models) {
   }
 }
 
+async function saveTransfer(event, models) {
+  const { targetAccount, amount, type } = event.body
+  const { accountId } = event.query || {}
+
+  if (!targetAccount || !amount || !type || !accountId) {
+    throw new Error('参数不完整：targetAccount, amount, type, accountId 都是必需的')
+  }
+
+  const { data: categories } = await models.category.list({
+    filter: {
+      where: {
+        name: { $in: ['转账', '收转账'] },
+        _openid: { $empty: true },
+      },
+    },
+  })
+
+  const transferOutCategory = categories.records.find(c => c.name === '转账')
+  const transferInCategory = categories.records.find(c => c.name === '收转账')
+
+  if (!transferOutCategory || !transferInCategory) {
+    throw new Error('找不到内置的转账分类')
+  }
+
+  const category = type === 20 ? transferOutCategory : transferInCategory
+  // 在 category 对象中嵌入目标账户信息，以匹配 common.js 中 saveTransfer 的期望结构
+  category.account = targetAccount
+
+  const bill = {
+    category,
+    amount,
+    datetime: Date.now(),
+    note: '',
+  }
+
+  // 构建一个新的 event 对象，其结构与 common.js 中的 saveTransfer 函数期望的完全一致
+  const eventForCommon = {
+    ...event,
+    body: { bill },
+    query: { accountId }, // 明确传递源账户ID
+  }
+
+  const { saveTransfer: _saveTransfer } = require('./common.js')
+  return _saveTransfer(eventForCommon, models)
+}
+
 module.exports = {
   saveBill,
   saveBills,
@@ -606,4 +653,5 @@ module.exports = {
   getBillsByIds,
   deleteBill,
   resetBills,
+  saveTransfer,
 }

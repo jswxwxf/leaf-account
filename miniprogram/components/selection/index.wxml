@@ -3,7 +3,7 @@
   <view class="dropdown-container">
     <!-- 下拉头部（显示选中项） -->
     <view class="dropdown-header" @tap="toggleDropdown">
-      <text class="selected-text">{{selectedItem || placeholder}}</text>
+      <text class="selected-text">{{ selectedItem ? selectedItem[valueKey] : placeholder }}</text>
 
       <view class="dropdown">
         <!-- 删除图标（有值时才显示） -->
@@ -15,8 +15,8 @@
 
     <!-- 下拉列表（含过渡动画） -->
     <view class="dropdown-list {{isDropdownOpen ? 'open' : 'close'}}">
-      <view wx:for="{{dropdownItems}}" wx:key="index" class="dropdown-item {{item === selectedItem ? 'selected' : ''}}" @tap="selectItem" data-item="{{item}}">
-        {{item}}
+      <view wx:for="{{items}}" wx:key="index" class="dropdown-item {{ item[itemKey] === selectedItem[itemKey] ? 'selected' : '' }}" @tap="selectItem" data-item="{{item}}">
+        {{ item[valueKey] }}
       </view>
     </view>
   </view>

@@ -1,10 +1,58 @@
-<van-action-sheet
-  show="{{ visible }}"
-  actions="{{ accounts }}"
-  title="请选择账本"
-  @close="onClose"
-  @cancel="onClose"
-  @select="onSelect"
-  cancel-text="取消"
-  safe-area-inset-bottom="{{ false }}"
-/>
+<block wx:if="{{ mode === 'simple' }}">
+  <van-action-sheet
+    show="{{ visible }}"
+    actions="{{ accounts }}"
+    title="请选择账本"
+    @close="onClose"
+    @cancel="onClose"
+    @select="onSelectSimple"
+    cancel-text="取消"
+    safe-area-inset-bottom="{{ false }}"
+  />
+</block>
+<block wx:else>
+  <van-popup
+    show="{{ visible }}"
+    position="bottom"
+    custom-style="height: 60%;"
+    round
+    @close="onClose"
+    safe-area-inset-bottom="{{ false }}"
+  >
+    <bill-form id="form">
+      <view class="p-4 h-full flex flex-col">
+        <view class="text-lg font-bold text-center mb-4">选择账户</view>
+        <view class="flex-1 overflow-y-auto">
+          <van-radio-group value="{{ formData.account._id }}">
+            <van-cell-group inset>
+              <van-cell
+                wx:for="{{ accounts }}"
+                wx:key="_id"
+                title="{{ item.title }}"
+                clickable
+                data-item="{{ item }}"
+                @click="onRadioClick"
+              >
+                <van-radio name="{{ item._id }}" slot="right-icon" />
+              </van-cell>
+            </van-cell-group>
+          </van-radio-group>
+        </view>
+        <view class="mx-4">
+          <money-field
+            value="{{ formData.amount }}"
+            label="金额"
+            field="amount"
+            rule="requiredMoney"
+            placeholder="请输入金额"
+            @change="onAmountChange"
+            rules="{{ [{ required: true, message: '请输入金额' }] }}"
+          />
+        </view>
+        <view class="mt-4">
+          <van-button type="primary" block round @click="onConfirm">确定</van-button>
+        </view>
+      </view>
+    </bill-form>
+  </van-popup>
+</block>

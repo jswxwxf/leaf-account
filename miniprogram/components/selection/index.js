@@ -4,17 +4,27 @@ defineComponent({
   properties: {
     items: {
       type: Array,
-      value: ['中心校区', '红旗校区', '东风校区', '共青城校区', 'CSDN奇妙方程式'],
+      value: [],
     },
     value: {
-      type: String,
+      type: null, // 可以是字符串或对象
       value: null,
     },
     placeholder: {
       type: String,
-      value: '请选择校区',
+      value: '请选择',
+    },
+    // 新增属性，用于从对象中取值的 key
+    itemKey: {
+      type: String,
+      value: '_id',
+    },
+    valueKey: {
+      type: String,
+      value: 'text',
     },
   },
+
   setup(props, { triggerEvent }) {
     const isDropdownOpen = ref(false)
     const selectedItem = ref(props.value)
@@ -35,21 +45,18 @@ defineComponent({
       const { item } = e.currentTarget.dataset
       selectedItem.value = item
       isDropdownOpen.value = false
-      triggerEvent('change', item) // 使用 'change' 事件通知父组件
+      triggerEvent('change', item) // 直接传递整个 item
     }
 
     const handleDelete = () => {
       selectedItem.value = null
       isDropdownOpen.value = false
-      triggerEvent('change', null) // 使用 'change' 事件通知父组件
+      triggerEvent('change', null)
     }
 
     return {
       isDropdownOpen,
       selectedItem,
-      // props 会自动暴露给模板，所以不需要返回
-      dropdownItems: props.items,
-      // placeholder: props.placeholder,
       toggleDropdown,
       selectItem,
       handleDelete,
