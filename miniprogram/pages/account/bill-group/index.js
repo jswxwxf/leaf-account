@@ -1,4 +1,4 @@
-import { computed, defineComponent, inject } from '@vue-mini/core'
+import { computed, defineComponent, inject, onHide } from '@vue-mini/core'
 import { storeKey } from '../store'
 
 defineComponent({
@@ -12,8 +12,15 @@ defineComponent({
       value: false,
     },
   },
-  setup(props, { triggerEvent }) {
+  setup(props, { triggerEvent, selectAllComponents }) {
     const { searchText } = inject(storeKey)
+
+    onHide(() => {
+      console.log('closing swipe cell')
+      selectAllComponents('.swipe-cell').forEach((cell) => {
+        cell.close()
+      })
+    })
 
     const handleCopy = (e) => {
       if (props.disabled) return
