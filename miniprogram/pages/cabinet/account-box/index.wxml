@@ -11,7 +11,7 @@
   <view class="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-black/40"></view>
 
   <!-- 前景内容：左侧标题+金额，右侧竖向按钮 -->
-  <view class="relative h-full px-4 py-3 flex items-center justify-between">
+  <view class="relative h-full px-4 py-3 flex items-start justify-between">
     <view class="flex flex-col items-start gap-1">
       <view class="flex items-center gap-2">
         <view
@@ -24,14 +24,23 @@
           改名
         </van-button>
       </view>
-      <view class="inline-flex items-center gap-2 text-xs bg-black/30 py-1 px-2">
-        <view>收 ¥{{ utils.formatMoney(account.totalIncome) }}</view>
-        <view>支 ¥{{ utils.formatMoney(-account.totalExpense) }}</view>
-        <view>余 ¥{{ utils.formatMoney(account.balance) }}</view>
+      <view class="flex flex-col text-xs bg-black/30 py-1 px-2 w-36 gap-1">
+        <view class="flex justify-between gap-2">
+          <text>收入</text>
+          <text>¥{{ utils.formatMoney(account.totalIncome) }}</text>
+        </view>
+        <view class="flex justify-between gap-2">
+          <text>支出</text>
+          <text>¥{{ utils.formatMoney(account.totalExpense) }}</text>
+        </view>
+        <view class="flex justify-between gap-2">
+          <text>余额</text>
+          <text>¥{{ utils.formatMoney(account.balance) }}</text>
+        </view>
       </view>
     </view>
 
-    <view class="grid grid-rows-3 grid-cols-2 gap-1">
+    <view class="grid grid-rows-3 grid-cols-2 gap-1 pt-1">
       <van-button size="mini" custom-class="cabinet-btn" @tap="handleTap">{{ account.isOpened ? '记帐' : '启用' }}</van-button>
       <van-button size="mini" custom-class="cabinet-btn" disabled @tap="handleDeactivate">停用</van-button>
       <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !enableTransfer }}" @tap="handleTransferOut">转出</van-button>
