@@ -55,7 +55,7 @@ function formatMoney(value, digits) {
     count++
 
     // 每四位添加一个逗号，但最后一位后面不添加
-    if (count % 4 === 0 && i > 0) {
+    if (count % 3 === 0 && i > 0) {
       formatted = ',' + formatted
     }
   }

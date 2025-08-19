@@ -2,4 +2,8 @@
   background-color: rgba(255, 255, 255, 0.8) !important;
   border: none !important;
   color: rgba(0, 0, 0, 0.8) !important;
+
+  --button-mini-height: 50rpx;
+  --button-line-height: 48rpx;
+  --button-mini-font-size: 24rpx;
 }

@@ -92,8 +92,8 @@ export function formatMoney(value, digits = 2) {
   let integerPart = parts[0]
   const decimalPart = parts.length > 1 ? `.${parts[1]}` : ''
 
-  // 使用正则表达式每四位添加一个逗号
-  const rgx = /(\d+)(\d{4})/
+  // 使用正则表达式每三位添加一个逗号
+  const rgx = /(\d+)(\d{3})/
   while (rgx.test(integerPart)) {
     integerPart = integerPart.replace(rgx, '$1,$2')
   }
