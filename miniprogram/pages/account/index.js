@@ -4,7 +4,7 @@ import Dialog from '@vant/weapp/dialog/dialog.js'
 import { reconcileAccount } from '@/api/account.js'
 import { upsertBill, deleteBill, saveBills } from '@/api/bill.js'
 import { newBill } from '@/service/bill-service.js'
-import store, { storeKey } from './store'
+import store, { MAX_BATCH_BILLS, storeKey } from './store'
 import { useOcr } from '@/composables/use-ocr.js'
 import { useAi } from '@/composables/use-ai.js'
 
@@ -235,6 +235,10 @@ defineComponent({
       const texts = await handleOcr(imagePath.value)
       const bills = await analyzeBillsFromText(texts.join(' '))
       if (bills && bills.length > 0) {
+        if (bills.length > MAX_BATCH_BILLS) {
+          Toast.fail(`单次识别账单数量不能超过 ${MAX_BATCH_BILLS} 条`)
+          return
+        }
         handleBatchBills(bills)
       } else {
         Toast('未识别到有效账单')
@@ -245,6 +249,10 @@ defineComponent({
       textContent.value = await textPopup.value.show()
       const bills = await analyzeBillsFromText(textContent.value)
       if (bills && bills.length > 0) {
+        if (bills.length > MAX_BATCH_BILLS) {
+          Toast.fail(`单次识别账单数量不能超过 ${MAX_BATCH_BILLS} 条`)
+          return
+        }
         handleBatchBills(bills)
       } else {
         Toast('未识别到有效账单')

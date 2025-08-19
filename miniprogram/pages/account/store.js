@@ -5,6 +5,8 @@ import { getAccount } from '@/api/account.js'
 import { groupBillsByDate } from '@/service/bill-service.js'
 import { getCurrentMonth, formatDate } from '@/utils/date.js'
 
+export const MAX_BATCH_BILLS = 20
+
 export default function store() {
   // 原始账单列表
   const rawBills = ref([])

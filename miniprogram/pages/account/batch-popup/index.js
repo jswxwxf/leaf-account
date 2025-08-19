@@ -1,8 +1,9 @@
 import { defineComponent, inject, nextTick, onHide, ref } from '@vue-mini/core'
 import { isEmpty } from 'lodash'
+import Toast from '@vant/weapp/toast/toast.js'
 import { parseDate } from '@/utils/date.js'
 import { newBill } from '@/service/bill-service.js'
-import { storeKey } from '../store'
+import { storeKey, MAX_BATCH_BILLS } from '../store'
 
 defineComponent({
   setup(props, { selectAllComponents }) {
@@ -82,7 +83,10 @@ defineComponent({
     }
 
     const handleAddRow = (e) => {
-      if (list.value.length >= 20) return
+      if (list.value.length >= MAX_BATCH_BILLS) {
+        Toast(`最多只能添加 ${MAX_BATCH_BILLS} 条账单`)
+        return
+      }
       const { rowIndex } = e.currentTarget.dataset
       list.value.splice(rowIndex + 1, 0, newBill())
     }
@@ -95,7 +99,10 @@ defineComponent({
     }
 
     const handleCopyRow = (e) => {
-      if (list.value.length >= 20) return
+      if (list.value.length >= MAX_BATCH_BILLS) {
+        Toast(`最多只能添加 ${MAX_BATCH_BILLS} 条账单`)
+        return
+      }
       const { rowIndex } = e.currentTarget.dataset
       const rowToCopy = list.value[rowIndex]
       // Deep copy to avoid reference issues
