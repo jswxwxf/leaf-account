@@ -133,8 +133,11 @@ async function saveBill(billToSave, accountId, models, dbOrTransaction) {
     billToSave.amount = -billToSave.amount
   }
 
+  // 从 bill.category 对象中提取 ID，用于存储
   const categoryId = billToSave.category?._id
+  // 在 billToSave 对象上，将 category 字段的值设置为 ID 字符串
   billToSave.category = categoryId
+
   if (Array.isArray(billToSave.tags)) {
     billToSave.tags = billToSave.tags.map((tag) => tag._id).filter(Boolean)
   }
@@ -338,11 +341,46 @@ async function saveTransfer(event, models, dbOrTransaction) {
   }
 }
 
+/**
+ * 为账单列表填充完整的分类信息
+ * @param {object[]} bills - 账单对象数组
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<object[]>} - 填充了分类信息的账单数组
+ */
+async function populateCategoriesForBills(bills, models) {
+  if (!bills || bills.length === 0) {
+    return []
+  }
+
+  // 1. 提取所有不重复的 categoryId
+  const categoryIds = [...new Set(bills.map(b => b.category).filter(Boolean))]
+
+  if (categoryIds.length === 0) {
+    return bills // 如果没有 categoryId，直接返回原数组
+  }
+
+  // 2. 批量查询 categoryId 对应的分类信息
+  const { getCategoriesByIds } = require('./category.js')
+  const categories = await getCategoriesByIds({ query: { ids: categoryIds } }, models)
+
+  // 3. 创建一个 categoryId 到 category 对象的映射
+  const categoryMap = new Map(categories.map(c => [c._id, c]))
+
+  // 4. 将分类信息填充回账单对象
+  return bills.map(bill => {
+    return {
+      ...bill,
+      category: categoryMap.get(bill.category) || null,
+    }
+  })
+}
+
 module.exports = {
   saveBill,
   updateAccount,
   parseMoney,
   populateTagsForBills,
+  populateCategoriesForBills, // 导出新函数
   saveTransfer,
   BizError,
 }

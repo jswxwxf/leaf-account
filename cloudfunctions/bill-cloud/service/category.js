@@ -206,9 +206,40 @@ async function updateCategory(event, models) {
   }
 }
 
+/**
+ * 根据 ID 列表批量获取分类信息
+ * @param {object} event - 云函数的原始 event 对象，包含 { query: { ids } }
+ * @param {object} models - 数据模型实例
+ */
+async function getCategoriesByIds(event, models) {
+  const { ids } = event.query || {}
+  const { OPENID } = cloud.getWXContext()
+
+  if (!ids || ids.length === 0) {
+    return []
+  }
+
+  // 确保只能查询到自己的或公共的分类
+  const { data } = await models.category.list({
+    filter: {
+      where: {
+        $and: [
+          { _id: _.in(ids) },
+          { $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }] },
+        ],
+      },
+    },
+    pageSize: 1000, // 假设一次查询的ID数量不会超过1000
+  })
+
+  return data.records || []
+}
+
+
 module.exports = {
   getCategories,
   getCategoryIds,
+  getCategoriesByIds, // 导出新函数
   addCategory,
   deleteCategory,
   updateCategory,
