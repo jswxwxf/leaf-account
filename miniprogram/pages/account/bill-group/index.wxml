@@ -15,7 +15,7 @@
       </view>
     </van-cell>
     <block wx:for="{{ filteredBills }}" wx:key="_id" wx:for-item="bill">
-      <van-swipe-cell right-width="{{ 198 }}">
+      <van-swipe-cell right-width="{{ 64 * 3 }}">
         <van-cell custom-class="{{ utils.isToday(bill.createdAt) ? 'bill-item--today' : '' }}">
           <view class="flex items-center">
             <view class="flex-1 text-left min-w-0" @tap="handleCopyNote" data-bill="{{bill}}">
@@ -35,9 +35,9 @@
           </view>
         </van-cell>
         <view slot="right" class="van-swipe-cell__right flex h-full">
-          <view class="h-full w-16 flex items-center justify-center text-white text-sm bg-blue-400 {{ disabled ? 'grayscale' : '' }}" @tap="handleCopy" data-bill="{{bill}}">复制</view>
-          <view class="h-full w-16 flex items-center justify-center text-white text-sm bg-green-500 {{ disabled ? 'grayscale' : '' }}" @tap="handleEdit" data-bill="{{bill}}">编辑</view>
-          <view class="h-full w-16 flex items-center justify-center text-white text-sm bg-red-500" @tap="handleDelete" data-bill="{{bill}}">删除</view>
+          <view class="h-full w-[64px] flex items-center justify-center text-white text-sm bg-blue-400 {{ disabled ? 'grayscale' : '' }}" @tap="handleCopy" data-bill="{{bill}}">复制</view>
+          <view class="h-full w-[64px] flex items-center justify-center text-white text-sm bg-green-500 {{ disabled ? 'grayscale' : '' }}" @tap="handleEdit" data-bill="{{bill}}">编辑</view>
+          <view class="h-full w-[64px] flex items-center justify-center text-white text-sm bg-red-500" @tap="handleDelete" data-bill="{{bill}}">删除</view>
         </view>
       </van-swipe-cell>
     </block>
