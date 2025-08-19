@@ -1,4 +1,4 @@
-import { defineComponent, ref, onReady } from '@vue-mini/core'
+import { defineComponent, ref, onReady, onHide } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast'
 import { getTags } from '@/api/tag.js'
 import { newTag, saveTags } from '@/service/tag-service.js'
@@ -85,6 +85,10 @@ defineComponent({
 
     fetchTags()
 
+    onHide(() => {
+      handleClose()
+    })
+
     const show = (value = []) => {
       visible.value = true
       selectedTags.value = [...value]
@@ -103,7 +107,7 @@ defineComponent({
 
     const handleClose = () => {
       hide()
-      _reject(new Error('用户取消'))
+      _reject && _reject(new Error('用户取消'))
     }
 
     const handleSelect = (event) => {

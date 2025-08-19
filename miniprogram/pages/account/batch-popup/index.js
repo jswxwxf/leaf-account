@@ -1,4 +1,4 @@
-import { defineComponent, inject, nextTick, ref } from '@vue-mini/core'
+import { defineComponent, inject, nextTick, onHide, ref } from '@vue-mini/core'
 import { isEmpty } from 'lodash'
 import { parseDate } from '@/utils/date.js'
 import { newBill } from '@/service/bill-service.js'
@@ -13,6 +13,10 @@ defineComponent({
     const billForms = ref([])
 
     let _resolve, _reject
+
+    onHide(() => {
+      handleClose()
+    })
 
     const show = (bills) => {
       if (bills && bills.length > 0) {
@@ -40,7 +44,7 @@ defineComponent({
     }
 
     const handleClose = () => {
-      _reject(new Error('用户取消'))
+      _reject && _reject(new Error('用户取消'))
       visible.value = false
     }
 

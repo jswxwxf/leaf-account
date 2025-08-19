@@ -1,4 +1,4 @@
-import { defineComponent, ref, onMounted, onReady } from '@vue-mini/core'
+import { defineComponent, ref, onMounted, onReady, onHide } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
 import { getCategories, addCategory } from '@/api/category.js'
 import { newCategory } from '@/service/category-service.js'
@@ -76,6 +76,10 @@ defineComponent({
 
     fetchCategories()
 
+    onHide(() => {
+      handleClose()
+    })
+
     const show = () => {
       visible.value = true
       resetNewCategory()
@@ -93,7 +97,7 @@ defineComponent({
 
     const handleClose = () => {
       hide()
-      _reject(new Error('用户取消'))
+      _reject && _reject(new Error('用户取消'))
     }
 
     const handleSelect = async (event) => {

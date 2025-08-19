@@ -1,4 +1,4 @@
-import { defineComponent, ref, onReady } from '@vue-mini/core'
+import { defineComponent, ref, onReady, onHide } from '@vue-mini/core'
 
 defineComponent({
   setup(props, { triggerEvent, selectComponent }) {
@@ -11,6 +11,10 @@ defineComponent({
 
     onReady(() => {
       form.value = selectComponent('#reconcileForm')
+    })
+
+    onHide(() => {
+      handleClose()
     })
 
     const show = (balance) => {
@@ -33,7 +37,7 @@ defineComponent({
 
     const handleClose = () => {
       hide()
-      _reject(new Error('User canceled'))
+      _reject && _reject(new Error('User canceled'))
     }
 
     const handleConfirm = async () => {

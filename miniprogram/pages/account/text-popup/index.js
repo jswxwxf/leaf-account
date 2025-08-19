@@ -1,4 +1,4 @@
-import { defineComponent, ref } from '@vue-mini/core'
+import { defineComponent, onHide, ref } from '@vue-mini/core'
 
 defineComponent({
   setup() {
@@ -7,6 +7,10 @@ defineComponent({
 
     let _resolve
     let _reject
+
+    onHide(() => {
+      handleClose()
+    })
 
     const show = (text) => {
       content.value = text || ''
@@ -23,7 +27,7 @@ defineComponent({
 
     const handleClose = () => {
       hide()
-      _reject(new Error('用户取消了操作'))
+      _reject && _reject(new Error('用户取消了操作'))
     }
 
     const handleConfirm = () => {

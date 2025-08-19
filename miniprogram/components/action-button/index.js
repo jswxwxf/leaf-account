@@ -1,4 +1,4 @@
-import { defineComponent, ref } from '@vue-mini/core'
+import { defineComponent, ref, onHide } from '@vue-mini/core'
 
 defineComponent({
   properties: {
@@ -23,6 +23,10 @@ defineComponent({
       triggerEvent('select', e.detail)
       onCloseActionSheet()
     }
+
+    onHide(() => {
+      onCloseActionSheet()
+    })
 
     return {
       showActionSheet,

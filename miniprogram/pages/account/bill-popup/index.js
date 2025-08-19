@@ -1,4 +1,4 @@
-import { defineComponent, ref, onReady, inject } from '@vue-mini/core'
+import { defineComponent, ref, onReady, inject, onHide } from '@vue-mini/core'
 import { storeKey } from '../store'
 
 defineComponent({
@@ -16,6 +16,10 @@ defineComponent({
 
     let _resolve, _reject
 
+    onHide(() => {
+      handleClose()
+    })
+
     const show = (value) => {
       bill.value = value
       visible.value = true
@@ -27,7 +31,7 @@ defineComponent({
     }
 
     const handleClose = () => {
-      _reject(new Error('用户取消'))
+      _reject && _reject(new Error('用户取消'))
       visible.value = false
     }
 

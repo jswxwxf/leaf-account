@@ -1,4 +1,4 @@
-import { defineComponent, ref } from '@vue-mini/core'
+import { defineComponent, onHide, ref } from '@vue-mini/core'
 import { getAccounts } from '@/api/account.js'
 
 export default defineComponent({
@@ -21,6 +21,10 @@ export default defineComponent({
       accounts.value = res.data.filter((item) => item.name !== accountToFilter.name)
     }
 
+    onHide(() => {
+      onClose()
+    })
+
     const show = async (options = {}) => {
       await fetchAccounts(options.currentAccount)
       form.value = selectComponent('#form')
@@ -39,7 +43,7 @@ export default defineComponent({
 
     const onClose = () => {
       visible.value = false
-      _reject(new Error('User cancelled'))
+      _reject && _reject(new Error('User cancelled'))
     }
 
     const onRadioClick = (event) => {

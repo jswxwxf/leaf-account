@@ -1,4 +1,4 @@
-import { defineComponent, ref } from '@vue-mini/core'
+import { defineComponent, onHide, ref } from '@vue-mini/core'
 
 defineComponent({
   setup() {
@@ -9,6 +9,10 @@ defineComponent({
 
     let _resolve
     let _reject
+
+    onHide(() => {
+      onClose()
+    })
 
     // 暴露给外部调用的方法
     const show = (currentDate) => {
@@ -30,7 +34,7 @@ defineComponent({
     }
 
     const onClose = () => {
-      _reject(new Error('用户取消选择'))
+      _reject && _reject(new Error('用户取消选择'))
       hide()
     }
 

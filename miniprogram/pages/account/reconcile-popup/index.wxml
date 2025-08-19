@@ -1,6 +1,6 @@
 <wxs src="../../../utils/utils.wxs" module="utils" />
 
-<van-popup show="{{ visible }}" @close="handleClose">
+<van-popup show="{{ visible }}" @close="handleClose" closeable>
   <view class="p-4">
     <view class="text-lg font-bold text-center">账单对账</view>
     <view class="py-4 w-[80vw]">

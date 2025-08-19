@@ -1,4 +1,4 @@
-import { defineComponent, ref, computed, watch, inject } from '@vue-mini/core'
+import { defineComponent, ref, computed, watch, inject, onHide } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
 import { getAllBills } from '@/api/bill.js'
 import { formatDate } from '@/utils/date.js'
@@ -27,6 +27,10 @@ defineComponent({
     }
 
     watch(currentDate, generateSummary)
+
+    onHide(() => {
+      handleClose()
+    })
 
     const show = async (query = {}) => {
       currentDate.value = query.createdAt || Date.now()

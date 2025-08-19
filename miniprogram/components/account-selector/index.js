@@ -1,4 +1,4 @@
-import { defineComponent, onShow, ref } from '@vue-mini/core'
+import { defineComponent, onHide, onShow, ref } from '@vue-mini/core'
 import { getAccounts } from '@/api/account.js'
 
 export default defineComponent({
@@ -19,6 +19,10 @@ export default defineComponent({
         .map((item) => ({ ...item, name: item.title }))
     }
 
+    onHide(() => {
+      onClose()
+    })
+
     const show = async (options = {}) => {
       await fetchAccounts(options.currentAccount)
       if (accounts.value.length === 0) {
@@ -35,7 +39,7 @@ export default defineComponent({
 
     const onClose = () => {
       visible.value = false
-      _reject(new Error('User cancelled'))
+      _reject && _reject(new Error('User cancelled'))
     }
 
     const onSelect = (event) => {

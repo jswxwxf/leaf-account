@@ -1,4 +1,4 @@
-import { defineComponent, onReady, ref } from '@vue-mini/core'
+import { defineComponent, onHide, onReady, ref } from '@vue-mini/core'
 import { updateAccount } from '@/api/account.js'
 
 defineComponent({
@@ -15,6 +15,10 @@ defineComponent({
       form.value = selectComponent('#form')
     })
 
+    onHide(() => {
+      onClose()
+    })
+
     const show = (value, options = {}) => {
       account.value = { ...value }
       visible.value = true
@@ -29,9 +33,7 @@ defineComponent({
 
     const onClose = () => {
       visible.value = false
-      if (_reject) {
-        _reject()
-      }
+      _reject && _reject()
     }
 
     const handleFormChange = (e) => {
