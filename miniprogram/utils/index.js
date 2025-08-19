@@ -80,12 +80,24 @@ export function formatMoney(value, digits = 2) {
   const num = parseMoney(value)
   if (isNaN(num)) return '' // 如果解析失败，返回空字符串
 
-  const options = {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-    useGrouping: true,
+  // 检查是否为负数
+  const isNegative = num < 0
+  const absoluteNum = Math.abs(num)
+
+  // 四舍五入到指定小数位数
+  const fixedNum = absoluteNum.toFixed(digits)
+
+  // 分割整数和小数部分
+  const parts = fixedNum.split('.')
+  let integerPart = parts[0]
+  const decimalPart = parts.length > 1 ? `.${parts[1]}` : ''
+
+  // 使用正则表达式每四位添加一个逗号
+  const rgx = /(\d+)(\d{4})/
+  while (rgx.test(integerPart)) {
+    integerPart = integerPart.replace(rgx, '$1,$2')
   }
 
-  // toLocaleString 自带千分位和负号处理
-  return num.toLocaleString('en-US', options)
+  // 组合最终结果，并处理负数情况
+  return (isNegative ? '-' : '') + integerPart + decimalPart
 }
