@@ -70,7 +70,11 @@ defineComponent({
     const handleFormChange = (e) => {
       const { rowIndex, field } = e.currentTarget.dataset
       // 自定义组件的 value 在 e.detail 中，而不是 e.detail.value
-      list.value[rowIndex][field] = e.detail
+      let value = e.detail
+      list.value[rowIndex][field] = value
+      if (value.note) {
+        list.value[rowIndex].note = value.note
+      }
     }
 
     const handleAddRow = (e) => {

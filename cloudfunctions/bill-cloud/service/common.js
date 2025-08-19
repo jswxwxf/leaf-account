@@ -118,10 +118,10 @@ async function populateTagsForBills(bills, models) {
  * @param {object} billToSave - 准备存入数据库的账单对象
  * @param {string} accountId - 账户 ID
  * @param {object} models - 数据模型实例
- * @param {object} transaction - 数据库事务实例
+ * @param {object} dbOrTransaction - 数据库事务实例
  * @returns {object} - 保存后的账单 ID
  */
-async function saveBill(billToSave, accountId, models, transaction) {
+async function saveBill(billToSave, accountId, models, dbOrTransaction) {
   const { OPENID } = cloud.getWXContext()
   const originalBill = { ...billToSave } // a copy for returning
   let savedBillId
@@ -144,7 +144,7 @@ async function saveBill(billToSave, accountId, models, transaction) {
     const billId = billToSave._id
     delete billToSave._id
 
-    const oldBillRes = await transaction.collection('bill').doc(billId).get()
+    const oldBillRes = await dbOrTransaction.collection('bill').doc(billId).get()
     if (!oldBillRes.data) throw new Error(`找不到 ID 为 ${billId} 的账单`)
     const oldBill = oldBillRes.data
 
@@ -163,9 +163,9 @@ async function saveBill(billToSave, accountId, models, transaction) {
     await updateAccount(
       { query: { accountId }, body: { balanceIncrement, incomeIncrement, expenseIncrement } },
       models,
-      transaction,
+      dbOrTransaction,
     )
-    await transaction
+    await dbOrTransaction
       .collection('bill')
       .doc(billId)
       .update({ data: { ...billToSave, updatedAt: Date.now(), updatedBy: OPENID } })
@@ -179,9 +179,9 @@ async function saveBill(billToSave, accountId, models, transaction) {
     await updateAccount(
       { query: { accountId }, body: { balanceIncrement, incomeIncrement, expenseIncrement } },
       models,
-      transaction,
+      dbOrTransaction,
     )
-    const createResult = await transaction.collection('bill').add({
+    const createResult = await dbOrTransaction.collection('bill').add({
       data: {
         ...billToSave,
         account: accountId,
@@ -197,7 +197,7 @@ async function saveBill(billToSave, accountId, models, transaction) {
   }
 
   if (categoryId) {
-    await transaction
+    await dbOrTransaction
       .collection('category')
       .doc(categoryId)
       .update({ data: { usedAt: Date.now() } })
@@ -214,8 +214,9 @@ async function saveBill(billToSave, accountId, models, transaction) {
  * 保存转账账单（双向）
  * @param {object} event - 云函数的原始 event 对象
  * @param {object} models - 数据模型实例
+ * @param {object} [transaction] - 可选的数据库事务实例
  */
-async function saveTransfer(event, models) {
+async function saveTransfer(event, models, dbOrTransaction) {
   const { bill } = event.body
   const { accountId: currentAccountId } = event.query || {}
   const { category, amount, datetime, note } = bill
@@ -237,19 +238,25 @@ async function saveTransfer(event, models) {
   const sourceAccountId = isTransferOut ? currentAccountId : targetAccountId
   const destinationAccountId = isTransferOut ? targetAccountId : currentAccountId
 
-  const transaction = await db.startTransaction()
-  try {
+  const main = async (tx) => {
     // 1. 获取源账户和目标账户的信息
+    // 注意：在事务中，所有读操作也需要使用事务实例
     const [sourceAccount, destinationAccount, transferOutCategory, transferInCategory] =
       await Promise.all([
-        getAccount({ query: { accountId: sourceAccountId } }, models),
-        getAccount({ query: { accountId: destinationAccountId } }, models),
-        models.category.list({
-          filter: { where: { name: { $eq: '转账' }, _openid: { $empty: true } } },
-        }),
-        models.category.list({
-          filter: { where: { name: { $eq: '收转账' }, _openid: { $empty: true } } },
-        }),
+        getAccount({ query: { accountId: sourceAccountId } }, models, tx),
+        getAccount({ query: { accountId: destinationAccountId } }, models, tx),
+        models.category.list(
+          {
+            filter: { where: { name: { $eq: '转账' }, _openid: { $empty: true } } },
+          },
+          tx,
+        ),
+        models.category.list(
+          {
+            filter: { where: { name: { $eq: '收转账' }, _openid: { $empty: true } } },
+          },
+          tx,
+        ),
       ])
 
     if (!sourceAccount) throw new Error('转账失败：找不到源账户')
@@ -291,32 +298,43 @@ async function saveTransfer(event, models) {
     }
 
     // 3. 保存两笔账单
-    const savedBillOut = await saveBill(billOut, sourceAccountId, models, transaction)
-    const savedBillIn = await saveBill(billIn, destinationAccountId, models, transaction)
+    const savedBillOut = await saveBill(billOut, sourceAccountId, models, tx)
+    const savedBillIn = await saveBill(billIn, destinationAccountId, models, tx)
 
     // 4. 互相更新，保存对方的 ID
-    await transaction
+    await tx
       .collection('bill')
       .doc(savedBillOut._id)
       .update({ data: { relatedBill: savedBillIn._id } })
-    await transaction
+    await tx
       .collection('bill')
       .doc(savedBillIn._id)
       .update({ data: { relatedBill: savedBillOut._id } })
-
-    await transaction.commit()
 
     // 5. 返回用户操作的原始账单，并附上关联ID
     const primaryBill = isTransferOut ? savedBillOut : savedBillIn
     const secondaryBill = isTransferOut ? savedBillIn : savedBillOut
 
     return { ...primaryBill, relatedBill: secondaryBill._id }
-  } catch (e) {
-    await transaction.rollback()
-    if (e.isBiz) {
-      throw e // 如果是业务异常，直接抛出
+  }
+
+  if (dbOrTransaction) {
+    // 如果传入了事务，则在当前事务中执行
+    return main(dbOrTransaction)
+  } else {
+    // 否则，开启新事务
+    const tx = await db.startTransaction()
+    try {
+      const result = await main(tx)
+      await tx.commit()
+      return result
+    } catch (e) {
+      await tx.rollback()
+      if (e.isBiz) {
+        throw e // 如果是业务异常，直接抛出
+      }
+      throw new Error(`转账失败: ${e.message}`)
     }
-    throw new Error(`转账失败: ${e.message}`)
   }
 }
 

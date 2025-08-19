@@ -26,21 +26,24 @@ async function saveBill(event, models) {
   }
 
   // 如果是转账或收转账，则调用专门的转账函数
-  // 如果是转账，则走特殊逻辑
-  if (bill.category.name === '转账' || bill.category.name === '收转账') {
-    const { saveTransfer: _saveTransfer } = require('./common.js')
-    return _saveTransfer(event, models)
-  }
+  const isTransfer = bill.category.name === '转账' || bill.category.name === '收转账'
+  const { saveTransfer: _saveTransfer } = require('./common.js')
 
-  // 对于普通账单，开启独立事务
+  // 对于普通账单和转账，都开启独立事务
   const transaction = await db.startTransaction()
   try {
-    const savedBill = await _saveBill(bill, accountId, models, transaction)
+    let savedBill
+    if (isTransfer) {
+      savedBill = await _saveTransfer(event, models, transaction)
+    } else {
+      savedBill = await _saveBill(bill, accountId, models, transaction)
+    }
     await transaction.commit()
     return savedBill
   } catch (e) {
     await transaction.rollback()
-    throw new Error(`保存账单失败: ${e.message}`)
+    // 抛出原始错误，保留 BizError 等特殊错误类型
+    throw e
   }
 }
 
@@ -52,110 +55,37 @@ async function saveBill(event, models) {
 async function saveBills(event, models) {
   const { bills } = event.body
   const { accountId } = event.query || {}
-  const { OPENID } = cloud.getWXContext()
 
   if (!Array.isArray(bills) || bills.length === 0) {
     throw new Error('请求中缺少 bills 数组')
   }
 
-  const BATCH_SIZE = 20 // 设置每批保存的数量
-  const allBillIds = []
+  const { saveTransfer: _saveTransfer } = require('./common.js')
+  const transaction = await db.startTransaction()
 
-  // 将账单分块
-  for (let i = 0; i < bills.length; i += BATCH_SIZE) {
-    const batch = bills.slice(i, i + BATCH_SIZE)
-    const billsToSave = batch.map((bill) => {
-      const { datetime, category, amount } = bill
-      const note = bill.note?.trim()
-      if (!datetime || !category || !amount || note === undefined || note === null) {
-        throw new Error('参数不合法，datetime, category, amount, note 不能为空')
+  try {
+    const savedBills = []
+    for (const bill of bills) {
+      const isTransfer = bill.category.name === '转账' || bill.category.name === '收转账'
+      let savedBill
+      if (isTransfer) {
+        // 对于转账，需要构建符合 saveTransfer 期望的 event 结构
+        const transferEvent = { body: { bill }, query: { accountId } }
+        savedBill = await _saveTransfer(transferEvent, models, transaction)
+      } else {
+        // 对于普通账单，直接调用内部保存函数
+        savedBill = await _saveBill(bill, accountId, models, transaction)
       }
-      const billToSave = { ...bill, note, amount: parseMoney(bill.amount) }
-      // 确保金额正负与类别匹配
-      if (billToSave.category?.type === '10' && billToSave.amount < 0) {
-        billToSave.amount = -billToSave.amount
-      } else if (billToSave.category?.type === '20' && billToSave.amount > 0) {
-        billToSave.amount = -billToSave.amount
-      }
-      delete billToSave._id
-      billToSave.category = billToSave.category?._id
-      if (Array.isArray(billToSave.tags)) {
-        billToSave.tags = billToSave.tags.map((tag) => tag._id).filter(Boolean)
-      }
-      return billToSave
-    })
-
-    const categoryIds = [...new Set(billsToSave.map((bill) => bill.category).filter((id) => id))]
-
-    const balanceIncrement = parseMoney(billsToSave.reduce((sum, bill) => sum + bill.amount, 0))
-    const incomeIncrement = parseMoney(
-      billsToSave.reduce((sum, bill) => sum + (bill.amount > 0 ? bill.amount : 0), 0),
-    )
-    const expenseIncrement = parseMoney(
-      billsToSave.reduce((sum, bill) => sum + (bill.amount < 0 ? bill.amount : 0), 0),
-    )
-
-    const transaction = await db.startTransaction()
-    try {
-      // 1. 更新账户余额
-      if (balanceIncrement !== 0) {
-        await updateAccount(
-          {
-            query: { accountId },
-            body: { balanceIncrement, incomeIncrement, expenseIncrement },
-          },
-          models,
-          transaction,
-        )
-      }
-
-      // 2. 串行创建账单
-      const newBillIds = []
-      for (const bill of billsToSave) {
-        const result = await transaction.collection('bill').add({
-          data: {
-            ...bill,
-            account: accountId,
-            _openid: OPENID,
-            createdAt: Date.now(),
-            createdBy: OPENID,
-            updatedAt: Date.now(),
-            updatedBy: OPENID,
-          },
-        })
-        newBillIds.push(result._id)
-      }
-
-      if (newBillIds.some((id) => !id)) {
-        throw new Error('部分账单创建失败')
-      }
-
-      allBillIds.push(...newBillIds)
-
-      if (categoryIds.length > 0) {
-        await transaction
-          .collection('category')
-          .where({
-            _id: _.in(categoryIds),
-          })
-          .update({
-            data: {
-              usedAt: Date.now(),
-            },
-          })
-      }
-
-      // 3. 提交事务
-      await transaction.commit()
-    } catch (e) {
-      await transaction.rollback()
-      throw new Error(`批量保存账单失败: ${e.message}`)
+      savedBills.push(savedBill)
     }
-  }
 
-  // 4. 获取所有新创建的账单详情
-  const newBills = await getBillsByIds({ query: { ids: allBillIds } }, models)
-  return newBills
+    await transaction.commit()
+    return savedBills
+  } catch (e) {
+    await transaction.rollback()
+    // 抛出原始错误，以便上层能捕获到 BizError 等
+    throw e
+  }
 }
 
 /**
