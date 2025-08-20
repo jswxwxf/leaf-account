@@ -1,7 +1,7 @@
 <van-popup show="{{ visible }}" position="top" style="--overlay-background-color: rgba(0, 0, 0, 0.1)" @close="onClose">
   <view class="flex flex-col">
     <view class="flex w-full gap-1">
-      <scroll-view scroll-y class="w-[300rpx] border-r border-gray-100 shadow-lg">
+      <scroll-view scroll-y class="w-[300rpx] h-[350rpx] shadow-md bg-slate-50">
         <view
           wx:for="{{ notes }}"
           wx:key="*this"
