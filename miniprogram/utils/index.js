@@ -1,4 +1,5 @@
 import { ref } from '@vue-mini/core'
+import { toRPN, calculateRPN } from './calculator.js'
 
 export const tagsSelector = ref(null)
 
@@ -63,20 +64,29 @@ export function showToast(message) {
   return theToast.value.showToast(message)
 }
 
-/**
- * 将可能带逗号的金额字符串解析为数字
- * @param {string | number} value - 金额
- * @returns {number}
- */
 export function parseMoney(value) {
   if (typeof value === 'number') {
     return value
   }
-  if (typeof value !== 'string') {
+  if (typeof value !== 'string' || value.trim() === '') {
     return NaN
   }
-  // parseFloat will correctly return NaN for empty or invalid strings
-  return parseFloat(value.replace(/,/g, ''))
+
+  const cleanedValue = value.replace(/,/g, '').replace(/\s/g, '')
+
+  // 检查是否包含运算符或括号，如果没有，则直接解析
+  if (!/[+\-*/()]/.test(cleanedValue)) {
+    return parseFloat(cleanedValue)
+  }
+
+  try {
+    const rpn = toRPN(cleanedValue)
+    if (rpn.length === 0) return NaN
+    const result = calculateRPN(rpn)
+    return typeof result === 'number' && isFinite(result) ? result : NaN
+  } catch (e) {
+    return NaN
+  }
 }
 
 /**

@@ -1,6 +1,5 @@
 <van-field
   label="{{ label }}"
-  type="digit"
   value="{{ displayValue }}"
   placeholder="{{ placeholder }}"
   error="{{ showError ? false : fields[field] === false }}"

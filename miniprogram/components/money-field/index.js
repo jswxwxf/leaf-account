@@ -14,7 +14,7 @@ defineComponent({
     },
     placeholder: {
       type: String,
-      value: '请输入金额',
+      value: '请输入金额，支持简单运算',
     },
     ...formItemProps('amount'),
   },
