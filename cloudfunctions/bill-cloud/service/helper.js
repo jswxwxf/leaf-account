@@ -384,6 +384,7 @@ async function populateCategoriesForBills(bills, models) {
  */
 async function deleteBills(event, models, dbOrTransaction) {
   const { ids, accountId } = event.query;
+  const { isDeactivating } = event; // 检查是否来自停用流程
   const { OPENID } = cloud.getWXContext();
 
   // 1. 第一次查询：根据传入的id和accountId获取初始账单列表
@@ -426,10 +427,14 @@ async function deleteBills(event, models, dbOrTransaction) {
     return acc;
   }, {});
 
-  // 6. 一次性更新所有受影响的账户
-  const updatePromises = Object.keys(accountChanges).map(id => {
+  // 6. 串行更新所有受影响的账户
+  for (const id of Object.keys(accountChanges)) {
     const changes = accountChanges[id];
-    return updateAccount(
+    // 只有在停用账本的流程中，才跳过对主账本的余额更新
+    if (isDeactivating && id === accountId) {
+      continue;
+    }
+    await updateAccount(
       {
         query: { accountId: id },
         body: {
@@ -441,8 +446,7 @@ async function deleteBills(event, models, dbOrTransaction) {
       models,
       dbOrTransaction
     );
-  });
-  await Promise.all(updatePromises);
+  }
 
   // 7. 一次性删除所有相关账单
   const deleteResult = await dbOrTransaction.collection('bill').where({
@@ -478,10 +482,13 @@ async function deactivateAccount(event, models, dbOrTransaction) {
 
   let deletedCount = 0
 
-  // 3. 调用 _deleteBills 一次性处理所有账单
+  // 3. 调用 deleteBills 一次性处理所有账单
   if (billIdsInAccount.length > 0) {
-    const deleteResult = await _deleteBills(
-      { query: { ids: billIdsInAccount, accountId: accountId } },
+    const deleteResult = await deleteBills(
+      {
+        query: { ids: billIdsInAccount, accountId: accountId },
+        isDeactivating: true // 传入特殊标志
+      },
       models,
       dbOrTransaction
     )
