@@ -69,10 +69,22 @@ defineComponent({
         message: `确定要停用账本「${account.title}」吗？\n所有关联的账单都将被删除且无法恢复。`,
         confirmButtonColor: '#fa5151',
       })
+      const currentAccount = getApp().globalData.account
+
       await deactivateAccount(account._id)
       wx.showToast({ title: '账本已删除', icon: 'success' })
       // 重新获取账本列表
       fetchAccounts()
+
+      // 如果删除的是当前账本，则切换回默认账本
+      if (currentAccount.value.name === account.name) {
+        const { data: defaultAccount } = await getAccount('leaf-maple')
+        currentAccount.value = defaultAccount
+        wx.setTabBarItem({
+          index: 0,
+          text: defaultAccount.title,
+        })
+      }
     }
 
     const handleRename = async (e) => {

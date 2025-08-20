@@ -285,7 +285,6 @@ async function saveTransfer(event, models, dbOrTransaction) {
       amount: -transferAmount,
       category: transferOutCat,
       account: sourceAccountId,
-      relatedAccount: destinationAccountId, // 保存对方账户信息
       note: isTransferOut ? note : `向 ${destinationAccount.title} 转账`,
     }
 
@@ -295,7 +294,6 @@ async function saveTransfer(event, models, dbOrTransaction) {
       amount: transferAmount,
       category: transferInCat,
       account: destinationAccountId,
-      relatedAccount: sourceAccountId, // 保存对方账户信息
       note: isTransferOut ? `从 ${sourceAccount.title} 转入` : note,
       tags: [], // 转入记录不带标签
     }
@@ -480,27 +478,48 @@ async function deactivateAccount(event, models, dbOrTransaction) {
   }).get()
   const billIdsInAccount = (billsInAccountRes.data || []).map(b => b._id)
 
-  let deletedCount = 0
+  // 3. 查找与本账本账单相关联的其他账单
+  const relatedBillsRes = await dbOrTransaction.collection('bill').where({
+    relatedBill: _.in(billIdsInAccount),
+    _openid: _.eq(OPENID),
+  }).get()
+  const relatedBills = relatedBillsRes.data || []
 
-  // 3. 调用 deleteBills 一次性处理所有账单
-  if (billIdsInAccount.length > 0) {
-    const deleteResult = await deleteBills(
-      {
-        query: { ids: billIdsInAccount, accountId: accountId },
-        isDeactivating: true // 传入特殊标志
-      },
-      models,
-      dbOrTransaction
-    )
-    deletedCount = deleteResult.deleted
+  // 4. 将这些关联账单的 relatedBill 字段备份到 deletedRelatedBill，然后移除
+  if (relatedBills.length > 0) {
+    // 分批并行更新，平衡效率与稳定性
+    const batchSize = 3 // 每次处理3个
+    for (let i = 0; i < relatedBills.length; i += batchSize) {
+      const batch = relatedBills.slice(i, i + batchSize)
+      const updatePromises = batch.map(bill => {
+        return dbOrTransaction.collection('bill').doc(bill._id).update({
+          data: {
+            // 将对方账单（即被停用账本中的账单）的ID存入 deletedRelatedBill
+            deletedRelatedBill: bill.relatedBill,
+            // 移除 relatedBill 字段
+            relatedBill: _.remove(),
+          },
+        })
+      })
+      await Promise.all(updatePromises)
+    }
   }
 
-  // 4. 删除账本自身
+  // 5. 删除本账本的所有账单
+  let deletedCount = 0
+  if (billIdsInAccount.length > 0) {
+    const deleteResult = await dbOrTransaction.collection('bill').where({
+      _id: _.in(billIdsInAccount)
+    }).remove()
+    deletedCount = deleteResult.stats.removed
+  }
+
+  // 6. 删除账本自身
   await dbOrTransaction.collection('account').doc(accountId).remove()
 
   return {
     success: true,
-    message: '账本及其所有关联账单已永久删除',
+    message: '账本及其所有账单已删除，关联转账记录已处理',
     deletedBills: deletedCount,
   }
 }
