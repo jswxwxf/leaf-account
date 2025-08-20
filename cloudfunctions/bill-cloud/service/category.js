@@ -1,7 +1,7 @@
 const cloud = require('wx-server-sdk')
 const db = cloud.database()
 const _ = db.command
-const { BizError } = require('./common.js')
+const { BizError } = require('./helper.js')
 const { isEmpty } = require('lodash')
 
 /**

@@ -375,6 +375,129 @@ async function populateCategoriesForBills(bills, models) {
   })
 }
 
+/**
+ * 核心批量删除账单逻辑（内部函数）。
+ * @param {object} event - 包含 ids 和 accountId 的事件对象
+ * @param {object} models - 数据模型实例
+ * @param {object} dbOrTransaction - 数据库或事务实例
+ * @returns {Promise<{deleted: number}>}
+ */
+async function deleteBills(event, models, dbOrTransaction) {
+  const { ids, accountId } = event.query;
+  const { OPENID } = cloud.getWXContext();
+
+  // 1. 第一次查询：根据传入的id和accountId获取初始账单列表
+  const initialBillsRes = await dbOrTransaction.collection('bill').where({
+    _id: _.in(ids),
+    account: _.eq(accountId),
+    _openid: _.eq(OPENID)
+  }).get();
+  const initialBills = initialBillsRes.data || [];
+
+  // 2. 收集所有关联账单的ID
+  const relatedBillIds = initialBills.map(b => b.relatedBill).filter(Boolean);
+
+  // 3. 合并初始ID和关联ID，得到最终需要处理的完整ID列表
+  const finalBillIds = Array.from(new Set([...ids, ...relatedBillIds]));
+
+  if (finalBillIds.length === 0) {
+    return { deleted: 0 };
+  }
+
+  // 4. 第二次查询：获取所有最终要删除的账单的完整信息
+  const billsRes = await dbOrTransaction.collection('bill').where({
+    _id: _.in(finalBillIds),
+    _openid: _.eq(OPENID) // 权限校验，确保只能删除自己的账单
+  }).get();
+  const finalBillsToDelete = billsRes.data;
+
+  // 5. 按账户ID对账单进行分组，并计算每个账户的余额、收入、支出变化量
+  const accountChanges = finalBillsToDelete.reduce((acc, bill) => {
+    const { account, amount } = bill;
+    if (!acc[account]) {
+      acc[account] = { balanceIncrement: 0, incomeIncrement: 0, expenseIncrement: 0 };
+    }
+    acc[account].balanceIncrement -= amount;
+    if (amount > 0) {
+      acc[account].incomeIncrement -= amount;
+    } else {
+      acc[account].expenseIncrement -= amount;
+    }
+    return acc;
+  }, {});
+
+  // 6. 一次性更新所有受影响的账户
+  const updatePromises = Object.keys(accountChanges).map(id => {
+    const changes = accountChanges[id];
+    return updateAccount(
+      {
+        query: { accountId: id },
+        body: {
+          balanceIncrement: parseMoney(changes.balanceIncrement),
+          incomeIncrement: parseMoney(changes.incomeIncrement),
+          expenseIncrement: parseMoney(changes.expenseIncrement),
+        },
+      },
+      models,
+      dbOrTransaction
+    );
+  });
+  await Promise.all(updatePromises);
+
+  // 7. 一次性删除所有相关账单
+  const deleteResult = await dbOrTransaction.collection('bill').where({
+    _id: _.in(finalBillIds),
+    _openid: _.eq(OPENID)
+  }).remove();
+
+  return { deleted: deleteResult.stats.removed };
+}
+
+/**
+ * 核心停用账本逻辑（内部函数）。
+ * @param {object} event - 包含 accountId 的事件对象
+ * @param {object} models - 数据模型实例
+ * @param {object} dbOrTransaction - 数据库或事务实例
+ */
+async function deactivateAccount(event, models, dbOrTransaction) {
+  const { accountId } = event.query
+  const { OPENID } = cloud.getWXContext()
+
+  // 1. 验证账本是否存在且属于当前用户
+  const accountRes = await dbOrTransaction.collection('account').doc(accountId).get()
+  if (!accountRes.data || accountRes.data._openid !== OPENID) {
+    throw new BizError(`找不到 ID 为 ${accountId} 的账本，或没有权限删除。`)
+  }
+
+  // 2. 查找本账本的所有账单ID
+  const billsInAccountRes = await dbOrTransaction.collection('bill').where({
+    account: _.eq(accountId),
+    _openid: _.eq(OPENID),
+  }).get()
+  const billIdsInAccount = (billsInAccountRes.data || []).map(b => b._id)
+
+  let deletedCount = 0
+
+  // 3. 调用 _deleteBills 一次性处理所有账单
+  if (billIdsInAccount.length > 0) {
+    const deleteResult = await _deleteBills(
+      { query: { ids: billIdsInAccount, accountId: accountId } },
+      models,
+      dbOrTransaction
+    )
+    deletedCount = deleteResult.deleted
+  }
+
+  // 4. 删除账本自身
+  await dbOrTransaction.collection('account').doc(accountId).remove()
+
+  return {
+    success: true,
+    message: '账本及其所有关联账单已永久删除',
+    deletedBills: deletedCount,
+  }
+}
+
 module.exports = {
   saveBill,
   updateAccount,
@@ -382,5 +505,7 @@ module.exports = {
   populateTagsForBills,
   populateCategoriesForBills, // 导出新函数
   saveTransfer,
+  deleteBills,
+  deactivateAccount,
   BizError,
 }

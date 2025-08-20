@@ -1,6 +1,6 @@
 const cloud = require('wx-server-sdk')
 const { saveBill } = require('./bill.js')
-const { BizError } = require('./common.js')
+const { BizError, deactivateAccount: _deactivateAccount } = require('./helper.js')
 
 const db = cloud.database()
 const _ = db.command
@@ -229,9 +229,53 @@ async function getAccounts(event, models) {
   // 默认：合并并返回
   return [...privateAccounts, ...availablePublicAccounts]
 }
+/**
+ * 停用一个账本（实质是删除用户的私有账本记录）。
+ * @param {object} event - 云函数的原始 event 对象
+ * @param {object} models - 数据模型实例
+ */
+async function deactivateAccount(event, models) {
+  const transaction = await db.startTransaction()
+  try {
+    const result = await _deactivateAccount(event, models, transaction)
+    await transaction.commit()
+    return result
+  } catch (e) {
+    await transaction.rollback()
+    if (e.isBiz) {
+      throw e
+    }
+    console.error('deactivateAccount transaction error:', e)
+    throw new Error('删除账本失败，请稍后重试。')
+  }
+}
+
+/**
+ * 更新账户信息（外层函数，处理事务）。
+ * @param {object} event - 云函数的原始 event 对象
+ * @param {object} models - 数据模型实例
+ */
+async function updateAccount(event, models) {
+  const { updateAccount: _updateAccount } = require('./helper.js')
+  const transaction = await db.startTransaction()
+  try {
+    const result = await _updateAccount(event, models, transaction)
+    await transaction.commit()
+    return result
+  } catch (e) {
+    await transaction.rollback()
+    if (e.isBiz) {
+      throw e
+    }
+    console.error('updateAccount transaction error:', e)
+    throw new Error('更新账户失败，请稍后重试。')
+  }
+}
 
 module.exports = {
   getAccount,
   getAccounts,
   reconcileAccount,
+  deactivateAccount,
+  updateAccount,
 }

@@ -34,12 +34,17 @@ defineComponent({
     const handleTransferOut = () => handleTransfer(20) // 20 for expense
     const handleTransferIn = () => handleTransfer(10) // 10 for income
 
+    const handleDeactivate = async () => {
+      triggerEvent('deactivate', props.account)
+    }
+
     return {
       enableTransfer,
       handleTap,
       handleRename,
       handleTransferOut,
       handleTransferIn,
+      handleDeactivate,
     }
   },
 })

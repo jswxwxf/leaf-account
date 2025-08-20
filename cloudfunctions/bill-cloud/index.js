@@ -18,16 +18,27 @@ const {
   saveBills,
   getBills,
   deleteBill,
+  deleteBills,
   getBillsByIds,
   getBillsSummary,
   resetBills,
   getAllBills,
   saveTransfer,
 } = require('./service/bill.js')
-const { getAccount, getAccounts, reconcileAccount } = require('./service/account.js')
-const { getCategories, addCategory, deleteCategory, updateCategory } = require('./service/category.js')
+const {
+  getAccount,
+  getAccounts,
+  reconcileAccount,
+  deactivateAccount,
+  updateAccount,
+} = require('./service/account.js')
+const {
+  getCategories,
+  addCategory,
+  deleteCategory,
+  updateCategory,
+} = require('./service/category.js')
 const { getTags, addTags, addTag, updateTag, deleteTag } = require('./service/tag.js')
-const { updateAccount } = require('./service/common.js')
 
 exports.main = (event, context) => {
   const app = new TcbRouter({ event })
@@ -126,6 +137,19 @@ exports.main = (event, context) => {
   })
 
   /**
+   * @desc 批量删除账单
+   */
+  app.router('/batch/bills/delete', async (ctx) => {
+    try {
+      const data = await deleteBills(event, models)
+      ctx.body = { code: 200, success: true, message: '批量删除成功', data }
+    } catch (e) {
+      console.error('/batch/bills/delete error:', e)
+      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+    }
+  })
+
+  /**
    * @desc 清空账目
    */
   app.router('/delete/reset-bills', async (ctx) => {
@@ -209,6 +233,23 @@ exports.main = (event, context) => {
   })
 
   /**
+   * @desc 停用账本
+   */
+  app.router('/delete/account', async (ctx) => {
+    try {
+      const data = await deactivateAccount(event, models)
+      ctx.body = { code: 200, success: true, message: data.message, data }
+    } catch (e) {
+      console.error('/delete/account error:', e)
+      if (e.isBiz) {
+        ctx.body = { code: 400, success: false, message: e.message }
+      } else {
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
+    }
+  })
+
+  /**
    * @desc 获取分类列表
    * @param {object} query - 查询参数
    * @param {string} [query.type] - 分类类型，'10' 为收入，'20' 为支出
@@ -251,11 +292,11 @@ exports.main = (event, context) => {
       ctx.body = { code: 200, success: true, message: '添加成功', data }
     } catch (e) {
       console.error('/post/category error:', e)
-     if (e.isBiz) {
-       ctx.body = { code: 400, success: false, message: e.message }
-     } else {
-       ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-     }
+      if (e.isBiz) {
+        ctx.body = { code: 400, success: false, message: e.message }
+      } else {
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
     }
   })
 

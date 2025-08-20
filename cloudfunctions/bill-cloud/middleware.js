@@ -2,7 +2,7 @@ const cloud = require('wx-server-sdk')
 const { getAccount } = require('./service/account.js')
 const { getBillsSummary } = require('./service/bill.js')
 
-const { BizError } = require('./service/common.js')
+const { BizError } = require('./service/helper.js')
 
 // --- 中间件应用的路由列表 ---
 const REQUIRE_LOGIN_ROUTES = [
@@ -10,6 +10,7 @@ const REQUIRE_LOGIN_ROUTES = [
   '/post/transfer',
   '/batch/bills',
   '/delete/bill',
+  '/batch/bills/delete',
   '/post/category',
   '/post/tags',
   '/get/account',
@@ -22,14 +23,29 @@ const REQUIRE_ACCOUNT_ID_ROUTES = [
   '/post/transfer',
   '/batch/bills',
   '/delete/bill',
+  '/batch/bills/delete',
   '/get/bills',
   '/get/bills/all',
   '/get/bills/summary',
   '/put/account/reconcile',
   '/put/account',
+  '/delete/account',
 ]
-const WITH_ACCOUNT_ROUTES = ['/upsert/bill', '/get/bills', '/get/bills/all', '/batch/bills', '/delete/bill']
-const WITH_SUMMARY_ROUTES = ['/upsert/bill', '/get/bills', '/batch/bills', '/delete/bill']
+const WITH_ACCOUNT_ROUTES = [
+  '/upsert/bill',
+  '/get/bills',
+  '/get/bills/all',
+  '/batch/bills',
+  '/delete/bill',
+  '/batch/bills/delete',
+]
+const WITH_SUMMARY_ROUTES = [
+  '/upsert/bill',
+  '/get/bills',
+  '/batch/bills',
+  '/delete/bill',
+  '/batch/bills/delete',
+]
 
 /**
  * 权限校验中间件
@@ -89,7 +105,10 @@ const withSummary = (models, event) => async (ctx, next) => {
     endTime &&
     accountId
   ) {
-    const summary = await getBillsSummary({ ...event, query: { ...event.query, accountId } }, models)
+    const summary = await getBillsSummary(
+      { ...event, query: { ...event.query, accountId } },
+      models,
+    )
     ctx.body.summary = {
       totalIncome: summary.totalIncome || 0,
       totalExpense: Math.abs(summary.totalExpense || 0),

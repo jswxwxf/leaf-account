@@ -1,5 +1,6 @@
 import { defineComponent, ref, onShow, onReady, provide } from '@vue-mini/core'
-import { getAccount, getAccounts, updateAccount } from '@/api/account.js'
+import Dialog from '@vant/weapp/dialog/dialog.js'
+import { getAccount, getAccounts, updateAccount, deactivateAccount } from '@/api/account.js'
 import { saveTransfer } from '@/api/bill.js'
 import store, { storeKey } from './store'
 
@@ -59,6 +60,21 @@ defineComponent({
       })
     }
 
+    const handleDeactivate = async (e) => {
+      const { index } = e.currentTarget.dataset
+      const account = e.detail
+
+      await Dialog.confirm({
+        title: '确认停用',
+        message: `确定要停用账本「${account.title}」吗？\n所有关联的账单都将被删除且无法恢复。`,
+        confirmButtonColor: '#fa5151',
+      })
+      await deactivateAccount(account._id)
+      wx.showToast({ title: '账本已删除', icon: 'success' })
+      // 重新获取账本列表
+      fetchAccounts()
+    }
+
     const handleRename = async (e) => {
       const { index } = e.currentTarget.dataset
       const oldAccount = e.detail
@@ -81,6 +97,7 @@ defineComponent({
     return {
       accounts,
       handleActivate,
+      handleDeactivate,
       handleRename,
       handleTransfer,
     }

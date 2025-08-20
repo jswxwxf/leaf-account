@@ -8,7 +8,7 @@
     class="absolute inset-0 w-full h-full {{ !account.isOpened ? 'grayscale' : '' }}"
   />
   <!-- 渐变遮罩，提升前景可读性且更高级 -->
-  <view class="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-black/40"></view>
+  <view class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-black/40"></view>
 
   <!-- 前景内容：左侧标题+金额，右侧竖向按钮 -->
   <view class="relative h-full px-4 py-3 flex items-start justify-between">
@@ -42,7 +42,7 @@
 
     <view class="grid grid-rows-3 grid-cols-2 gap-1">
       <van-button size="mini" custom-class="cabinet-btn" @tap="handleTap">{{ account.isOpened ? '记帐' : '启用' }}</van-button>
-      <van-button size="mini" custom-class="cabinet-btn" disabled @tap="handleDeactivate">停用</van-button>
+      <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !account.isOpened || account.name === 'leaf-maple' }}" @tap="handleDeactivate">停用</van-button>
       <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !enableTransfer }}" @tap="handleTransferOut">转出</van-button>
       <van-button size="mini" custom-class="cabinet-btn" disabled @tap="handleExport">导出</van-button>
       <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !enableTransfer }}" @tap="handleTransferIn">转入</van-button>

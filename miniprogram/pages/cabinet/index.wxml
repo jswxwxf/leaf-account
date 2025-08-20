@@ -2,9 +2,18 @@
 
 <view class="p-3">
   <block wx:for="{{ accounts }}" wx:key="_id">
-    <account-box account="{{ item }}" @tapped="handleActivate" @rename="handleRename" @transfer="handleTransfer" data-index="{{ index }}" />
+    <account-box
+      account="{{ item }}"
+      @tapped="handleActivate"
+      @rename="handleRename"
+      @transfer="handleTransfer"
+      @deactivate="handleDeactivate"
+      data-index="{{ index }}"
+    />
   </block>
 </view>
+
+<van-dialog id="van-dialog" />
 
 <account-popup id="account-popup" />
 <transfer-helper />

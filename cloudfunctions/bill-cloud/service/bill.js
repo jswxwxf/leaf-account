@@ -6,9 +6,10 @@ const {
   updateAccount,
   parseMoney,
   populateTagsForBills,
-  populateCategoriesForBills, // 确认从 common.js 导入
+  populateCategoriesForBills,
   saveBill: _saveBill,
-} = require('./common.js')
+  deleteBills: _deleteBills,
+} = require('./helper.js')
 
 const db = cloud.database()
 const _ = db.command
@@ -29,7 +30,7 @@ async function saveBill(event, models) {
 
   // 业务逻辑判断依然使用传入的 category 对象
   const isTransfer = bill.category.name === '转账' || bill.category.name === '收转账'
-  const { saveTransfer: _saveTransfer } = require('./common.js')
+  const { saveTransfer: _saveTransfer } = require('./helper.js')
 
   const transaction = await db.startTransaction()
   try {
@@ -37,7 +38,7 @@ async function saveBill(event, models) {
     if (isTransfer) {
       savedBill = await _saveTransfer(event, models, transaction)
     } else {
-      // _saveBill (in common.js) 会负责从 bill.category 对象中提取 ID 并存入数据库
+      // _saveBill (in helper.js) 会负责从 bill.category 对象中提取 ID 并存入数据库
       savedBill = await _saveBill(bill, accountId, models, transaction)
     }
     await transaction.commit()
@@ -61,7 +62,7 @@ async function saveBills(event, models) {
     throw new Error('请求中缺少 bills 数组')
   }
 
-  const { saveTransfer: _saveTransfer } = require('./common.js')
+  const { saveTransfer: _saveTransfer } = require('./helper.js')
   const transaction = await db.startTransaction()
 
   try {
@@ -253,7 +254,9 @@ async function getBills(event, models) {
       break
     }
 
-    const periodStartDate = dayjs(currentDateTs).subtract(FETCH_WINDOW_DAYS - 1, 'day').startOf('day')
+    const periodStartDate = dayjs(currentDateTs)
+      .subtract(FETCH_WINDOW_DAYS - 1, 'day')
+      .startOf('day')
 
     let finalPeriodStartTs = periodStartDate.valueOf()
     if (finalPeriodStartTs < minDateTs) {
@@ -408,7 +411,10 @@ async function deleteBill(event, models) {
     await transaction.collection('bill').doc(id).remove()
 
     if (billToDelete.relatedBill) {
-      const relatedBillRes = await transaction.collection('bill').doc(billToDelete.relatedBill).get()
+      const relatedBillRes = await transaction
+        .collection('bill')
+        .doc(billToDelete.relatedBill)
+        .get()
       if (relatedBillRes.data) {
         const relatedBill = relatedBillRes.data
         const relatedAmount = relatedBill.amount
@@ -484,8 +490,8 @@ async function saveTransfer(event, models) {
     },
   })
 
-  const transferOutCategory = categories.records.find(c => c.name === '转账')
-  const transferInCategory = categories.records.find(c => c.name === '收转账')
+  const transferOutCategory = categories.records.find((c) => c.name === '转账')
+  const transferInCategory = categories.records.find((c) => c.name === '收转账')
 
   if (!transferOutCategory || !transferInCategory) {
     throw new Error('找不到内置的转账分类')
@@ -507,8 +513,26 @@ async function saveTransfer(event, models) {
     query: { accountId },
   }
 
-  const { saveTransfer: _saveTransfer } = require('./common.js')
+  const { saveTransfer: _saveTransfer } = require('./helper.js')
   return _saveTransfer(eventForCommon, models)
+}
+
+/**
+ * 批量删除账单，并同步更新所有相关账户的余额。
+ * @param {object} event - 包含 billsToDelete 的事件对象
+ * @param {object} models - 数据模型实例
+ * @param {object} transaction - 外部事务对象
+ */
+async function deleteBills(event, models) {
+  const transaction = await db.startTransaction()
+  try {
+    const result = await _deleteBills(event, models, transaction)
+    await transaction.commit()
+    return result
+  } catch (e) {
+    await transaction.rollback()
+    throw e // 将 helper.js 中抛出的原始错误继续向上抛出
+  }
 }
 
 module.exports = {
@@ -519,6 +543,7 @@ module.exports = {
   getAllBills,
   getBillsByIds,
   deleteBill,
+  deleteBills,
   resetBills,
   saveTransfer,
 }

@@ -65,3 +65,17 @@ export function updateAccount(accountId, data) {
     },
   })
 }
+
+/**
+ * 永久删除账本及其所有关联账单
+ * @param {string} accountId - 要删除的账本ID
+ * @returns {Promise<any>}
+ */
+export function deactivateAccount(accountId) {
+  return post('bill-cloud', {
+    $url: '/delete/account',
+    query: {
+      accountId,
+    },
+  })
+}
