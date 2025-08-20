@@ -75,7 +75,7 @@ export function parseMoney(value) {
   const cleanedValue = value.replace(/,/g, '').replace(/\s/g, '')
 
   // 检查是否包含运算符或括号，如果没有，则直接解析
-  if (!/[+\-*/()]/.test(cleanedValue)) {
+  if (!/[+\-*/()×]/.test(cleanedValue)) {
     return parseFloat(cleanedValue)
   }
 

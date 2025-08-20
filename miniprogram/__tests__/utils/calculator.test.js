@@ -93,6 +93,10 @@ describe('Calculator Logic', () => {
       expect(parseMoney('100 * 2 + ( 30 - 10 ) / 2')).toBe(210)
     })
 
+    it('should correctly calculate 3×4', () => {
+      expect(parseMoney('3×4')).toBe(12)
+    })
+
     it('should correctly calculate expressions with × symbol', () => {
       expect(parseMoney('100 × 2 + ( 30 - 10 ) / 2')).toBe(210)
     })
