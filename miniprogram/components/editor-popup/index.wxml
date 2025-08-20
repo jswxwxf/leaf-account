@@ -10,7 +10,6 @@
         value="{{ text }}"
         type="textarea"
         border="{{ false }}"
-        auto-focus
         style="--field-text-area-min-height: 200rpx"
         bind:change="onChange"
       />
