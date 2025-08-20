@@ -1,5 +1,5 @@
 .cabinet-btn {
   --button-mini-height: 50rpx;
-  --button-line-height: 48rpx;
+  --button-line-height: 45rpx;
   --button-mini-font-size: 24rpx;
 }
