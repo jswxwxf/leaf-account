@@ -17,6 +17,10 @@ describe('Calculator Logic', () => {
       expect(toRPN('3+4*2')).toEqual([3, 4, 2, '*', '+'])
     })
 
+    it('should handle multiplication with × symbol', () => {
+      expect(toRPN('3×4')).toEqual([3, 4, '×'])
+    })
+
     it('should handle parentheses correctly', () => {
       expect(toRPN('(3+4)*2')).toEqual([3, 4, '+', 2, '*'])
     })
@@ -87,6 +91,10 @@ describe('Calculator Logic', () => {
 
     it('should correctly calculate complex expressions', () => {
       expect(parseMoney('100 * 2 + ( 30 - 10 ) / 2')).toBe(210)
+    })
+
+    it('should correctly calculate expressions with × symbol', () => {
+      expect(parseMoney('100 × 2 + ( 30 - 10 ) / 2')).toBe(210)
     })
 
     it('should correctly calculate the example: 300 * 2 + (5 - 2) / 8', () => {

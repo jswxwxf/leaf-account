@@ -14,6 +14,7 @@ const precedence = {
   '-': 1,
   '*': 2,
   '/': 2,
+  '×': 2,
 }
 
 /**
@@ -40,7 +41,7 @@ export function toRPN(expression) {
         tokens.push(currentNumber)
         currentNumber = ''
       }
-      if (/[+\-*/()]/.test(char)) {
+      if (/[+\-*/()×]/.test(char)) {
         // 判断是负号还是减号
         // 条件：1. 它是第一个字符 2. 它在左括号后面
         const lastToken = tokens[tokens.length - 1]
@@ -135,6 +136,7 @@ export function calculateRPN(rpnTokens) {
           stack.push(a - b)
           break
         case '*':
+        case '×':
           stack.push(a * b)
           break
         case '/':
