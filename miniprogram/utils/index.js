@@ -120,3 +120,46 @@ export function formatMoney(value, digits = 2) {
   // 组合最终结果，并处理负数情况
   return (isNegative ? '-' : '') + integerPart + decimalPart
 }
+
+/**
+ * 等待直到条件满足或超时
+ * @param {() => boolean} conditionFunction - 条件检查函数，返回 true 时停止
+ * @param {object} [options] - 配置选项
+ * @param {number} [options.maxRetry=3] - 最大重试次数
+ * @param {number} [options.retryTimer=400] - 每次重试的间隔时间 (ms)
+ * @returns {Promise<void>} - 当条件满足时 resolve
+ */
+export function until(conditionFunction, options = {}) {
+  const opts = {
+    maxRetry: 3,
+    retryTimer: 400,
+    ...options,
+  }
+  let retryCount = 0
+  const poll = (resolve) => {
+    if (conditionFunction()) {
+      resolve()
+      return
+    }
+    retryCount++
+    if (retryCount > opts.maxRetry) {
+      return
+    }
+    setTimeout((_) => poll(resolve), opts.retryTimer)
+  }
+
+  return new Promise(poll)
+}
+
+/**
+ * 判断当前页面是否是指定路由
+ * @param {string} route - 页面路由
+ * @returns {boolean}
+ */
+export function isCurrentPage(route) {
+  const pages = getCurrentPages()
+  if (pages.length === 0) {
+    return false
+  }
+  return pages[pages.length - 1].route === route
+}

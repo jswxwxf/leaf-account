@@ -4,6 +4,7 @@ import { getBills } from '@/api/bill.js'
 import { getAccount } from '@/api/account.js'
 import { groupBillsByDate } from '@/service/bill-service.js'
 import { getCurrentMonth, formatDate } from '@/utils/date.js'
+import { isCurrentPage, until } from '@/utils/index.js'
 
 export const MAX_BATCH_BILLS = 20
 
@@ -109,15 +110,10 @@ export default function store() {
       totalBalance.value = accountInfo.balance
       totalIncome.value = accountInfo.totalIncome
       totalExpense.value = accountInfo.totalExpense
-      // 注意：此处不应动态设置标题。
-      // 因为全局 `globalData.account` 是一个响应式引用 (ref)，
-      // 在其他页面（如 `cabinet` 页面停用当前账本）修改它时，
-      // 这个 `watchEffect` 也会被触发。
-      // 如果当时用户不在 `account` 页面，`setNavigationBarTitle` 会作用于
-      // 当前的 `cabinet` 页面，导致非预期的行为或错误。
-      // wx.setNavigationBarTitle({
-      //   title: `小叶记帐 - ${accountInfo.title}`,
-      // })
+      await until(() => isCurrentPage('pages/account/index'), { maxRetry: Infinity })
+      wx.setNavigationBarTitle({
+        title: `小叶记帐 - ${accountInfo.title}`,
+      })
     } catch (err) {
       error.value = err.message || '加载账本失败，请稍后重试'
       currentAccount.value = {}
