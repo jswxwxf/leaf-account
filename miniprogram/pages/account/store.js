@@ -198,6 +198,7 @@ export default function store() {
   return {
     error,
     currentAccount,
+    rawBills,
     dailyBills,
     typeValue,
     monthValue,

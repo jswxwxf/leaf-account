@@ -4,12 +4,13 @@ import store, { storeKey } from './store'
 defineComponent({
   setup(props, { triggerEvent }) {
     const state = store()
-    const { clearErrors, registerRule, validate } = state
+    const { setExtra, clearErrors, registerRule, validate } = state
     provide(storeKey, state)
 
     triggerEvent('init', state)
 
     return {
+      setExtra,
       clearErrors,
       registerRule,
       validate,

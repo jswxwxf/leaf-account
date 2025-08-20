@@ -4,6 +4,7 @@ defineComponent({
   setup() {
     const visible = ref(false)
     const text = ref('')
+    const notes = ref([])
     let _resolve = null
     let _reject = null
 
@@ -11,8 +12,9 @@ defineComponent({
       onClose()
     })
 
-    const show = (initialText = '') => {
+    const show = (initialText = '', options = {}) => {
       text.value = initialText
+      notes.value = options.notes ?? []
       visible.value = true
       return new Promise((resolve, reject) => {
         _resolve = resolve
@@ -45,14 +47,21 @@ defineComponent({
       text.value = event.detail
     }
 
+    const onSelectNote = (event) => {
+      const { note } = event.currentTarget.dataset
+      text.value = note
+    }
+
     return {
       visible,
       text,
+      notes,
       show,
       onConfirm,
       onCancel,
       onClose,
       onChange,
+      onSelectNote,
     }
   },
 })

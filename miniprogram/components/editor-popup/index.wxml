@@ -1,22 +1,33 @@
-<van-popup
-  show="{{ visible }}"
-  position="top"
-  style="--overlay-background-color: rgba(0, 0, 0, 0.1)"
-  @close="onClose"
->
-  <view class="p-4 h-full flex flex-col">
-    <van-cell-group>
-      <van-field
-        value="{{ text }}"
-        type="textarea"
-        border="{{ false }}"
-        style="--field-text-area-min-height: 200rpx"
-        bind:change="onChange"
-      />
-    </van-cell-group>
-    <view class="flex justify-end mt-4">
-      <van-button size="small" custom-class="w-20" bind:tap="onCancel">取消</van-button>
-      <van-button type="primary" custom-class="w-20" size="small" class="ml-2" bind:tap="onConfirm">确定</van-button>
+<van-popup show="{{ visible }}" position="top" style="--overlay-background-color: rgba(0, 0, 0, 0.1)" @close="onClose">
+  <view class="flex flex-col">
+    <view class="flex w-full gap-1">
+      <scroll-view scroll-y class="w-[300rpx] border-r border-gray-100 shadow-lg">
+        <view
+          wx:for="{{ notes }}"
+          wx:key="*this"
+          class="p-2 text-sm cursor-pointer hover:bg-gray-50 van-ellipsis"
+          data-note="{{ item }}"
+          @tap="onSelectNote"
+        >
+          {{ item }}
+        </view>
+      </scroll-view>
+      <van-cell-group class="flex-1">
+        <van-field
+          value="{{ text }}"
+          type="textarea"
+          custom-class="flex-1 h-full"
+          style="--field-text-area-min-height: 300rpx"
+          bind:change="onChange"
+        />
+      </van-cell-group>
+    </view>
+    <view class="flex justify-between items-center m-4">
+      <view class="text-xs text-gray-400">点击左侧已加载帐单备注可快速填写</view>
+      <view class="flex">
+        <van-button size="small" custom-class="w-19" bind:tap="onCancel">取消</van-button>
+        <van-button type="primary" custom-class="w-19" size="small" class="ml-2" bind:tap="onConfirm">确定</van-button>
+      </view>
     </view>
   </view>
 </van-popup>

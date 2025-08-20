@@ -1,9 +1,14 @@
-import { defineComponent, ref, onReady, inject, onHide } from '@vue-mini/core'
+import { defineComponent, ref, onReady, inject, onHide, computed } from '@vue-mini/core'
 import { storeKey } from '../store'
 
 defineComponent({
   setup(props, { selectComponent }) {
-    const { searchText, updateSearchText } = inject(storeKey)
+    const { searchText, updateSearchText, rawBills } = inject(storeKey)
+
+    const notes = computed(() => {
+      const allNotes = rawBills.value.map((bill) => bill.note).filter(Boolean)
+      return [...new Set(allNotes)]
+    })
 
     const visible = ref(false)
     const bill = ref({})
@@ -12,6 +17,7 @@ defineComponent({
     onReady(() => {
       // 获取表单组件实例
       billForm.value = selectComponent('#billForm')
+      billForm.value.setExtra('notes', notes)
     })
 
     let _resolve, _reject
@@ -58,6 +64,7 @@ defineComponent({
       visible,
       bill,
       searchText,
+      notes,
       show,
       handleClose,
       handleConfirm,

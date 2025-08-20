@@ -34,6 +34,7 @@ export default function store() {
   const rules = {}
   const fields = ref({})
   const errors = ref({})
+  const extra = {}
 
   function registerRule(field, rule) {
     if (rule) {
@@ -64,9 +65,15 @@ export default function store() {
     }
   }
 
+  function setExtra(key, value) {
+    extra[key] = value
+  }
+
   return {
     fields,
     errors,
+    extra,
+    setExtra,
     clearErrors,
     clearError,
     registerRule,

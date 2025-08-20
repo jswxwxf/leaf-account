@@ -39,11 +39,11 @@ export function showAccountSelector(options) {
 
 export const editorPopup = ref(null)
 
-export function showEditorPopup(text) {
+export function showEditorPopup(text, options) {
   if (!editorPopup.value) {
     return Promise.reject(new Error('Editor popup not initialized'))
   }
-  return editorPopup.value.show(text)
+  return editorPopup.value.show(text, options)
 }
 
 export const transferPopup = ref(null)
