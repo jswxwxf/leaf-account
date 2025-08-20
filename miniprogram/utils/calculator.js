@@ -26,14 +26,38 @@ export function toRPN(expression) {
   const outputQueue = [] // 输出队列，最终成为RPN结果
   const operatorStack = [] // 运算符栈
 
-  // 正则表达式将表达式字符串分割成数字和运算符的 token 数组。
-  // 例如 "3+4*2" -> ["3", "+", "4", "*", "2"]
-  // 支持小数和负数。
-  const tokens = expression.match(/-?\d+\.?\d*|[+\-*/()]/g)
+  // 改进的 Tokenizer，能更好地区分减号和负号
+  const tokens = []
+  let currentNumber = ''
 
-  if (!tokens) return [] // 如果无法解析，返回空数组
+  for (let i = 0; i < expression.length; i++) {
+    const char = expression[i]
 
-  tokens.forEach((token) => {
+    if (/\d|\./.test(char)) {
+      currentNumber += char
+    } else {
+      if (currentNumber) {
+        tokens.push(currentNumber)
+        currentNumber = ''
+      }
+      if (/[+\-*/()]/.test(char)) {
+        // 判断是负号还是减号
+        // 条件：1. 它是第一个字符 2. 它在左括号后面
+        const lastToken = tokens[tokens.length - 1]
+        if (char === '-' && (tokens.length === 0 || lastToken === '(' || (lastToken in precedence) )) {
+          currentNumber += '-'
+        } else {
+          tokens.push(char)
+        }
+      }
+    }
+  }
+  if (currentNumber) {
+    tokens.push(currentNumber)
+  }
+
+  // 对解析出的 tokens 进行处理
+  for (const token of tokens) {
     // 检查 token 是否是一个数字
     if (!isNaN(parseFloat(token))) {
       // 规则1: 如果是数字，直接放入输出队列。
@@ -60,14 +84,21 @@ export function toRPN(expression) {
       while (operatorStack.length && operatorStack[operatorStack.length - 1] !== '(') {
         outputQueue.push(operatorStack.pop())
       }
+      if (operatorStack.length === 0) {
+        throw new Error("Mismatched parentheses.");
+      }
       // 弹出左括号，但不放入输出队列（括号仅用于分组，不参与计算）。
       operatorStack.pop()
     }
-  })
+  }
 
   // 规则5: 遍历完所有 token 后，将栈中剩余的所有运算符依次弹出并放入输出队列。
   while (operatorStack.length) {
-    outputQueue.push(operatorStack.pop())
+    const operator = operatorStack.pop();
+    if (operator === '(') {
+      throw new Error("Mismatched parentheses.");
+    }
+    outputQueue.push(operator)
   }
 
   return outputQueue
@@ -89,6 +120,9 @@ export function calculateRPN(rpnTokens) {
     } else if (token in precedence) {
       // 如果是运算符，从栈顶弹出两个数字。
       // 注意顺序：b 是第二个操作数，a 是第一个。
+      if (stack.length < 2) {
+        throw new Error("Invalid expression.");
+      }
       const b = stack.pop()
       const a = stack.pop()
 
@@ -111,6 +145,9 @@ export function calculateRPN(rpnTokens) {
     }
   })
 
+  if (stack.length !== 1) {
+    throw new Error("Invalid expression.");
+  }
   // 当所有 token 处理完毕后，栈中应该只剩下一个数字，即最终结果。
   return stack[0]
 }
