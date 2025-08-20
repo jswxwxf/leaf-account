@@ -46,7 +46,6 @@ defineComponent({
 
     const handleEdit = async (event) => {
       const updatedCategory = await categoryPopup.value.show(event.detail)
-      console.log(updatedCategory)
       await updateCategory(updatedCategory)
       await loadData()
       wx.showToast({ title: '更新成功', icon: 'success' })

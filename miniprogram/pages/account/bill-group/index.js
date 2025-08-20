@@ -16,7 +16,6 @@ defineComponent({
     const { searchText } = inject(storeKey)
 
     onHide(() => {
-      console.log('closing swipe cell')
       selectAllComponents('.swipe-cell').forEach((cell) => {
         cell.close()
       })

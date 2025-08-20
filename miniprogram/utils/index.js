@@ -36,6 +36,15 @@ export function showAccountSelector(options) {
   return accountSelector.value.show(options)
 }
 
+export const editorPopup = ref(null)
+
+export function showEditorPopup(text) {
+  if (!editorPopup.value) {
+    return Promise.reject(new Error('Editor popup not initialized'))
+  }
+  return editorPopup.value.show(text)
+}
+
 export const transferPopup = ref(null)
 
 export function showTransferPopup(options) {

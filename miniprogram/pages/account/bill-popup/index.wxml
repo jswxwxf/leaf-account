@@ -1,5 +1,3 @@
-<wxs src="../../../utils/utils.wxs" module="utils" />
-
 <van-popup
   show="{{ visible }}"
   position="top"
@@ -35,12 +33,12 @@
           data-field="amount"
           @change="handleFormChange"
         />
-        <bill-field
+        <note-field
           label="备注"
           value="{{ bill.note }}"
           placeholder="请输入备注"
           field="note"
-          rule="required"
+          rule="required|max:15"
           data-field="note"
           @change="handleFormChange"
         />
@@ -51,9 +49,6 @@
         />
       </van-cell-group>
     </bill-form>
-    <!-- <view class="w-full text-wrap overflow-auto">
-      {{utils.stringify(bill)}}
-    </view> -->
 
     <!-- Footer -->
     <view class="flex items-center py-4">

@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "editor-popup": "../editor-popup/index"
+  }
+}

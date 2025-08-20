@@ -60,6 +60,7 @@
 <tags-helper />
 <calendar-helper />
 <account-helper />
+<editor-helper />
 <reconcile-popup id="reconcile-popup" />
 <summary-popup id="summary-popup" />
 <text-popup id="text-popup" />

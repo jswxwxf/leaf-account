@@ -6,7 +6,7 @@
     "money-field": "/components/money-field/index",
     "tags-field": "/components/tags-field/index",
     "bill-form": "/components/bill-form/index",
-    "bill-field": "/components/bill-field/index"
+    "note-field": "/components/note-field/index"
   },
   "styleIsolation": "apply-shared"
 }

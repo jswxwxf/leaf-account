@@ -33,7 +33,6 @@ defineComponent({
 
     const handleEdit = async (event) => {
       const updatedTag = await tagPopup.value.show(event.detail)
-      console.log(updatedTag)
       await updateTag(updatedTag)
       await loadData()
       wx.showToast({ title: '更新成功', icon: 'success' })

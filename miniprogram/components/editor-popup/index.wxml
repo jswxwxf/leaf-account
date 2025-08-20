@@ -1,0 +1,23 @@
+<van-popup
+  show="{{ visible }}"
+  position="top"
+  style="--overlay-background-color: rgba(0, 0, 0, 0.1)"
+  @close="onClose"
+>
+  <view class="p-4 h-full flex flex-col">
+    <van-cell-group>
+      <van-field
+        value="{{ text }}"
+        type="textarea"
+        border="{{ false }}"
+        auto-focus
+        style="--field-text-area-min-height: 200rpx"
+        bind:change="onChange"
+      />
+    </van-cell-group>
+    <view class="flex justify-end mt-4">
+      <van-button size="small" custom-class="w-20" bind:tap="onCancel">取消</van-button>
+      <van-button type="primary" custom-class="w-20" size="small" class="ml-2" bind:tap="onConfirm">确定</van-button>
+    </view>
+  </view>
+</van-popup>

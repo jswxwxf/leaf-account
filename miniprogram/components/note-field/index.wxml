@@ -1,0 +1,15 @@
+<van-field
+  label="{{ label }}"
+  type="{{ type }}"
+  value="{{ value }}"
+  placeholder="{{ placeholder }}"
+  error="{{ showError ? false : fields[field] === false }}"
+  error-message="{{ showError ? errors[field][0].message : '' }}"
+  @change="handleChange"
+  @focus="clearError"
+  use-button-slot
+>
+  <view slot="button" class="flex items-center h-full" @tap="handleIconClick">
+    <van-icon size="40rpx" name="expand-o" />
+  </view>
+</van-field>
