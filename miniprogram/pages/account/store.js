@@ -40,6 +40,11 @@ export default function store() {
     searchText.value = e.detail
   }
 
+  const notes = computed(() => {
+    const allNotes = rawBills.value.map((bill) => bill.note).filter(Boolean)
+    return [...new Set(allNotes)]
+  })
+
   function resetQuery() {
     typeValue.value = ''
     monthValue.value = getCurrentMonth()
@@ -208,6 +213,7 @@ export default function store() {
     loading,
     searchText,
     hasMore,
+    notes,
     loadData,
     loadMore,
     updateAccountSummary,

@@ -7,7 +7,7 @@ import { storeKey, MAX_BATCH_BILLS } from '../store'
 
 defineComponent({
   setup(props, { selectAllComponents }) {
-    const { searchText, updateSearchText } = inject(storeKey)
+    const { searchText, updateSearchText, notes } = inject(storeKey)
 
     const visible = ref(false)
     const list = ref([])
@@ -35,6 +35,7 @@ defineComponent({
       nextTick(() => {
         selectAllComponents('.bill-form').forEach((form) => {
           form.clearErrors()
+          form.setExtra('notes', notes)
         })
       })
       visible.value = true

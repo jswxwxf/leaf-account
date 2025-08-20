@@ -3,12 +3,7 @@ import { storeKey } from '../store'
 
 defineComponent({
   setup(props, { selectComponent }) {
-    const { searchText, updateSearchText, rawBills } = inject(storeKey)
-
-    const notes = computed(() => {
-      const allNotes = rawBills.value.map((bill) => bill.note).filter(Boolean)
-      return [...new Set(allNotes)]
-    })
+    const { searchText, updateSearchText, notes } = inject(storeKey)
 
     const visible = ref(false)
     const bill = ref({})
@@ -64,7 +59,6 @@ defineComponent({
       visible,
       bill,
       searchText,
-      notes,
       show,
       handleClose,
       handleConfirm,
