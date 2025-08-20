@@ -17,6 +17,7 @@
         wx:key="rowIndex"
         class="flex mb-[0.4rem] py-1 pl-1 bg-slate-100 items-center"
       >
+        <view class="pl-1 pr-2">{{ rowIndex + 1 }}</view>
         <bill-form class="bill-form">
           <view class="flex-1 batch-popup-form">
             <!-- Row 1: Date, Category, Amount -->
