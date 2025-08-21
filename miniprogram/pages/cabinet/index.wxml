@@ -8,6 +8,8 @@
       @rename="handleRename"
       @transfer="handleTransfer"
       @deactivate="handleDeactivate"
+      @export="handleExport"
+      @import="handleImport"
       data-index="{{ index }}"
     />
   </block>
@@ -17,3 +19,4 @@
 
 <account-popup id="account-popup" />
 <transfer-helper />
+<imexport-helper />

@@ -1,5 +1,5 @@
 import { defineComponent, onDetach, onReady } from '@vue-mini/core'
-import { tagsSelector } from '@/utils/index.js'
+import { tagsSelector } from '@/utils/helper.js'
 
 defineComponent({
   setup(props, { selectComponent }) {

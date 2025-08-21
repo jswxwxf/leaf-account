@@ -3,6 +3,7 @@ import Dialog from '@vant/weapp/dialog/dialog.js'
 import { getAccount, getAccounts, updateAccount, deactivateAccount } from '@/api/account.js'
 import { saveTransfer } from '@/api/bill.js'
 import store, { storeKey } from './store'
+import { showImexportPopup } from '@/utils/helper.js'
 
 defineComponent({
   setup(props, { selectComponent }) {
@@ -106,12 +107,26 @@ defineComponent({
       fetchAccounts()
     }
 
+    const handleExport = async (e) => {
+      const { index } = e.currentTarget.dataset
+      const account = e.detail
+      await showImexportPopup()
+    }
+
+    const handleImport = async (e) => {
+      const { index } = e.currentTarget.dataset
+      const account = e.detail
+      await showImexportPopup()
+    }
+
     return {
       accounts,
       handleActivate,
       handleDeactivate,
       handleRename,
       handleTransfer,
+      handleExport,
+      handleImport,
     }
   },
 })

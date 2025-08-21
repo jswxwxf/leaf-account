@@ -1,6 +1,6 @@
 import { defineComponent, computed } from '@vue-mini/core'
 import { useFormItem, formItemProps } from '../bill-form/use-form-item.js'
-import { showEditorPopup } from '@/utils/index.js'
+import { showEditorPopup } from '@/utils/helper.js'
 
 defineComponent({
   properties: {

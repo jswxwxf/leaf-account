@@ -1,6 +1,6 @@
 import { defineComponent, computed } from '@vue-mini/core'
 import { formatDate } from '@/utils/date.js'
-import { showCalendar } from '@/utils/index.js'
+import { showCalendar } from '@/utils/helper.js'
 import { useFormItem, formItemProps } from '../bill-form/use-form-item.js'
 
 defineComponent({

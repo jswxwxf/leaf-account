@@ -1,5 +1,5 @@
 import { computed, defineComponent, inject } from '@vue-mini/core'
-import { showTransferPopup } from '@/utils/index.js'
+import { showTransferPopup } from '@/utils/helper.js'
 import { storeKey } from '../store'
 
 defineComponent({
@@ -38,6 +38,14 @@ defineComponent({
       triggerEvent('deactivate', props.account)
     }
 
+    const handleExport = async () => {
+      triggerEvent('export', props.account)
+    }
+
+    const handleImport = async () => {
+      triggerEvent('import', props.account)
+    }
+
     return {
       enableTransfer,
       handleTap,
@@ -45,6 +53,8 @@ defineComponent({
       handleTransferOut,
       handleTransferIn,
       handleDeactivate,
+      handleExport,
+      handleImport,
     }
   },
 })

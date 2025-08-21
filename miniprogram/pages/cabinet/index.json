@@ -6,6 +6,7 @@
     "account-box": "./account-box/index",
     "account-popup": "./account-popup/index",
     "transfer-helper": "/components/transfer-helper/index",
+    "imexport-helper": "/components/imexport-helper/index"
   },
   "navigationBarTitleText": "切换帐本"
 }

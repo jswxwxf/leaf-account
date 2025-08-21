@@ -1,5 +1,5 @@
 import { defineComponent, onDetach, onReady } from '@vue-mini/core'
-import { transferPopup } from '@/utils/index.js'
+import { transferPopup } from '@/utils/helper.js'
 
 defineComponent({
   setup(props, { selectComponent }) {

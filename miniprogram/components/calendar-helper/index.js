@@ -1,5 +1,5 @@
 import { defineComponent, onDetach, onReady } from '@vue-mini/core'
-import { calendarSelector } from '@/utils/index.js'
+import { calendarSelector } from '@/utils/helper.js'
 
 defineComponent({
   setup(props, { selectComponent }) {

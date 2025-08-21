@@ -1,5 +1,5 @@
 import { defineComponent } from '@vue-mini/core'
-import { showTagsSelector } from '@/utils/index.js'
+import { showTagsSelector } from '@/utils/helper.js'
 import { useFormItem, formItemProps } from '../bill-form/use-form-item.js'
 
 defineComponent({

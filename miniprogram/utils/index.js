@@ -1,68 +1,6 @@
 import { ref } from '@vue-mini/core'
 import { toRPN, calculateRPN } from './calculator.js'
 
-export const tagsSelector = ref(null)
-
-export function showTagsSelector(tags) {
-  if (!tagsSelector.value) {
-    return Promise.reject(new Error('Tags selector not initialized'))
-  }
-  return tagsSelector.value.show(tags)
-}
-
-export const categorySelector = ref(null)
-
-export function showCategorySelector() {
-  if (!categorySelector.value) {
-    return Promise.reject(new Error('Category selector not initialized'))
-  }
-  return categorySelector.value.show()
-}
-
-export const calendarSelector = ref(null)
-
-export function showCalendar(currentDate) {
-  if (!calendarSelector.value) {
-    return Promise.reject(new Error('Calendar selector not initialized'))
-  }
-  return calendarSelector.value.show(currentDate)
-}
-
-export const accountSelector = ref(null)
-
-export function showAccountSelector(options) {
-  if (!accountSelector.value) {
-    return Promise.reject(new Error('Account selector not initialized'))
-  }
-  return accountSelector.value.show(options)
-}
-
-export const editorPopup = ref(null)
-
-export function showEditorPopup(text, options) {
-  if (!editorPopup.value) {
-    return Promise.reject(new Error('Editor popup not initialized'))
-  }
-  return editorPopup.value.show(text, options)
-}
-
-export const transferPopup = ref(null)
-
-export function showTransferPopup(options) {
-  if (!transferPopup.value) {
-    return Promise.reject(new Error('Transfer popup not initialized'))
-  }
-  return transferPopup.value.show(options)
-}
-
-export const theToast = ref(null)
-
-export function showToast(message) {
-  if (!theToast.value) {
-    return Promise.reject(new Error('Toast not initialized'))
-  }
-  return theToast.value.showToast(message)
-}
 
 export function parseMoney(value) {
   if (typeof value === 'number') {

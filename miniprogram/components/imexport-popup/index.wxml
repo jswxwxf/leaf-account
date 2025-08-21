@@ -1,0 +1,14 @@
+<van-popup
+  show="{{ visible }}"
+  position="top"
+  custom-style="height: 60%;"
+  bind:close="onClose"
+  safe-area-inset-bottom="{{ false }}"
+>
+  <view class="p-4 h-full flex flex-col">
+    <!-- Close button -->
+    <view class="absolute right-4 bottom-4">
+      <van-icon name="cross" size="22px" bind:click="onClose" />
+    </view>
+  </view>
+</van-popup>

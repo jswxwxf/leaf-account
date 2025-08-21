@@ -1,5 +1,5 @@
 import { defineComponent } from '@vue-mini/core'
-import { showCategorySelector } from '@/utils/index.js'
+import { showCategorySelector } from '@/utils/helper.js'
 import { useFormItem, formItemProps } from '../bill-form/use-form-item.js'
 
 defineComponent({
