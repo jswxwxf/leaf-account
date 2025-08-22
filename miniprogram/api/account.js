@@ -79,3 +79,33 @@ export function deactivateAccount(accountId) {
     },
   })
 }
+
+/**
+ * 导出账本数据
+ * @param {string} accountId - 账本ID
+ * @param {number} year - 年份
+ * @returns {Promise<any>}
+ */
+export function exportAccount(accountId, year) {
+  return get('bill-cloud', {
+    $url: '/get/account/export',
+    query: {
+      accountId,
+      year,
+    },
+  })
+}
+
+/**
+ * 获取账本的所有年份
+ * @param {string} accountId - 账本ID
+ * @returns {Promise<number[]>}
+ */
+export function getAccountYears(accountId) {
+  return get('bill-cloud', {
+    $url: '/get/account/years',
+    query: {
+      accountId,
+    },
+  })
+}

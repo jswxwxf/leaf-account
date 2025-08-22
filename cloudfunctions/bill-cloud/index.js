@@ -31,6 +31,8 @@ const {
   reconcileAccount,
   deactivateAccount,
   updateAccount,
+  getAccountYears,
+  exportAccount,
 } = require('./service/account.js')
 const {
   getCategories,
@@ -172,6 +174,42 @@ exports.main = (event, context) => {
       ctx.body = { code: 200, success: true, message: '获取成功', data }
     } catch (e) {
       console.error('/get/accounts error:', e)
+      if (e.isBiz) {
+        ctx.body = { code: 400, success: false, message: e.message }
+      } else {
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
+    }
+  })
+
+  /**
+   * @desc 获取账本的所有年份
+   * @returns {number[]} data - 年份数组
+   */
+  app.router('/get/account/years', async (ctx) => {
+    try {
+      const data = await getAccountYears(event, models)
+      ctx.body = { code: 200, success: true, message: '获取成功', data }
+    } catch (e) {
+      console.error('/get/account/years error:', e)
+      if (e.isBiz) {
+        ctx.body = { code: 400, success: false, message: e.message }
+      } else {
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
+    }
+  })
+
+  /**
+   * @desc 导出账本数据
+   * @returns {object[]} data - 格式化后的账单数据
+   */
+  app.router('/get/account/export', async (ctx) => {
+    try {
+      const data = await exportAccount(event, models)
+      ctx.body = { code: 200, success: true, message: '导出成功', data }
+    } catch (e) {
+      console.error('/get/account/export error:', e)
       if (e.isBiz) {
         ctx.body = { code: 400, success: false, message: e.message }
       } else {

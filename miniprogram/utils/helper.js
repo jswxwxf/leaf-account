@@ -56,9 +56,9 @@ export function showTransferPopup(options) {
 
 export const imexportPopup = ref(null)
 
-export function showImexportPopup(options) {
+export function showImexportPopup(account, options) {
   if (!imexportPopup.value) {
     return Promise.reject(new Error('Imexport popup not initialized'))
   }
-  return imexportPopup.value.show(options)
+  return imexportPopup.value.show(account, options)
 }

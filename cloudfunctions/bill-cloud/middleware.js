@@ -17,6 +17,8 @@ const REQUIRE_LOGIN_ROUTES = [
   '/get/accounts',
   '/put/account/reconcile',
   '/put/account',
+  '/get/account/years',
+  '/get/account/export',
 ]
 const REQUIRE_ACCOUNT_ID_ROUTES = [
   '/upsert/bill',
@@ -30,6 +32,8 @@ const REQUIRE_ACCOUNT_ID_ROUTES = [
   '/put/account/reconcile',
   '/put/account',
   '/delete/account',
+  '/get/account/years',
+  '/get/account/export',
 ]
 const WITH_ACCOUNT_ROUTES = [
   '/upsert/bill',

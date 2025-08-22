@@ -1,14 +1,19 @@
-<van-popup
-  show="{{ visible }}"
-  position="top"
-  custom-style="height: 60%;"
-  bind:close="onClose"
-  safe-area-inset-bottom="{{ false }}"
->
+<van-popup show="{{ visible }}" bind:close="onClose" closeable>
   <view class="p-4 h-full flex flex-col">
-    <!-- Close button -->
-    <view class="absolute right-4 bottom-4">
-      <van-icon name="cross" size="22px" bind:click="onClose" />
+    <view class="mb-4">
+      <view class="flex-1">{{ mode === 'import' ? '导入' : '导出' }} {{ currentAccount.title }} 帐单</view>
     </view>
+    <view class="flex items-center justify-between gap-2">
+      <van-dropdown-menu
+        overlay="{{ false }}"
+        style="--dropdown-menu-height: 45px; --dropdown-menu-title-disabled-text-color: #323233"
+        title-class="{{ yearOptions.length <= 1 ? 'year-dropdown-title--disabled' : '' }}"
+        class="w-48"
+      >
+        <van-dropdown-item value="{{ year }}" options="{{ yearOptions }}" disabled="{{ yearOptions.length <= 1 }}" />
+      </van-dropdown-menu>
+      <van-button type="primary" custom-class="w-20" @tap="onTap">{{ mode === 'import' ? '导入' : '导出' }}</van-button>
+    </view>
+    <van-progress show-pivot="{{ false }}" class="my-4" />
   </view>
 </van-popup>

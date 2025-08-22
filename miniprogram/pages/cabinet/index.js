@@ -110,13 +110,13 @@ defineComponent({
     const handleExport = async (e) => {
       const { index } = e.currentTarget.dataset
       const account = e.detail
-      await showImexportPopup()
+      await showImexportPopup(account, { mode: 'export' })
     }
 
     const handleImport = async (e) => {
       const { index } = e.currentTarget.dataset
       const account = e.detail
-      await showImexportPopup()
+      await showImexportPopup(account, { mode: 'import' })
     }
 
     return {

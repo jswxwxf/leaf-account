@@ -272,10 +272,86 @@ async function updateAccount(event, models) {
   }
 }
 
+async function getAccountYears(event, models) {
+  const { accountId } = event.query
+  const { OPENID } = cloud.getWXContext()
+
+  const $ = db.command.aggregate
+
+  const result = await db.collection('bill')
+    .aggregate()
+    .match({
+      _openid: OPENID,
+      account: accountId,
+    })
+    .addFields({
+      convertedDate: { $toDate: '$datetime' }
+    })
+    .project({
+      year: { $year: '$convertedDate' },
+    })
+    .group({
+      _id: '$year',
+    })
+    .sort({
+      _id: -1,
+    })
+    .end()
+
+  return result.list.map(item => item._id)
+}
+
+async function exportAccount(event, models) {
+  const { accountId, year } = event.query
+  const { OPENID } = cloud.getWXContext()
+
+  const yearStart = new Date(year, 0, 1).getTime()
+  const yearEnd = new Date(year, 11, 31, 23, 59, 59, 999).getTime()
+
+  // 1. 获取账本信息
+  const account = await getAccount({ query: { accountId } }, models)
+
+  // 2. 获取该年度所有账单
+  const billsRes = await db.collection('bill')
+    .where({
+      _openid: OPENID,
+      account: accountId,
+      datetime: _.gte(yearStart).and(_.lte(yearEnd)),
+    })
+    .orderBy('datetime', 'asc')
+    .limit(1000) // 单次最多获取 1000 条
+    .get()
+
+  // 3. 获取所有分类和标签，用于数据转换
+  const [categoriesRes, tagsRes] = await Promise.all([
+    models.category.list({ pageSize: 1000 }),
+    models.tag.list({ pageSize: 1000 }),
+  ])
+  const categories = categoriesRes.data.records
+  const tags = tagsRes.data.records
+
+  // 4. 格式化账单数据
+  const formattedBills = billsRes.data.map(bill => ({
+    '账本': account.title,
+    '时间': new Date(bill.datetime).toLocaleString(),
+    '类型': bill.category.type === '10' ? '收入' : '支出',
+    '分类': bill.category.name,
+    '金额': bill.amount,
+    '备注': bill.note || '',
+    '标签': bill.tags && bill.tags.length > 0
+      ? bill.tags.map(tagId => tags.find(t => t._id === tagId)?.name || '未知标签').join(', ')
+      : '',
+  }))
+
+  return formattedBills
+}
+
 module.exports = {
   getAccount,
   getAccounts,
   reconcileAccount,
   deactivateAccount,
   updateAccount,
+  getAccountYears,
+  exportAccount,
 }

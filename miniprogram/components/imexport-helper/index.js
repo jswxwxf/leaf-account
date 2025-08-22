@@ -1,4 +1,4 @@
-import { defineComponent, onReady } from '@vue-mini/core'
+import { defineComponent, onDetach, onReady } from '@vue-mini/core'
 import { imexportPopup } from '@/utils/helper.js'
 
 defineComponent({
