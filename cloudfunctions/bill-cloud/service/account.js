@@ -1,7 +1,13 @@
 const cloud = require('wx-server-sdk')
 const ExcelJS = require('exceljs')
+const dayjs = require('dayjs')
 const { saveBill } = require('./bill.js')
-const { BizError, deactivateAccount: _deactivateAccount } = require('./helper.js')
+const {
+  BizError,
+  deactivateAccount: _deactivateAccount,
+  populateCategoriesForBills,
+  populateTagsForBills,
+} = require('./helper.js')
 
 const db = cloud.database()
 const _ = db.command
@@ -279,14 +285,15 @@ async function getAccountYears(event, models) {
 
   const $ = db.command.aggregate
 
-  const result = await db.collection('bill')
+  const result = await db
+    .collection('bill')
     .aggregate()
     .match({
       _openid: OPENID,
       account: accountId,
     })
     .addFields({
-      convertedDate: { $toDate: '$datetime' }
+      convertedDate: { $toDate: '$datetime' },
     })
     .project({
       year: { $year: '$convertedDate' },
@@ -299,7 +306,7 @@ async function getAccountYears(event, models) {
     })
     .end()
 
-  return result.list.map(item => item._id)
+  return result.list.map((item) => item._id)
 }
 
 async function exportAccount(event, models) {
@@ -317,8 +324,13 @@ async function exportAccount(event, models) {
   const MAX_LIMIT = 1000
   let skip = 0
   while (true) {
-    const billsRes = await db.collection('bill')
-      .where({ _openid: OPENID, account: accountId, datetime: _.gte(yearStart).and(_.lte(yearEnd)) })
+    const billsRes = await db
+      .collection('bill')
+      .where({
+        _openid: OPENID,
+        account: accountId,
+        datetime: _.gte(yearStart).and(_.lte(yearEnd)),
+      })
       .orderBy('datetime', 'asc')
       .skip(skip)
       .limit(MAX_LIMIT)
@@ -328,39 +340,63 @@ async function exportAccount(event, models) {
     skip += MAX_LIMIT
   }
 
-  // 3. 获取所有分类和标签，用于数据转换
-  const [tagsRes] = await Promise.all([
-    db.collection('tag').where({ _openid: OPENID }).limit(1000).get(),
-  ])
-  const tags = tagsRes.data
+  // 3. 填充关联数据
+  allBills = await populateCategoriesForBills(allBills, models)
+  allBills = await populateTagsForBills(allBills, models)
 
   // 4. 格式化账单数据
-  const formattedBills = allBills.map(bill => {
+  const formattedBills = allBills.map((bill) => {
     return {
-      account: account.title,
-      datetime: new Date(bill.datetime).toLocaleString(),
+      _id: bill._id,
+      date: dayjs(bill.datetime).format('YYYY年MM月DD日'),
+      timestamp: bill.datetime,
       type: bill.category.type === '10' ? '收入' : '支出',
       category: bill.category.name,
       amount: bill.amount,
       note: bill.note || '',
-      tags: bill.tags && bill.tags.length > 0
-        ? bill.tags.map(tagId => tags.find(t => t._id === tagId)?.name || '未知标签').join(', ')
-        : '',
+      tags: bill.tags && bill.tags.length > 0 ? bill.tags.map((t) => t.name).join(', ') : '',
     }
   })
 
   const workbook = new ExcelJS.Workbook()
-  const worksheet = workbook.addWorksheet('账单数据')
+  const worksheet = workbook.addWorksheet(`${account.title}-${year}`)
+
+  // 1. 添加主标题
+  const title = `【${account.title}】${year}年度账单`
+  worksheet.mergeCells('A1:H1'); // 合并A1到H1
+  const titleCell = worksheet.getCell('A1');
+  titleCell.value = title;
+  titleCell.font = { name: 'Calibri', size: 16, bold: true };
+  titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+  // 2. 设置表头
+  const headerRow = worksheet.getRow(2) // 第二行作为表头
+  headerRow.values = ['日期', '类型', '分类', '金额', '备注', '标签', 'ID', '时间戳']
+  headerRow.font = { name: 'Calibri', size: 13, bold: true }
+
+  // 3. 设置列宽和key（用于数据映射）
   worksheet.columns = [
-    { header: '账本', key: 'account', width: 20 },
-    { header: '时间', key: 'datetime', width: 20 },
-    { header: '类型', key: 'type', width: 10 },
-    { header: '分类', key: 'category', width: 15 },
-    { header: '金额', key: 'amount', width: 15 },
-    { header: '备注', key: 'note', width: 30 },
-    { header: '标签', key: 'tags', width: 20 },
+    { key: 'date', width: 20 },
+    { key: 'type', width: 10 },
+    { key: 'category', width: 15 },
+    { key: 'amount', width: 15 },
+    { key: 'note', width: 30 },
+    { key: 'tags', width: 20 },
+    { key: '_id', width: 40 },
+    { key: 'timestamp', width: 18 },
   ]
+
+  // 3. 插入数据并设置字体
   worksheet.addRows(formattedBills)
+  worksheet.eachRow({ includeEmpty: false }, function(row, rowNumber) {
+    // 设置数据行的字体，跳过标题和表头
+    if (rowNumber > 2) {
+      row.eachCell({ includeEmpty: true }, function(cell) {
+        cell.font = { name: 'Calibri', size: 13 };
+      });
+    }
+  });
+
   const buffer = await workbook.xlsx.writeBuffer()
 
   // 5. 上传到云存储
