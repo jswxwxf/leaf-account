@@ -49,8 +49,8 @@
     "swc": false,
     "disableSWC": true
   },
-  "appid": "wx16613535052d1ff9",
-  "projectname": "leaf-account-prod",
+  "appid": "wxeacfc9538b27e45c",
+  "projectname": "leaf-account",
   "libVersion": "3.8.12",
   "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
   "condition": {
