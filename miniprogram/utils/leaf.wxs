@@ -1,0 +1,23 @@
+var leafMap = {
+  'leaf-maple': 'cloud://cloud1-9gm1l59n4e091c1b.636c-cloud1-9gm1l59n4e091c1b-1373633950/leaf-maple.jpg',
+  'leaf-willow': 'cloud://cloud1-9gm1l59n4e091c1b.636c-cloud1-9gm1l59n4e091c1b-1373633950/leaf-willow.jpg',
+  'leaf-reed': 'cloud://cloud1-9gm1l59n4e091c1b.636c-cloud1-9gm1l59n4e091c1b-1373633950/leaf-reed.jpg',
+  'leaf-pine': 'cloud://cloud1-9gm1l59n4e091c1b.636c-cloud1-9gm1l59n4e091c1b-1373633950/leaf-pine.jpg',
+  'leaf-phoenix': 'cloud://cloud1-9gm1l59n4e091c1b.636c-cloud1-9gm1l59n4e091c1b-1373633950/leaf-phoenix.jpg',
+  'leaf-mulberry': 'cloud://cloud1-9gm1l59n4e091c1b.636c-cloud1-9gm1l59n4e091c1b-1373633950/leaf-mulberry.jpg',
+  'leaf-lotus': 'cloud://cloud1-9gm1l59n4e091c1b.636c-cloud1-9gm1l59n4e091c1b-1373633950/leaf-lotus.jpg',
+  'leaf-ginkgo': 'cloud://cloud1-9gm1l59n4e091c1b.636c-cloud1-9gm1l59n4e091c1b-1373633950/leaf-ginkgo.jpg',
+  'leaf-banana': 'cloud://cloud1-9gm1l59n4e091c1b.636c-cloud1-9gm1l59n4e091c1b-1373633950/leaf-banana.jpg'
+};
+
+var getLeafUrl = function(name) {
+  if (!name) {
+    return leafMap['leaf-maple'];
+  }
+  var key = name.toLowerCase();
+  return leafMap[key] || leafMap['leaf-maple'];
+};
+
+module.exports = {
+  getLeafUrl: getLeafUrl
+};

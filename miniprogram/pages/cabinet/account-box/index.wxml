@@ -1,9 +1,10 @@
 <wxs src="../../../utils/utils.wxs" module="utils" />
+<wxs src="../../../utils/leaf.wxs" module="leaf" />
 
 <view class="relative overflow-hidden text-white mb-3 shadow-lg shadow-cyan-500/20">
   <!-- 背景图：使用 image + aspectFill，避免 background-image -->
   <image
-    src="{{ '../../../assets/images/' + account.name + '.jpg' }}"
+    src="{{ leaf.getLeafUrl(account.name) }}"
     mode="aspectFill"
     class="absolute inset-0 w-full h-full {{ !account.isOpened ? 'grayscale' : '' }}"
   />

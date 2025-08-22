@@ -1,8 +1,9 @@
 <wxs src="../../../utils/utils.wxs" module="utils" />
+<wxs src="../../../utils/leaf.wxs" module="leaf" />
 
 <view class="relative overflow-hidden text-white pt-4 pb-3 px-4 shadow-md" hidden="{{ hidden }}">
   <image
-    src="{{ '../../../assets/images/' + (currentAccount.name || 'leaf-maple') + '.jpg' }}"
+    src="{{ leaf.getLeafUrl(account.name) }}"
     mode="aspectFill"
     class="absolute inset-0 w-full h-full"
   />
