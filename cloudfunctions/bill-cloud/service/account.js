@@ -1,4 +1,5 @@
 const cloud = require('wx-server-sdk')
+const ExcelJS = require('exceljs')
 const { saveBill } = require('./bill.js')
 const { BizError, deactivateAccount: _deactivateAccount } = require('./helper.js')
 
@@ -312,38 +313,61 @@ async function exportAccount(event, models) {
   const account = await getAccount({ query: { accountId } }, models)
 
   // 2. 获取该年度所有账单
-  const billsRes = await db.collection('bill')
-    .where({
-      _openid: OPENID,
-      account: accountId,
-      datetime: _.gte(yearStart).and(_.lte(yearEnd)),
-    })
-    .orderBy('datetime', 'asc')
-    .limit(1000) // 单次最多获取 1000 条
-    .get()
+  let allBills = []
+  const MAX_LIMIT = 1000
+  let skip = 0
+  while (true) {
+    const billsRes = await db.collection('bill')
+      .where({ _openid: OPENID, account: accountId, datetime: _.gte(yearStart).and(_.lte(yearEnd)) })
+      .orderBy('datetime', 'asc')
+      .skip(skip)
+      .limit(MAX_LIMIT)
+      .get()
+    if (billsRes.data.length === 0) break
+    allBills = allBills.concat(billsRes.data)
+    skip += MAX_LIMIT
+  }
 
   // 3. 获取所有分类和标签，用于数据转换
-  const [categoriesRes, tagsRes] = await Promise.all([
-    models.category.list({ pageSize: 1000 }),
-    models.tag.list({ pageSize: 1000 }),
+  const [tagsRes] = await Promise.all([
+    db.collection('tag').where({ _openid: OPENID }).limit(1000).get(),
   ])
-  const categories = categoriesRes.data.records
-  const tags = tagsRes.data.records
+  const tags = tagsRes.data
 
   // 4. 格式化账单数据
-  const formattedBills = billsRes.data.map(bill => ({
-    '账本': account.title,
-    '时间': new Date(bill.datetime).toLocaleString(),
-    '类型': bill.category.type === '10' ? '收入' : '支出',
-    '分类': bill.category.name,
-    '金额': bill.amount,
-    '备注': bill.note || '',
-    '标签': bill.tags && bill.tags.length > 0
-      ? bill.tags.map(tagId => tags.find(t => t._id === tagId)?.name || '未知标签').join(', ')
-      : '',
-  }))
+  const formattedBills = allBills.map(bill => {
+    return {
+      account: account.title,
+      datetime: new Date(bill.datetime).toLocaleString(),
+      type: bill.category.type === '10' ? '收入' : '支出',
+      category: bill.category.name,
+      amount: bill.amount,
+      note: bill.note || '',
+      tags: bill.tags && bill.tags.length > 0
+        ? bill.tags.map(tagId => tags.find(t => t._id === tagId)?.name || '未知标签').join(', ')
+        : '',
+    }
+  })
 
-  return formattedBills
+  const workbook = new ExcelJS.Workbook()
+  const worksheet = workbook.addWorksheet('账单数据')
+  worksheet.columns = [
+    { header: '账本', key: 'account', width: 20 },
+    { header: '时间', key: 'datetime', width: 20 },
+    { header: '类型', key: 'type', width: 10 },
+    { header: '分类', key: 'category', width: 15 },
+    { header: '金额', key: 'amount', width: 15 },
+    { header: '备注', key: 'note', width: 30 },
+    { header: '标签', key: 'tags', width: 20 },
+  ]
+  worksheet.addRows(formattedBills)
+  const buffer = await workbook.xlsx.writeBuffer()
+
+  // 5. 上传到云存储
+  const cloudPath = `exports/${OPENID}/${year}-${account.name}-${Date.now()}.xlsx`
+  const uploadRes = await cloud.uploadFile({ cloudPath, fileContent: buffer })
+
+  return { fileID: uploadRes.fileID }
 }
 
 module.exports = {

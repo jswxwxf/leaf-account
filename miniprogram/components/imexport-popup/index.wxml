@@ -12,7 +12,7 @@
       >
         <van-dropdown-item value="{{ year }}" options="{{ yearOptions }}" disabled="{{ yearOptions.length <= 1 }}" />
       </van-dropdown-menu>
-      <van-button type="primary" custom-class="w-20" @tap="onTap">{{ mode === 'import' ? '导入' : '导出' }}</van-button>
+      <van-button type="primary" custom-class="w-20" @tap="handleExport">{{ mode === 'import' ? '导入' : '导出' }}</van-button>
     </view>
     <van-progress show-pivot="{{ false }}" class="my-4" />
   </view>
