@@ -49,9 +49,9 @@
     "swc": false,
     "disableSWC": true
   },
-  "appid": "wxeacfc9538b27e45c",
-  "projectname": "quickstart-wx-cloud",
-  "libVersion": "2.20.1",
+  "appid": "wx16613535052d1ff9",
+  "projectname": "leaf-account-prod",
+  "libVersion": "3.8.12",
   "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
   "condition": {
     "search": {
