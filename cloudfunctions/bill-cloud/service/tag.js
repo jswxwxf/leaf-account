@@ -158,6 +158,11 @@ async function getTagsByIds(event, models) {
   return tags
 }
 
+async function getTagsByNames(event, models) {
+  const { getTagsByNames: _getTagsByNames } = require('./helper.js')
+  return _getTagsByNames(event, models, db)
+}
+
 module.exports = {
   getTags,
   addTags,
@@ -165,6 +170,7 @@ module.exports = {
   updateTag,
   deleteTag,
   getTagsByIds,
+  getTagsByNames,
 }
 
 /**

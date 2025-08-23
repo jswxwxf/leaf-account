@@ -33,6 +33,7 @@ const {
   updateAccount,
   getAccountYears,
   exportAccount,
+  importAccount,
 } = require('./service/account.js')
 const {
   getCategories,
@@ -41,6 +42,7 @@ const {
   updateCategory,
 } = require('./service/category.js')
 const { getTags, addTags, addTag, updateTag, deleteTag } = require('./service/tag.js')
+const { getTask } = require('./service/task.js')
 
 exports.main = (event, context) => {
   const app = new TcbRouter({ event })
@@ -204,12 +206,46 @@ exports.main = (event, context) => {
    * @desc 导出账本数据
    * @returns {object[]} data - 格式化后的账单数据
    */
-  app.router('/get/account/export', async (ctx) => {
+  app.router('/post/account/export', async (ctx) => {
     try {
       const data = await exportAccount(event, models)
-      ctx.body = { code: 200, success: true, message: '导出成功', data }
+      ctx.body = { code: 200, success: true, message: '导出任务已创建', data }
     } catch (e) {
-      console.error('/get/account/export error:', e)
+      console.error('/post/account/export error:', e)
+      if (e.isBiz) {
+        ctx.body = { code: 400, success: false, message: e.message }
+      } else {
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
+    }
+  })
+
+  /**
+   * @desc 导入账本数据
+   */
+  app.router('/post/account/import', async (ctx) => {
+    try {
+      const data = await importAccount(event, models)
+      ctx.body = { code: 200, success: true, message: '导入任务已创建', data }
+    } catch (e) {
+      console.error('/post/account/import error:', e)
+      if (e.isBiz) {
+        ctx.body = { code: 400, success: false, message: e.message }
+      } else {
+        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+      }
+    }
+  })
+
+  /**
+   * @desc 获取任务状态
+   */
+  app.router('/get/task', async (ctx) => {
+    try {
+      const data = await getTask(event, models)
+      ctx.body = { code: 200, success: true, message: '获取成功', data }
+    } catch (e) {
+      console.error('/get/task error:', e)
       if (e.isBiz) {
         ctx.body = { code: 400, success: false, message: e.message }
       } else {

@@ -236,10 +236,17 @@ async function getCategoriesByIds(event, models) {
 }
 
 
+async function getCategoryByNames(event, models) {
+  const { getCategoryByNames: _getCategoryByNames } = require('./helper.js')
+  return _getCategoryByNames(event, models, db)
+}
+
+
 module.exports = {
   getCategories,
   getCategoryIds,
-  getCategoriesByIds, // 导出新函数
+  getCategoriesByIds,
+  getCategoryByNames,
   addCategory,
   deleteCategory,
   updateCategory,

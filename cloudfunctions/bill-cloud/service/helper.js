@@ -90,6 +90,39 @@ function parseMoney(amount) {
 }
 
 /**
+ * 尝试将字符串解析为 JSON 对象。
+ * @param {string} str - 可能为 JSON 字符串的输入。
+ * @returns {object|string} - 如果解析成功，返回对象；否则返回原始字符串。
+ */
+function tryParseJSON(str) {
+  if (typeof str !== 'string') {
+    return str
+  }
+  try {
+    return JSON.parse(str)
+  } catch (e) {
+    return str
+  }
+}
+
+/**
+ * 尝试将对象序列化为 JSON 字符串。
+ * @param {*} value - 任何值
+ * @returns {string|*} - 如果输入是对象，则返回 JSON 字符串；否则返回原始值。
+ */
+function tryStringifyJSON(value) {
+  if (typeof value === 'object' && value !== null) {
+    try {
+      return JSON.stringify(value)
+    } catch (e) {
+      // 在极少数情况下，如循环引用，stringify 可能会失败
+      return String(value)
+    }
+  }
+  return value
+}
+
+/**
  * 为账单列表手动填充 tags 数据
  * @param {Array<object>} bills - 账单对象数组
  * @param {object} models - 数据模型实例
@@ -524,6 +557,97 @@ async function deactivateAccount(event, models, dbOrTransaction) {
   }
 }
 
+async function getCategoryByNames(event, models, dbOrTransaction) {
+  const { names, type } = event.query || {}
+  const { OPENID } = cloud.getWXContext()
+  const dbInstance = dbOrTransaction || db
+
+  if (!names || names.length === 0) {
+    return []
+  }
+
+  // 1. 查找已存在的分类
+  const { data: existingData } = await dbInstance.collection('category').where({
+    name: _.in(names),
+    $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }],
+  }).get()
+
+  const existingCategories = existingData.records || []
+  const existingCategoryMap = new Map(existingCategories.map(c => [c.name, c]))
+
+  // 2. 找出需要新建的分类
+  const categoriesToCreate = names.filter(name => !existingCategoryMap.has(name))
+
+  // 3. 批量创建新分类
+  if (categoriesToCreate.length > 0) {
+    const newCategoriesData = categoriesToCreate.map(name => ({
+      name,
+      type: type || '20', // 如果没有提供类型，默认为支出
+      _openid: OPENID,
+      usedAt: Date.now(),
+    }))
+
+    await dbInstance.collection('category').add({
+      data: newCategoriesData,
+    })
+
+    // 4. 重新获取所有相关的分类以包含新建的
+     const { data: allData } = await dbInstance.collection('category').where({
+        name: _.in(names),
+        _openid: { $eq: OPENID },
+      }).get()
+    return allData.records || []
+  }
+
+  // 5. 如果没有需要创建的，直接返回已存在的
+  return existingCategories
+}
+
+async function getTagsByNames(event, models, dbOrTransaction) {
+  const { names } = event.query || {}
+  const { OPENID } = cloud.getWXContext()
+  const dbInstance = dbOrTransaction || db
+
+
+  if (!names || names.length === 0) {
+    return []
+  }
+
+  // 1. 查找已存在的标签
+  const { data: existingData } = await dbInstance.collection('tag').where({
+    name: _.in(names),
+    _openid: { $eq: OPENID },
+  }).get()
+
+  const existingTags = existingData.records || []
+  const existingTagMap = new Map(existingTags.map(t => [t.name, t]))
+
+  // 2. 找出需要新建的标签
+  const tagsToCreate = names.filter(name => !existingTagMap.has(name))
+
+  // 3. 批量创建新标签
+  if (tagsToCreate.length > 0) {
+    const newTagsData = tagsToCreate.map(name => ({
+      name,
+      _openid: OPENID,
+    }))
+
+    await dbInstance.collection('tag').add({
+      data: newTagsData,
+    })
+
+    // 4. 重新获取所有相关的标签以包含新建的
+    const { data: allData } = await dbInstance.collection('tag').where({
+        name: _.in(names),
+        _openid: { $eq: OPENID },
+    }).get()
+    return allData.records || []
+  }
+
+  // 5. 如果没有需要创建的，直接返回已存在的
+  return existingTags
+}
+
 module.exports = {
   saveBill,
   updateAccount,
@@ -534,4 +658,8 @@ module.exports = {
   deleteBills,
   deactivateAccount,
   BizError,
+  getCategoryByNames,
+  getTagsByNames,
+  tryParseJSON,
+  tryStringifyJSON,
 }

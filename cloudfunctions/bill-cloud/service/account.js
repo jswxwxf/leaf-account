@@ -2,6 +2,7 @@ const cloud = require('wx-server-sdk')
 const ExcelJS = require('exceljs')
 const dayjs = require('dayjs')
 const { saveBill } = require('./bill.js')
+const { createTask, updateTask } = require('./task.js')
 const {
   BizError,
   deactivateAccount: _deactivateAccount,
@@ -310,101 +311,323 @@ async function getAccountYears(event, models) {
 }
 
 async function exportAccount(event, models) {
-  const { accountId, year } = event.query
-  const { OPENID } = cloud.getWXContext()
+  // 1. 创建任务
+  const { taskId } = await createTask({}, models)
 
-  const yearStart = new Date(year, 0, 1).getTime()
-  const yearEnd = new Date(year, 11, 31, 23, 59, 59, 999).getTime()
+  // 2. 异步执行导出逻辑
+  setTimeout(async () => {
+    const { accountId, year } = event.query
+    const { OPENID } = cloud.getWXContext()
 
-  // 1. 获取账本信息
-  const account = await getAccount({ query: { accountId } }, models)
+    try {
+      // 2.1 更新任务状态为处理中
+      await updateTask(
+        {
+          query: { taskId },
+          body: { status: 'processing', message: { text: '正在导出账单...' } },
+        },
+        models,
+      )
 
-  // 2. 获取该年度所有账单
-  let allBills = []
-  const MAX_LIMIT = 1000
-  let skip = 0
-  while (true) {
-    const billsRes = await db
-      .collection('bill')
-      .where({
-        _openid: OPENID,
-        account: accountId,
-        datetime: _.gte(yearStart).and(_.lte(yearEnd)),
+      const yearStart = new Date(year, 0, 1).getTime()
+      const yearEnd = new Date(year, 11, 31, 23, 59, 59, 999).getTime()
+      const account = await getAccount({ query: { accountId } }, models)
+
+      let allBills = []
+      const MAX_LIMIT = 1000
+      let skip = 0
+      while (true) {
+        const billsRes = await db
+          .collection('bill')
+          .where({
+            _openid: OPENID,
+            account: accountId,
+            datetime: _.gte(yearStart).and(_.lte(yearEnd)),
+          })
+          .orderBy('datetime', 'asc')
+          .skip(skip)
+          .limit(MAX_LIMIT)
+          .get()
+        if (billsRes.data.length === 0) break
+        allBills = allBills.concat(billsRes.data)
+        skip += MAX_LIMIT
+      }
+
+      allBills = await populateCategoriesForBills(allBills, models)
+      allBills = await populateTagsForBills(allBills, models)
+
+      // 更新状态：数据拉取和处理完成
+      await updateTask(
+        {
+          query: { taskId },
+          body: {
+            status: 'processing',
+            message: { text: '账单数据拉取完成，正在生成文件...' },
+          },
+        },
+        models,
+      )
+
+      const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+      const formattedBills = allBills.map((bill) => {
+        const d = dayjs(bill.datetime)
+        return {
+          _id: bill._id,
+          date: d.format('YYYY年MM月DD日') + ' ' + weekdays[d.day()],
+          timestamp: bill.datetime,
+          type: bill.category.type === '10' ? '收入' : '支出',
+          category: bill.category.name,
+          amount: bill.amount,
+          note: bill.note || '',
+          tags: bill.tags && bill.tags.length > 0 ? bill.tags.map((t) => t.name).join(', ') : '',
+        }
       })
-      .orderBy('datetime', 'asc')
-      .skip(skip)
-      .limit(MAX_LIMIT)
-      .get()
-    if (billsRes.data.length === 0) break
-    allBills = allBills.concat(billsRes.data)
-    skip += MAX_LIMIT
-  }
 
-  // 3. 填充关联数据
-  allBills = await populateCategoriesForBills(allBills, models)
-  allBills = await populateTagsForBills(allBills, models)
+      const workbook = new ExcelJS.Workbook()
+      const worksheet = workbook.addWorksheet(`${account.title}-${year}`)
+      const title = `【${account.title}】${year}年度账单`
+      worksheet.mergeCells('A1:J1')
+      const titleCell = worksheet.getCell('A1')
+      titleCell.value = title
+      titleCell.font = { name: 'Calibri', size: 16, bold: true }
+      titleCell.alignment = { vertical: 'middle', horizontal: 'center' }
 
-  // 4. 格式化账单数据
-  const formattedBills = allBills.map((bill) => {
-    return {
-      _id: bill._id,
-      date: dayjs(bill.datetime).format('YYYY年MM月DD日'),
-      timestamp: bill.datetime,
-      type: bill.category.type === '10' ? '收入' : '支出',
-      category: bill.category.name,
-      amount: bill.amount,
-      note: bill.note || '',
-      tags: bill.tags && bill.tags.length > 0 ? bill.tags.map((t) => t.name).join(', ') : '',
+      const headerRow = worksheet.getRow(2)
+      headerRow.values = [
+        '日期',
+        '类型',
+        '分类',
+        '金额',
+        '备注',
+        '标签',
+        '每日收入',
+        '每日支出',
+        'ID',
+        '时间戳',
+      ]
+      headerRow.font = { name: 'Calibri', size: 13, bold: true }
+
+      worksheet.columns = [
+        { key: 'date', width: 25 }, // A
+        { key: 'type', width: 10 }, // B
+        { key: 'category', width: 15 }, // C
+        { key: 'amount', width: 15 }, // D
+        { key: 'note', width: 30 }, // E
+        { key: 'tags', width: 20 }, // F
+        { key: 'dailyIncome', width: 15 }, // G
+        { key: 'dailyExpense', width: 15 }, // H
+        { key: '_id', width: 30 }, // I
+        { key: 'timestamp', width: 18 }, // J
+      ]
+
+      worksheet.addRows(formattedBills)
+
+      worksheet.eachRow({ includeEmpty: false }, function (row, rowNumber) {
+        if (rowNumber <= 2) return
+        row.eachCell({ includeEmpty: true }, function (cell) {
+          cell.font = { name: 'Calibri', size: 13 }
+        })
+
+        const currentDate = row.getCell('A').value
+        const nextRow = worksheet.getRow(rowNumber + 1)
+        const nextDate = nextRow.getCell('A').value
+
+        if (currentDate !== nextDate) {
+          const range = `A3:A${worksheet.rowCount}`
+          const amountRange = `D3:D${worksheet.rowCount}`
+          const typeRange = `B3:B${worksheet.rowCount}`
+          const tagsRange = `F3:F${worksheet.rowCount}`
+
+          row.getCell('G').value = {
+            formula: `SUMIFS(${amountRange}, ${range}, "${currentDate}", ${typeRange}, "收入", ${tagsRange}, "<>*不计入*")`,
+            result: undefined,
+          }
+
+          row.getCell('H').value = {
+            formula: `SUMIFS(${amountRange}, ${range}, "${currentDate}", ${typeRange}, "支出", ${tagsRange}, "<>*不计入*")`,
+            result: undefined,
+          }
+        }
+      })
+
+      const buffer = await workbook.xlsx.writeBuffer()
+
+      // 更新状态：Excel 文件生成完成
+      await updateTask(
+        {
+          query: { taskId },
+          body: { status: 'processing', message: { text: '文件已生成，请等待下载...' } },
+        },
+        models,
+      )
+
+      const cloudPath = `exports/${OPENID}/${year}-${account.name}-${Date.now()}.xlsx`
+      const uploadRes = await cloud.uploadFile({ cloudPath, fileContent: buffer })
+
+      await updateTask(
+        {
+          query: { taskId },
+          body: {
+            status: 'completed',
+            message: { text: '导出成功' },
+            result: { fileID: uploadRes.fileID },
+          },
+        },
+        models,
+      )
+    } catch (e) {
+      console.error('导出任务失败:', e)
+      await updateTask(
+        {
+          query: { taskId },
+          body: {
+            status: 'failed',
+            message: { text: '导出失败，请稍后重试' },
+            result: { error: e.message },
+          },
+        },
+        models,
+      )
     }
-  })
+  }, 0)
 
-  const workbook = new ExcelJS.Workbook()
-  const worksheet = workbook.addWorksheet(`${account.title}-${year}`)
-
-  // 1. 添加主标题
-  const title = `【${account.title}】${year}年度账单`
-  worksheet.mergeCells('A1:H1'); // 合并A1到H1
-  const titleCell = worksheet.getCell('A1');
-  titleCell.value = title;
-  titleCell.font = { name: 'Calibri', size: 16, bold: true };
-  titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
-
-  // 2. 设置表头
-  const headerRow = worksheet.getRow(2) // 第二行作为表头
-  headerRow.values = ['日期', '类型', '分类', '金额', '备注', '标签', 'ID', '时间戳']
-  headerRow.font = { name: 'Calibri', size: 13, bold: true }
-
-  // 3. 设置列宽和key（用于数据映射）
-  worksheet.columns = [
-    { key: 'date', width: 20 },
-    { key: 'type', width: 10 },
-    { key: 'category', width: 15 },
-    { key: 'amount', width: 15 },
-    { key: 'note', width: 30 },
-    { key: 'tags', width: 20 },
-    { key: '_id', width: 40 },
-    { key: 'timestamp', width: 18 },
-  ]
-
-  // 3. 插入数据并设置字体
-  worksheet.addRows(formattedBills)
-  worksheet.eachRow({ includeEmpty: false }, function(row, rowNumber) {
-    // 设置数据行的字体，跳过标题和表头
-    if (rowNumber > 2) {
-      row.eachCell({ includeEmpty: true }, function(cell) {
-        cell.font = { name: 'Calibri', size: 13 };
-      });
-    }
-  });
-
-  const buffer = await workbook.xlsx.writeBuffer()
-
-  // 5. 上传到云存储
-  const cloudPath = `exports/${OPENID}/${year}-${account.name}-${Date.now()}.xlsx`
-  const uploadRes = await cloud.uploadFile({ cloudPath, fileContent: buffer })
-
-  return { fileID: uploadRes.fileID }
+  return { taskId }
 }
+
+async function importAccount(event, models) {
+  // 1. 创建任务
+  const { taskId } = await createTask({}, models)
+
+  // 2. 异步执行导入逻辑
+  setTimeout(async () => {
+    const { accountId, fileID } = event.query
+    const { OPENID } = cloud.getWXContext()
+    const transaction = await db.startTransaction()
+    const { saveBill: _saveBill } = require('./helper.js')
+
+    try {
+      // 2.1 更新任务状态为处理中
+      await updateTask(
+        {
+          query: { taskId },
+          body: { status: 'processing', message: { text: '正在下载并解析文件...' } },
+        },
+        models,
+      )
+
+      // 2.2 下载文件
+      const downloadRes = await cloud.downloadFile({ fileID })
+      const buffer = downloadRes.fileContent
+
+      // 2.3 解析 Excel
+      const workbook = new ExcelJS.Workbook()
+      await workbook.xlsx.load(buffer)
+      const worksheet = workbook.worksheets[0]
+
+      const billsToSave = []
+      worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+        if (rowNumber <= 2) return // 跳过标题和表头
+
+        const type = row.getCell(2).value.trim()
+        const categoryName = row.getCell(3).value.trim()
+        const amount = parseFloat(row.getCell(4).value)
+        const note = row.getCell(5).value || ''
+        const tagsRaw = row.getCell(6).value || ''
+        const datetime = new Date(row.getCell(10).value).getTime() // 使用时间戳列
+
+        if (!type || !categoryName || isNaN(amount) || isNaN(datetime)) {
+          console.warn(`Skipping invalid row ${rowNumber}:`, row.values)
+          return
+        }
+
+        const tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean)
+
+        billsToSave.push({
+          type: type === '收入' ? '10' : '20',
+          categoryName,
+          amount,
+          note,
+          datetime,
+          tags,
+        })
+      })
+
+      await updateTask(
+        {
+          query: { taskId },
+          body: {
+            status: 'processing',
+            message: { text: `文件解析完成，共发现 ${billsToSave.length} 条账单，正在导入...` },
+          },
+        },
+        models,
+      )
+
+      // 2.4 获取或创建分类和标签
+      // 2.4 获取或创建标签
+      const tagNames = [...new Set(billsToSave.flatMap((b) => b.tags))]
+      const { getCategoryByNames, getTagsByNames } = require('./helper.js')
+      const tags = await getTagsByNames({ query: { names: tagNames } }, models, transaction)
+      const tagMap = new Map(tags.map((t) => [t.name, t]))
+
+      // 2.5 批量保存账单，并在循环内处理分类
+      for (const billData of billsToSave) {
+        // 根据金额动态确定分类类型
+        const categoryType = billData.amount > 0 ? '10' : '20'
+
+        // 每次只处理一个分类，确保类型正确
+        const categories = await getCategoryByNames(
+          { query: { names: [billData.categoryName], type: categoryType } },
+          models,
+          transaction
+        )
+
+        if (!categories || categories.length === 0) {
+           console.warn(`Category not found and could not be created: ${billData.categoryName}`)
+           continue
+        }
+        const category = categories[0]
+
+        const tagIds = billData.tags.map(tagName => tagMap.get(tagName)?._id).filter(Boolean)
+
+        const billToSave = {
+          ...billData,
+          category: { _id: category._id, name: category.name, type: category.type },
+          tags: tagIds,
+        }
+        // 直接调用 helper 里的 _saveBill，并传入事务
+        await _saveBill(billToSave, accountId, models, transaction)
+      }
+
+      await transaction.commit()
+      // 2.6 更新最终状态
+      await updateTask(
+        {
+          query: { taskId },
+          body: { status: 'completed', message: { text: '导入成功' } },
+        },
+        models,
+      )
+    } catch (e) {
+      await transaction.rollback()
+      console.error('导入任务失败:', e)
+      await updateTask(
+        {
+          query: { taskId },
+          body: {
+            status: 'failed',
+            message: { text: '导入失败，请检查文件格式或联系管理员' },
+            result: { error: e.message },
+          },
+        },
+        models,
+      )
+    }
+  }, 0)
+
+  return { taskId }
+}
+
 
 module.exports = {
   getAccount,
@@ -414,4 +637,5 @@ module.exports = {
   updateAccount,
   getAccountYears,
   exportAccount,
+  importAccount,
 }

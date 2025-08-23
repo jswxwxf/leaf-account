@@ -87,11 +87,27 @@ export function deactivateAccount(accountId) {
  * @returns {Promise<any>}
  */
 export function exportAccount(accountId, year) {
-  return get('bill-cloud', {
-    $url: '/get/account/export',
+  return post('bill-cloud', {
+    $url: '/post/account/export',
     query: {
       accountId,
       year,
+    },
+  })
+}
+
+/**
+ * 导入账本数据
+ * @param {string} accountId - 账本ID
+ * @param {string} fileID - 文件ID
+ * @returns {Promise<any>}
+ */
+export function importAccount(accountId, fileID) {
+  return post('bill-cloud', {
+    $url: '/post/account/import',
+    query: {
+      accountId,
+      fileID,
     },
   })
 }

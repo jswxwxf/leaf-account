@@ -101,3 +101,19 @@ export function isCurrentPage(route) {
   }
   return pages[pages.length - 1].route === route
 }
+
+/**
+ * 尝试解析 JSON 字符串，失败则返回原值
+ * @param {*} value
+ * @returns {*}
+ */
+export function tryParseJson(value) {
+  if (typeof value !== 'string') {
+    return value
+  }
+  try {
+    return JSON.parse(value)
+  } catch (e) {
+    return value
+  }
+}
