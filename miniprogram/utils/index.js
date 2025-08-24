@@ -1,6 +1,11 @@
 import { ref } from '@vue-mini/core'
 import { toRPN, calculateRPN } from './calculator.js'
 
+/**
+ * 解析金额字符串，支持简单的四则运算
+ * @param {number|string} value - 需要解析的值，可以是数字或包含运算的字符串
+ * @returns {number} - 解析并计算后的数字，如果无效则返回 NaN
+ */
 export function parseMoney(value) {
   if (typeof value === 'number') {
     return value
@@ -117,6 +122,11 @@ export function tryParseJson(value) {
   }
 }
 
+/**
+ * 将微信小程序异步 API 转换为 Promise 风格
+ * @param {Function} func - 需要转换的函数
+ * @returns {function(params: object): Promise<any>} - 返回一个 Promise 化的函数
+ */
 export function promisic(func) {
   return (params = {}) => {
     return new Promise((resolve, reject) => {
@@ -130,6 +140,11 @@ export function promisic(func) {
   }
 }
 
+/**
+ * 将 px 单位转换为 rpx 单位
+ * @param {number} pxNumber - px 值
+ * @returns {number} - 转换后的 rpx 值
+ */
 export const px2rpx = function (pxNumber) {
   const { screenWidth } = wx.getWindowInfo()
   return (750 / screenWidth) * pxNumber
