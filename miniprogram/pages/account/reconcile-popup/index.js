@@ -21,6 +21,7 @@ defineComponent({
       systemBalance.value = balance
       actualBalance.value = null // 重置输入框
       visible.value = true
+      form.value.clearErrors()
       return new Promise((resolve, reject) => {
         _resolve = resolve
         _reject = reject
