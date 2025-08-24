@@ -17,6 +17,9 @@
       <scroll-view
         scroll-y
         class="absolute inset-0"
+        refresher-enabled="true"
+        refresher-triggered="{{ refreshing }}"
+        @refresherrefresh="handleRefresh"
         lower-threshold="100"
         @scrolltolower="loadMore"
         scroll-top="{{ scrollTop }}"

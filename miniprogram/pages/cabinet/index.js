@@ -1,4 +1,4 @@
-import { defineComponent, ref, onShow, onReady, provide } from '@vue-mini/core'
+import { defineComponent, ref, onShow, onReady, provide, onPullDownRefresh } from '@vue-mini/core'
 import Dialog from '@vant/weapp/dialog/dialog.js'
 import { getAccount, getAccounts, updateAccount, deactivateAccount } from '@/api/account.js'
 import { saveTransfer } from '@/api/bill.js'
@@ -15,6 +15,11 @@ defineComponent({
 
     onReady(() => {
       accountPopup.value = selectComponent('#account-popup')
+    })
+
+    onPullDownRefresh(async () => {
+      await fetchAccounts()
+      wx.stopPullDownRefresh()
     })
 
     const doUpdateAccount = async (oldAccount, dataToUpdate, index) => {

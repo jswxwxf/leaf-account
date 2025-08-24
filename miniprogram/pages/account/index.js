@@ -124,6 +124,16 @@ defineComponent({
     // 监听月份或类型变化，自动滚动到顶部
     watch([monthValue, typeValue], scrollToTop)
 
+    const refreshing = ref(false)
+    const handleRefresh = async () => {
+      refreshing.value = true
+      try {
+        await state.loadData(true)
+      } finally {
+        refreshing.value = false
+      }
+    }
+
     const handleAddBill = async () => {
       await processBill(newBill())
       scrollToTop()
@@ -306,6 +316,8 @@ defineComponent({
       scrollTop,
       imagePath,
       textContent,
+      refreshing,
+      handleRefresh,
       handleActionSelect,
       handleAddBill,
       handleEditBill,
