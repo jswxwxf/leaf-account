@@ -3,8 +3,7 @@ import { defineComponent, ref, onReady, onHide } from '@vue-mini/core'
 defineComponent({
   setup(props, { triggerEvent, selectComponent }) {
     const visible = ref(false)
-    const systemBalance = ref(0)
-    const actualBalance = ref(null)
+    const formData = ref()
     const form = ref()
     let _resolve
     let _reject
@@ -18,8 +17,11 @@ defineComponent({
     })
 
     const show = (balance) => {
-      systemBalance.value = balance
-      actualBalance.value = null // 重置输入框
+      // 重置输入框
+      formData.value = {
+        systemBalance: balance,
+        actualBalance: null,
+      }
       visible.value = true
       form.value.clearErrors()
       return new Promise((resolve, reject) => {
@@ -33,7 +35,7 @@ defineComponent({
     }
 
     const onActualBalanceChange = (e) => {
-      actualBalance.value = e.detail
+      formData.value.actualBalance = e.detail
     }
 
     const handleClose = () => {
@@ -42,21 +44,20 @@ defineComponent({
     }
 
     const handleConfirm = async () => {
-      const result = await form.value.validate({ actualBalance: actualBalance.value })
+      const result = await form.value.validate(formData.value)
       if (result.isInvalid) {
         return
       }
 
       hide()
       _resolve({
-        actualBalance: parseFloat(actualBalance.value) || 0,
+        actualBalance: parseFloat(formData.value.actualBalance) || 0,
       })
     }
 
     return {
       visible,
-      systemBalance,
-      actualBalance,
+      formData,
       show,
       onActualBalanceChange,
       handleClose,

@@ -6,9 +6,9 @@
     <view class="py-4 w-[80vw]">
       <bill-form id="reconcileForm">
         <van-cell-group>
-          <van-field value="{{ '¥ ' + utils.formatMoney(systemBalance) }}" label="当前系统余额" readonly />
+          <van-field value="{{ '¥ ' + utils.formatMoney(formData.systemBalance) }}" label="当前系统余额" readonly />
           <money-field
-            value="{{ actualBalance }}"
+            value="{{ formData.actualBalance }}"
             label="实际余额"
             placeholder="请输入核对后的实际余额"
             field="actualBalance"
