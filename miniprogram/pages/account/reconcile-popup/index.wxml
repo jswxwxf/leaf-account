@@ -12,7 +12,7 @@
             label="实际余额"
             placeholder="请输入核对后的实际余额"
             field="actualBalance"
-            rule="requiredPositive"
+            rule="required|positive"
             data-field="actualBalance"
             @change="onActualBalanceChange"
           />
