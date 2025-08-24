@@ -45,10 +45,15 @@ export default function store() {
   }
 
   async function validate(data) {
-    const result = await _validate(data, rules)
-    fields.value = result.fields
-    errors.value = result.errors
-    return result
+    return new Promise(async (resolve) => {
+      // 给 parseMoney 一点时间
+      setTimeout(async () => {
+        const result = await _validate(data, rules)
+        fields.value = result.fields
+        errors.value = result.errors
+        resolve(result)
+      }, 500)
+    })
   }
 
   function clearErrors() {

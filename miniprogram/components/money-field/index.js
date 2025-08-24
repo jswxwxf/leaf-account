@@ -48,7 +48,8 @@ defineComponent({
       const rawValue = event.detail.value
       const num = parseMoney(rawValue)
 
-      if (isNaN(num)) {
+      // 给个最大长度，防止公式过于复杂
+      if (isNaN(num) || rawValue.length >= 20) {
         displayValue.value = ''
         triggerEvent('change', 0) // 当输入无效时，派发 0
       } else {
