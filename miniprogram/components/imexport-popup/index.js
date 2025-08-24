@@ -1,5 +1,6 @@
 import { defineComponent, ref, onUnload } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast'
+import { promisic } from '@/utils/index.js'
 import { getAccountYears, exportAccount, importAccount } from '@/api/account.js'
 import { getTask } from '@/api/task.js'
 
@@ -27,12 +28,8 @@ function useTaskWorker() {
       if (fileList.length === 0) throw new Error('获取临时链接失败')
 
       const { tempFileURL } = fileList[0]
-      const downloadRes = await new Promise((resolve, reject) => {
-        wx.downloadFile({
-          url: tempFileURL,
-          success: resolve,
-          fail: reject,
-        })
+      const downloadRes = await promisic(wx.downloadFile)({
+        url: tempFileURL,
       })
 
       if (downloadRes.statusCode !== 200) {
@@ -40,13 +37,9 @@ function useTaskWorker() {
       }
 
       wx.hideLoading()
-      await new Promise((resolve, reject) => {
-        wx.openDocument({
-          filePath: downloadRes.tempFilePath,
-          showMenu: true,
-          success: resolve,
-          fail: reject,
-        })
+      await promisic(wx.openDocument)({
+        filePath: downloadRes.tempFilePath,
+        showMenu: true,
       })
     } catch (error) {
       wx.hideLoading()

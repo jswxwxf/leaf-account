@@ -1,7 +1,6 @@
 import { ref } from '@vue-mini/core'
 import { toRPN, calculateRPN } from './calculator.js'
 
-
 export function parseMoney(value) {
   if (typeof value === 'number') {
     return value
@@ -116,4 +115,22 @@ export function tryParseJson(value) {
   } catch (e) {
     return value
   }
+}
+
+export function promisic(func) {
+  return (params = {}) => {
+    return new Promise((resolve, reject) => {
+      const args = {
+        ...params,
+        success: resolve,
+        fail: reject,
+      }
+      func(args)
+    })
+  }
+}
+
+export const px2rpx = function (pxNumber) {
+  const { screenWidth } = wx.getWindowInfo()
+  return (750 / screenWidth) * pxNumber
 }
