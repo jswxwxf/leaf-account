@@ -127,7 +127,7 @@ export default function store() {
       month: monthValue.value,
       type: typeValue.value,
     }
-    resetAndFetchBills(query)
+    return resetAndFetchBills(query)
   }
 
   // 监听筛选条件变化，自动重新获取数据
