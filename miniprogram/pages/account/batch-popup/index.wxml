@@ -65,7 +65,7 @@
                 value="{{ bill.note }}"
                 placeholder="输入备注"
                 field="note"
-                rule="required|max:15"
+                rule="required|max:20"
                 show-error="{{ false }}"
                 @change="handleFormChange"
                 data-field="note"
