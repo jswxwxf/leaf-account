@@ -123,7 +123,7 @@ defineComponent({
     const mode = ref() // 'import' | 'export'
     const year = ref()
     const yearOptions = ref([])
-    const fileList = ref([])
+    const uploadFile = ref(null)
 
     const {
       progress: taskProgress,
@@ -142,16 +142,19 @@ defineComponent({
       year.value = res.data[0]
     }
 
+    const onFileChange = (payload) => {
+      uploadFile.value = payload
+    }
+
     const onTap = async () => {
       if (mode.value === 'export') {
         await runTask(() => exportAccount(currentAccount.value._id, year.value))
       } else {
-        if (fileList.value.length === 0) {
+        if (!uploadFile.value) {
           wx.showToast({ title: '请选择文件', icon: 'none' })
           return
         }
-        const file = fileList.value[0]
-        await runTask(() => importAccount(currentAccount.value._id, file.url))
+        await runTask(() => importAccount(currentAccount.value._id, uploadFile.value.path))
       }
       onClose()
     }
@@ -190,7 +193,7 @@ defineComponent({
       currentAccount,
       year,
       yearOptions,
-      fileList,
+      uploadFile,
       taskProgress,
       taskStatusText,
       isTaskRunning,
@@ -199,6 +202,7 @@ defineComponent({
       onTap,
       onClose,
       stopTask,
+      onFileChange,
     }
   },
 })

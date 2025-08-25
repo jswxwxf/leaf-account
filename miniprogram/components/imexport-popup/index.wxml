@@ -15,12 +15,12 @@
         </van-dropdown-menu>
       </block>
       <block wx:else>
-        <van-uploader
-          file-list="{{ fileList }}"
-          max-count="1"
-          accept="file"
-          class="flex-1"
-        />
+        <file-uploader class="w-48" extension="{{['xls', 'xlsx']}}" bind:change="onFileChange">
+          <view class="flex items-center justify-center h-full text-gray-400">
+            <van-icon name="plus" size="20px" />
+            <view class=" ml-2">点击选择文件</view>
+          </view>
+        </file-uploader>
       </block>
       <van-button type="primary" custom-class="w-20" @tap="onTap" disabled="{{ isTaskRunning }}">{{ mode === 'import' ? '导入' : '导出' }}</van-button>
     </view>
