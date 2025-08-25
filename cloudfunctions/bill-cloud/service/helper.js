@@ -647,40 +647,68 @@ async function getTagsByNames(event, models, dbOrTransaction) {
     return []
   }
 
-  const { data: existingData } = await dbInstance
+  const finalTags = []
+  const tagMap = new Map()
+
+  // 1. 查找私有标签
+  const { data: privateTags } = await dbInstance
     .collection('tag')
     .where({
+      _openid: OPENID,
       name: _.in(names),
-      _openid: { $eq: OPENID },
     })
     .get()
 
-  const existingTags = existingData || []
-  const existingTagMap = new Map(existingTags.map((t) => [t.name, t]))
+  for (const tag of privateTags) {
+    if (!tagMap.has(tag.name)) {
+      finalTags.push(tag)
+      tagMap.set(tag.name, tag)
+    }
+  }
 
-  const tagsToCreate = names.filter((name) => !existingTagMap.has(name))
+  // 2. 查找公共标签
+  const remainingNames = names.filter((name) => !tagMap.has(name))
+  if (remainingNames.length > 0) {
+    const { data: publicTags } = await dbInstance
+      .collection('tag')
+      .where({
+        _openid: _.exists(false),
+        name: _.in(remainingNames),
+      })
+      .get()
 
+    for (const tag of publicTags) {
+      if (!tagMap.has(tag.name)) {
+        finalTags.push(tag)
+        tagMap.set(tag.name, tag)
+      }
+    }
+  }
+
+  // 3. 创建新的私有标签
+  const tagsToCreate = names.filter((name) => !tagMap.has(name))
   if (tagsToCreate.length > 0) {
     const newTagsData = tagsToCreate.map((name) => ({
       name,
       _openid: OPENID,
+      createdAt: Date.now(),
     }))
 
-    await dbInstance.collection('tag').add({
+    const createResult = await dbInstance.collection('tag').add({
       data: newTagsData,
     })
 
-    const { data: allData } = await dbInstance
+    const { data: newCreatedTags } = await dbInstance
       .collection('tag')
       .where({
-        name: _.in(names),
-        _openid: { $eq: OPENID },
+        _id: _.in(createResult._ids),
       })
       .get()
-    return allData || []
+
+    finalTags.push(...newCreatedTags)
   }
 
-  return existingTags
+  return finalTags
 }
 
 /**

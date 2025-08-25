@@ -102,7 +102,9 @@ function useTaskWorker() {
             resolve(task)
           } else if (task.status === 'failed') {
             clearTaskInterval()
-            const err = new Error(message.text || '任务执行失败')
+            const errorText = message.text || '任务执行失败'
+            Toast.fail(errorText)
+            const err = new Error(errorText)
             isRunning.value = false
             reject(err)
           }
@@ -199,6 +201,7 @@ defineComponent({
       } catch (err) {
         // 错误已在 useTaskWorker 中处理，这里可以根据需要添加额外处理
         console.error('onTap task failed:', err)
+        // useTaskWorker 中已经处理了 Toast，这里只记录日志即可
       }
     }
 
