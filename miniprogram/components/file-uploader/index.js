@@ -8,11 +8,16 @@ defineComponent({
       type: Array,
       value: [],
     },
+    disabled: {
+      type: Boolean,
+      value: false,
+    },
   },
   setup(props, { triggerEvent }) {
     const fileName = ref('')
 
     const onTap = async () => {
+      if (props.disabled) return
       try {
         const res = await promisic(wx.chooseMessageFile)({
           count: 1,

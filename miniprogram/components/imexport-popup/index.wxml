@@ -15,7 +15,7 @@
         </van-dropdown-menu>
       </block>
       <block wx:else>
-        <file-uploader id="file-uploader" class="w-48" extension="{{['xls', 'xlsx']}}" bind:change="onFileChange">
+        <file-uploader id="file-uploader" class="w-48" extension="{{['xls', 'xlsx']}}" bind:change="onFileChange" disabled="{{isTaskRunning}}">
           <view class="flex items-center justify-center h-full text-gray-400">
             <van-icon name="plus" size="20px" />
             <view class=" ml-2">点击选择文件</view>

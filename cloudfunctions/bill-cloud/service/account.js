@@ -484,11 +484,9 @@ async function importAccount(event, models) {
 
       // 清空账本数据
       await db.collection('bill').where({ account: accountId, _openid: OPENID }).remove()
-      await db.collection('category').where({ account: accountId, _openid: OPENID }).remove()
-      await db.collection('tag').where({ account: accountId, _openid: OPENID }).remove()
       await models.account.update({
         filter: { where: { _id: { $eq: accountId } } },
-        data: { balance: 0 },
+        data: { balance: 0, totalIncome: 0, totalExpense: 0 },
       })
 
       let processedCount = 0

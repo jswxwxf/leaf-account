@@ -97,6 +97,7 @@ function useTaskWorker() {
           } else if (task.status === 'completed') {
             clearTaskInterval()
             progress.value = 100
+            isRunning.value = false
             // 任务成功后，直接 resolve 任务对象，由调用方决定后续操作
             resolve(task)
           } else if (task.status === 'failed') {
@@ -166,6 +167,7 @@ defineComponent({
     }
 
     const onTap = async () => {
+      if (isTaskRunning.value) return
       try {
         if (mode.value === 'export') {
           const task = await runTask(() => exportAccount(currentAccount.value._id, year.value))
@@ -185,15 +187,18 @@ defineComponent({
           // 导入成功后，直接提示
           Toast.success('导入任务已成功')
         }
+        onClose()
       } catch (err) {
         // 错误已在 useTaskWorker 中处理，这里可以根据需要添加额外处理
         console.error('onTap task failed:', err)
-      } finally {
-        onClose()
       }
     }
 
     const onClose = () => {
+      if (isTaskRunning.value) {
+        Toast('任务正在进行中，请勿关闭')
+        return
+      }
       visible.value = false
       stopTask()
       if (_reject) {
@@ -210,11 +215,12 @@ defineComponent({
       selectComponent('#file-uploader')?.reset()
       uploadFile.value = null
 
-      await fetchYears(account._id)
-
-      if (mode.value === 'export' && yearOptions.value.length === 0) {
-        Toast('没有数据可以导出')
-        return Promise.reject(new Error('没有数据可以导出'))
+      if (mode.value === 'export') {
+        await fetchYears(account._id)
+        if (yearOptions.value.length === 0) {
+          Toast('没有数据可以导出')
+          return Promise.reject(new Error('没有数据可以导出'))
+        }
       }
 
       visible.value = true
