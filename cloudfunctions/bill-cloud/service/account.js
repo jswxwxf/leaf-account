@@ -275,55 +275,72 @@ async function exportAccount(event, models) {
   const { taskId } = await createTask({}, models)
 
   setTimeout(async () => {
-    const { accountId, year } = event.query
+    const { accountId } = event.query
     const { OPENID } = cloud.getWXContext()
 
     try {
+      // 1. 初始化任务状态
       await updateTask(
         {
           query: { taskId },
-          body: { status: 'processing', message: { text: '正在导出账单...' } },
+          body: { status: 'processing', message: { text: '正在准备导出...', progress: 0 } },
         },
         models,
       )
 
-      const yearStart = new Date(year, 0, 1).getTime()
-      const yearEnd = new Date(year, 11, 31, 23, 59, 59, 999).getTime()
       const account = await getAccount({ query: { accountId } }, models)
 
+      // 2. 分批拉取所有账单，并更新进度 (0% -> 40%)
+      const countResult = await db.collection('bill').where({ _openid: OPENID, account: accountId }).count()
+      const totalBills = countResult.total
       let allBills = []
-      const MAX_LIMIT = 1000
-      let skip = 0
-      while (true) {
-        const billsRes = await db
-          .collection('bill')
-          .where({
+      if (totalBills > 0) {
+        const MAX_LIMIT = 1000
+        let skip = 0
+        while (skip < totalBills) {
+          const billsRes = await db.collection('bill').where({
             _openid: OPENID,
             account: accountId,
-            datetime: _.gte(yearStart).and(_.lte(yearEnd)),
-          })
-          .orderBy('datetime', 'asc')
-          .skip(skip)
-          .limit(MAX_LIMIT)
-          .get()
-        if (billsRes.data.length === 0) break
-        allBills = allBills.concat(billsRes.data)
-        skip += MAX_LIMIT
+          }).orderBy('datetime', 'asc').skip(skip).limit(MAX_LIMIT)
+            .get()
+
+          allBills = allBills.concat(billsRes.data)
+          skip += MAX_LIMIT
+          const progress = Math.round((allBills.length / totalBills) * 40)
+          await updateTask({
+            query: { taskId },
+            body: { status: 'processing', message: { text: `正在拉取数据... (${allBills.length}/${totalBills})`, progress } },
+          }, models)
+        }
       }
 
-      allBills = await populateCategoriesForBills(allBills, models)
-      allBills = await populateTagsForBills(allBills, models)
+      // 3. 分批处理账单（关联分类和标签），并更新进度 (40% -> 80%)
+      await updateTask({
+        query: { taskId },
+        body: { status: 'processing', message: { text: '数据拉取完成，正在处理...', progress: 40 } },
+      }, models)
 
-      await updateTask(
-        {
-          query: { taskId },
-          body: {
-            status: 'processing',
-            message: { text: '账单数据拉取完成，正在生成文件...' },
-          },
-        },
-        models,
-      )
+      if (totalBills > 0) {
+        let processedCount = 0
+        for (let i = 0; i < allBills.length; i += 20) {
+          const batch = allBills.slice(i, i + 20)
+          const populatedBatch = await populateCategoriesForBills(batch, models)
+          const finalBatch = await populateTagsForBills(populatedBatch, models)
+          allBills.splice(i, finalBatch.length, ...finalBatch)
+          processedCount += batch.length
+          const progress = 40 + Math.round((processedCount / totalBills) * 40)
+          await updateTask({
+            query: { taskId },
+            body: { status: 'processing', message: { text: `正在处理数据... (${processedCount}/${totalBills})`, progress } },
+          }, models)
+        }
+      }
+
+      // 4. 生成 Excel 文件，并更新进度 (80% -> 90%)
+      await updateTask({
+        query: { taskId },
+        body: { status: 'processing', message: { text: '数据处理完成，正在生成文件...', progress: 80 } },
+      }, models)
 
       const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
       const formattedBills = allBills.map((bill) => {
@@ -341,76 +358,59 @@ async function exportAccount(event, models) {
       })
 
       const workbook = new ExcelJS.Workbook()
-      const worksheet = workbook.addWorksheet(`${account.title}-${year}`)
-      const title = `【${account.title}】${year}年度账单`
+      const worksheet = workbook.addWorksheet(`${account.title}`)
+      const title = `【${account.title}】账单`
       worksheet.mergeCells('A1:J1')
       const titleCell = worksheet.getCell('A1')
       titleCell.value = title
       titleCell.font = { name: 'Calibri', size: 16, bold: true }
       titleCell.alignment = { vertical: 'middle', horizontal: 'center' }
-
       const headerRow = worksheet.getRow(2)
-      headerRow.values = [
-        '日期', '类型', '分类', '金额', '备注', '标签', '每日收入', '每日支出', 'ID', '时间戳',
-      ]
+      headerRow.values = ['日期', '类型', '分类', '金额', '备注', '标签', '每日收入', '每日支出', 'ID', '时间戳']
       headerRow.font = { name: 'Calibri', size: 13, bold: true }
-
       worksheet.columns = [
         { key: 'date', width: 25 }, { key: 'type', width: 10 }, { key: 'category', width: 15 },
         { key: 'amount', width: 15 }, { key: 'note', width: 30 }, { key: 'tags', width: 20 },
         { key: 'dailyIncome', width: 15 }, { key: 'dailyExpense', width: 15 },
         { key: '_id', width: 30 }, { key: 'timestamp', width: 18 },
       ]
-
       worksheet.addRows(formattedBills)
-
       worksheet.eachRow({ includeEmpty: false }, function (row, rowNumber) {
         if (rowNumber <= 2) return
-        row.eachCell({ includeEmpty: true }, function (cell) {
-          cell.font = { name: 'Calibri', size: 13 }
-        })
-
+        row.eachCell({ includeEmpty: true }, function (cell) { cell.font = { name: 'Calibri', size: 13 } })
         const currentDate = row.getCell('A').value
         const nextRow = worksheet.getRow(rowNumber + 1)
         const nextDate = nextRow.getCell('A').value
-
         if (currentDate !== nextDate) {
           const range = `A3:A${worksheet.rowCount}`
           const amountRange = `D3:D${worksheet.rowCount}`
           const typeRange = `B3:B${worksheet.rowCount}`
           const tagsRange = `F3:F${worksheet.rowCount}`
-
-          row.getCell('G').value = {
-            formula: `SUMIFS(${amountRange}, ${range}, "${currentDate}", ${typeRange}, "收入", ${tagsRange}, "<>*不计入*")`,
-            result: undefined,
-          }
-
-          row.getCell('H').value = {
-            formula: `SUMIFS(${amountRange}, ${range}, "${currentDate}", ${typeRange}, "支出", ${tagsRange}, "<>*不计入*")`,
-            result: undefined,
-          }
+          row.getCell('G').value = { formula: `SUMIFS(${amountRange}, ${range}, "${currentDate}", ${typeRange}, "收入", ${tagsRange}, "<>*不计入*")`, result: undefined }
+          row.getCell('H').value = { formula: `SUMIFS(${amountRange}, ${range}, "${currentDate}", ${typeRange}, "支出", ${tagsRange}, "<>*不计入*")`, result: undefined }
         }
       })
-
       const buffer = await workbook.xlsx.writeBuffer()
 
+      // 5. 上传文件，并更新进度 (90% -> 100%)
       await updateTask(
         {
           query: { taskId },
-          body: { status: 'processing', message: { text: '文件已生成，请等待下载...' } },
+          body: { status: 'processing', message: { text: '文件已生成，正在上传...', progress: 90 } },
         },
         models,
       )
 
-      const cloudPath = `exports/${OPENID}/${year}-${account.name}-${Date.now()}.xlsx`
+      const cloudPath = `exports/${OPENID}/${account.name}-${Date.now()}.xlsx`
       const uploadRes = await cloud.uploadFile({ cloudPath, fileContent: buffer })
 
+      // 6. 完成任务
       await updateTask(
         {
           query: { taskId },
           body: {
             status: 'completed',
-            message: { text: '导出成功' },
+            message: { text: '导出成功', progress: 100 },
             result: { fileID: uploadRes.fileID },
           },
         },

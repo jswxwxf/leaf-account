@@ -86,12 +86,11 @@ export function deactivateAccount(accountId) {
  * @param {number} year - 年份
  * @returns {Promise<any>}
  */
-export function exportAccount(accountId, year) {
+export function exportAccount(accountId) {
   return post('bill-cloud', {
     $url: '/post/account/export',
     query: {
       accountId,
-      year,
     },
   })
 }

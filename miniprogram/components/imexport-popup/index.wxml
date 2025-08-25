@@ -5,14 +5,9 @@
     </view>
     <view class="flex items-center justify-between gap-2">
       <block wx:if="{{ mode === 'export' }}">
-        <van-dropdown-menu
-          overlay="{{ false }}"
-          style="--dropdown-menu-height: 45px; --dropdown-menu-title-disabled-text-color: #323233"
-          title-class="{{ yearOptions.length <= 1 ? 'year-dropdown-title--disabled' : '' }}"
-          class="w-48"
-        >
-          <van-dropdown-item value="{{ year }}" options="{{ yearOptions }}" disabled="{{ yearOptions.length <= 1 }}" />
-        </van-dropdown-menu>
+        <view class="flex-1 text-sm text-gray-500 w-48 text-center">
+          {{ yearRange.start }}<block wx:if="{{ yearRange.start !== yearRange.end }}"> - {{ yearRange.end }}</block> 所有帐单
+        </view>
       </block>
       <block wx:else>
         <file-uploader id="file-uploader" class="w-48" extension="{{['xls', 'xlsx']}}" bind:change="onFileChange" disabled="{{isTaskRunning}}">

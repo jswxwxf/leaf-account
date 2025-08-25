@@ -140,7 +140,7 @@ defineComponent({
     const currentAccount = ref(null)
     const mode = ref() // 'import' | 'export'
     const year = ref()
-    const yearOptions = ref([])
+    const yearRange = ref()
     const uploadFile = ref(null)
 
     const {
@@ -158,8 +158,16 @@ defineComponent({
 
     const fetchYears = async (accountId) => {
       const res = await getAccountYears(accountId)
-      yearOptions.value = res.data.map((y) => ({ text: `${y}年`, value: y }))
-      year.value = res.data[0]
+      const years = res.data || []
+      if (years.length > 0) {
+        yearRange.value = {
+          start: `${years[0]}年`,
+          end: `${years[years.length - 1]}年`,
+        }
+      } else {
+        yearRange.value = { start: 'N/A', end: 'N/A' }
+      }
+      return years.length > 0
     }
 
     const onFileChange = (e) => {
@@ -170,7 +178,7 @@ defineComponent({
       if (isTaskRunning.value) return
       try {
         if (mode.value === 'export') {
-          const task = await runTask(() => exportAccount(currentAccount.value._id, year.value))
+          const task = await runTask(() => exportAccount(currentAccount.value._id))
           // 导出成功后，手动调用下载
           if (task && task.result && task.result.fileID) {
             await downloadAndOpenFile(task.result.fileID)
@@ -216,8 +224,8 @@ defineComponent({
       uploadFile.value = null
 
       if (mode.value === 'export') {
-        await fetchYears(account._id)
-        if (yearOptions.value.length === 0) {
+        const hasData = await fetchYears(account._id)
+        if (!hasData) {
           Toast('没有数据可以导出')
           return Promise.reject(new Error('没有数据可以导出'))
         }
@@ -235,8 +243,7 @@ defineComponent({
       visible,
       mode,
       currentAccount,
-      year,
-      yearOptions,
+      yearRange,
       uploadFile,
       taskProgress,
       taskStatusText,

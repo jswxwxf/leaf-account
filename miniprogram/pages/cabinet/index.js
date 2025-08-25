@@ -121,6 +121,11 @@ defineComponent({
     const handleImport = async (e) => {
       const { index } = e.currentTarget.dataset
       const account = e.detail
+      await Dialog.confirm({
+        title: '确认导入',
+        message: `导入新的账单数据将会覆盖并清空「${account.title}」账本的所有现有数据，此操作不可恢复，确定要继续吗？`,
+        confirmButtonColor: '#fa5151',
+      })
       await showImexportPopup(account, { mode: 'import' })
     }
 
