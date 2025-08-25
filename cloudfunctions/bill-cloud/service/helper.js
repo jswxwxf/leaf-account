@@ -11,16 +11,6 @@ class BizError extends Error {
   }
 }
 
-/**
- * 原子化地更新用户的账户汇总信息。
- * 如果账户不存在，则会自动创建。
- * @param {object} event - 包含增量信息的对象
- * @param {number} event.balanceIncrement - 余额的变动量
- * @param {number} event.incomeIncrement - 总收入的变动量
- * @param {number} event.expenseIncrement - 总支出的变动量
- * @param {object} models - 数据模型实例
- * @param {object} [dbOrTransaction] - 数据库或事务实例，如果未提供，则使用默认的 db 实例
- */
 async function updateAccount(event, models, dbOrTransaction) {
   const { accountId } = event.query || {}
   const { balanceIncrement, incomeIncrement, expenseIncrement } = event.body || {}
@@ -33,27 +23,24 @@ async function updateAccount(event, models, dbOrTransaction) {
 
   const accountCollection = dbInstance.collection('account')
 
-  // 构建查询条件
   const where = {
     _id: accountId,
-    _openid: OPENID, // 确保用户只能更新自己的账户
+    _openid: OPENID,
   }
 
-  // 1. 查询账户是否存在
   const { data: accounts } = await accountCollection.where(where).limit(1).get()
 
   if (!accounts || accounts.length === 0) {
     throw new Error(`找不到 ID 为 ${accountId} 的账户，或没有权限操作。`)
   }
 
-  // 2. 更新账户
   const updateData = {}
   if (balanceIncrement) updateData.balance = _.inc(balanceIncrement)
   if (incomeIncrement) updateData.totalIncome = _.inc(incomeIncrement)
   if (expenseIncrement) updateData.totalExpense = _.inc(expenseIncrement)
   if (title) updateData.title = title
 
-  if (Object.keys(updateData).length === 0) return accounts[0] // 如果没有要更新的，直接返回当前账户信息
+  if (Object.keys(updateData).length === 0) return accounts[0]
 
   updateData.updatedAt = Date.now()
   updateData.updatedBy = OPENID
@@ -67,33 +54,20 @@ async function updateAccount(event, models, dbOrTransaction) {
   if (newAccounts && newAccounts.length > 0) {
     const account = newAccounts[0]
     delete account._openid
-    account.isOpened = true // 既然能更新，说明是用户自己的私有账本
+    account.isOpened = true
     return account
   }
   throw new Error('更新用户账户失败')
 }
 
-/**
- * 将金额四舍五入到两位小数。
- * @param {number|string} amount - 金额
- * @returns {number} - 处理后的金额
- */
 function parseMoney(amount) {
   const num = parseFloat(amount)
   if (isNaN(num)) {
     return 0
   }
-  // 使用 toFixed(2) 来进行正确的四舍五入并得到一个字符串
-  // 然后使用 Number() 将其转换回数字类型。
-  // 这是处理货币和需要精确小数位数的场景下的标准做法。
   return Number(num.toFixed(2))
 }
 
-/**
- * 尝试将字符串解析为 JSON 对象。
- * @param {string} str - 可能为 JSON 字符串的输入。
- * @returns {object|string} - 如果解析成功，返回对象；否则返回原始字符串。
- */
 function tryParseJSON(str) {
   if (typeof str !== 'string') {
     return str
@@ -105,29 +79,17 @@ function tryParseJSON(str) {
   }
 }
 
-/**
- * 尝试将对象序列化为 JSON 字符串。
- * @param {*} value - 任何值
- * @returns {string|*} - 如果输入是对象，则返回 JSON 字符串；否则返回原始值。
- */
 function tryStringifyJSON(value) {
   if (typeof value === 'object' && value !== null) {
     try {
       return JSON.stringify(value)
     } catch (e) {
-      // 在极少数情况下，如循环引用，stringify 可能会失败
       return String(value)
     }
   }
   return value
 }
 
-/**
- * 为账单列表手动填充 tags 数据
- * @param {Array<object>} bills - 账单对象数组
- * @param {object} models - 数据模型实例
- * @returns {Promise<Array<object>>} - 填充了 tags 的账单对象数组
- */
 async function populateTagsForBills(bills, models) {
   if (bills.length > 0) {
     const allTagIds = [...new Set(bills.flatMap((bill) => bill.tags || []).filter(Boolean))]
@@ -146,39 +108,33 @@ async function populateTagsForBills(bills, models) {
   return bills
 }
 
-/**
- * 核心保存账单逻辑（内部函数，需在事务中调用）。
- * @param {object} billToSave - 准备存入数据库的账单对象
- * @param {string} accountId - 账户 ID
- * @param {object} models - 数据模型实例
- * @param {object} dbOrTransaction - 数据库事务实例
- * @returns {object} - 保存后的账单 ID
- */
 async function saveBill(billToSave, accountId, models, dbOrTransaction) {
   const { OPENID } = cloud.getWXContext()
-  const originalBill = { ...billToSave } // a copy for returning
+  const originalBill = { ...billToSave }
   let savedBillId
 
-  // 确保金额正负与类别匹配
   if (billToSave.category?.type === '10' && billToSave.amount < 0) {
     billToSave.amount = -billToSave.amount
   } else if (billToSave.category?.type === '20' && billToSave.amount > 0) {
     billToSave.amount = -billToSave.amount
   }
 
-  // 从 bill.category 对象中提取 ID，用于存储
   const categoryId = billToSave.category?._id
-  // 在 billToSave 对象上，将 category 字段的值设置为 ID 字符串
   billToSave.category = categoryId
 
   if (Array.isArray(billToSave.tags)) {
     billToSave.tags = billToSave.tags.map((tag) => tag._id).filter(Boolean)
   }
 
+  const dataToSave = { ...billToSave }
+  if (dataToSave.originBill) {
+    dataToSave.originBill = billToSave.originBill
+  }
+
   if (billToSave._id) {
-    // --- 更新逻辑 ---
     const billId = billToSave._id
-    delete billToSave._id
+    delete dataToSave._id
+    delete dataToSave.originBill
 
     const oldBillRes = await dbOrTransaction.collection('bill').doc(billId).get()
     if (!oldBillRes.data) throw new Error(`找不到 ID 为 ${billId} 的账单`)
@@ -188,12 +144,12 @@ async function saveBill(billToSave, accountId, models, dbOrTransaction) {
       throw new Error(`没有权限修改账单 ${billId}`)
     }
 
-    const balanceIncrement = parseMoney(billToSave.amount - oldBill.amount)
+    const balanceIncrement = parseMoney(dataToSave.amount - oldBill.amount)
     const incomeIncrement = parseMoney(
-      (billToSave.amount > 0 ? billToSave.amount : 0) - (oldBill.amount > 0 ? oldBill.amount : 0),
+      (dataToSave.amount > 0 ? dataToSave.amount : 0) - (oldBill.amount > 0 ? oldBill.amount : 0),
     )
     const expenseIncrement = parseMoney(
-      (billToSave.amount < 0 ? billToSave.amount : 0) - (oldBill.amount < 0 ? oldBill.amount : 0),
+      (dataToSave.amount < 0 ? dataToSave.amount : 0) - (oldBill.amount < 0 ? oldBill.amount : 0),
     )
 
     await updateAccount(
@@ -204,11 +160,10 @@ async function saveBill(billToSave, accountId, models, dbOrTransaction) {
     await dbOrTransaction
       .collection('bill')
       .doc(billId)
-      .update({ data: { ...billToSave, updatedAt: Date.now(), updatedBy: OPENID } })
+      .update({ data: { ...dataToSave, updatedAt: Date.now(), updatedBy: OPENID } })
     savedBillId = billId
   } else {
-    // --- 新增逻辑 ---
-    const balanceIncrement = billToSave.amount
+    const balanceIncrement = dataToSave.amount
     const incomeIncrement = balanceIncrement > 0 ? balanceIncrement : 0
     const expenseIncrement = balanceIncrement < 0 ? balanceIncrement : 0
 
@@ -219,7 +174,7 @@ async function saveBill(billToSave, accountId, models, dbOrTransaction) {
     )
     const createResult = await dbOrTransaction.collection('bill').add({
       data: {
-        ...billToSave,
+        ...dataToSave,
         account: accountId,
         _openid: OPENID,
         createdAt: Date.now(),
@@ -258,7 +213,6 @@ async function saveTransfer(event, models, dbOrTransaction) {
   const { category, amount, datetime, note } = bill
   const { getAccount } = require('./account.js')
 
-  // 从 category 中获取目标账户信息
   const targetAccountInfo = bill.category?.account
   if (!targetAccountInfo || !targetAccountInfo._id) {
     throw new Error('转账失败：目标账户信息不完整')
@@ -270,25 +224,27 @@ async function saveTransfer(event, models, dbOrTransaction) {
 
   const isTransferOut = category.name === '转账'
 
-  // 确定源账户和目标账户
   const sourceAccountId = isTransferOut ? currentAccountId : targetAccountId
   const destinationAccountId = isTransferOut ? targetAccountId : currentAccountId
 
   const main = async (tx) => {
-    // 1. 获取源账户和目标账户的信息
-    // 注意：在事务中，所有读操作也需要使用事务实例
     const [sourceAccount, destinationAccount, transferOutCategoryRes, transferInCategoryRes] =
       await Promise.all([
         getAccount({ query: { accountId: sourceAccountId } }, models, tx),
         getAccount({ query: { accountId: destinationAccountId } }, models, tx),
-        dbInstance.collection('category').where({ name: '转账', _openid: _.exists(false) }).get(),
-        dbInstance.collection('category').where({ name: '收转账', _openid: _.exists(false) }).get()
+        db
+          .collection('category')
+          .where({ name: '转账', _openid: _.exists(false) })
+          .get(),
+        db
+          .collection('category')
+          .where({ name: '收转账', _openid: _.exists(false) })
+          .get(),
       ])
 
     if (!sourceAccount) throw new Error('转账失败：找不到源账户')
     if (!destinationAccount) throw new Error('转账失败：找不到目标账户')
 
-    // 检查转出账户余额
     const transferAmount = Math.abs(parseMoney(amount))
     if (sourceAccount.balance < transferAmount) {
       throw new BizError('账户余额不足，无法转账')
@@ -302,7 +258,6 @@ async function saveTransfer(event, models, dbOrTransaction) {
     const transferOutCat = transferOutCategoryRes.data[0]
     const transferInCat = transferInCategoryRes.data[0]
 
-    // 2. 构建转出和转入账单
     const billOut = {
       ...bill,
       amount: -transferAmount,
@@ -313,19 +268,17 @@ async function saveTransfer(event, models, dbOrTransaction) {
 
     const billIn = {
       ...bill,
-      _id: undefined, // 确保是新建
+      _id: undefined,
       amount: transferAmount,
       category: transferInCat,
       account: destinationAccountId,
       note: isTransferOut ? `从 ${sourceAccount.title} 转入` : note,
-      tags: [], // 转入记录不带标签
+      tags: [],
     }
 
-    // 3. 保存两笔账单
     const savedBillOut = await saveBill(billOut, sourceAccountId, models, tx)
     const savedBillIn = await saveBill(billIn, destinationAccountId, models, tx)
 
-    // 4. 互相更新，保存对方的 ID
     await tx
       .collection('bill')
       .doc(savedBillOut._id)
@@ -335,7 +288,6 @@ async function saveTransfer(event, models, dbOrTransaction) {
       .doc(savedBillIn._id)
       .update({ data: { relatedBill: savedBillOut._id } })
 
-    // 5. 返回用户操作的原始账单，并附上关联ID
     const primaryBill = isTransferOut ? savedBillOut : savedBillIn
     const secondaryBill = isTransferOut ? savedBillIn : savedBillOut
 
@@ -343,10 +295,8 @@ async function saveTransfer(event, models, dbOrTransaction) {
   }
 
   if (dbOrTransaction) {
-    // 如果传入了事务，则在当前事务中执行
     return main(dbOrTransaction)
   } else {
-    // 否则，开启新事务
     const tx = await db.startTransaction()
     try {
       const result = await main(tx)
@@ -355,40 +305,30 @@ async function saveTransfer(event, models, dbOrTransaction) {
     } catch (e) {
       await tx.rollback()
       if (e.isBiz) {
-        throw e // 如果是业务异常，直接抛出
+        throw e
       }
       throw new Error(`转账失败: ${e.message}`)
     }
   }
 }
 
-/**
- * 为账单列表填充完整的分类信息
- * @param {object[]} bills - 账单对象数组
- * @param {object} models - 数据模型实例
- * @returns {Promise<object[]>} - 填充了分类信息的账单数组
- */
 async function populateCategoriesForBills(bills, models) {
   if (!bills || bills.length === 0) {
     return []
   }
 
-  // 1. 提取所有不重复的 categoryId
-  const categoryIds = [...new Set(bills.map(b => b.category).filter(Boolean))]
+  const categoryIds = [...new Set(bills.map((b) => b.category).filter(Boolean))]
 
   if (categoryIds.length === 0) {
-    return bills // 如果没有 categoryId，直接返回原数组
+    return bills
   }
 
-  // 2. 批量查询 categoryId 对应的分类信息
   const { getCategoriesByIds } = require('./category.js')
   const categories = await getCategoriesByIds({ query: { ids: categoryIds } }, models)
 
-  // 3. 创建一个 categoryId 到 category 对象的映射
-  const categoryMap = new Map(categories.map(c => [c._id, c]))
+  const categoryMap = new Map(categories.map((c) => [c._id, c]))
 
-  // 4. 将分类信息填充回账单对象
-  return bills.map(bill => {
+  return bills.map((bill) => {
     return {
       ...bill,
       category: categoryMap.get(bill.category) || null,
@@ -396,64 +336,56 @@ async function populateCategoriesForBills(bills, models) {
   })
 }
 
-/**
- * 核心批量删除账单逻辑（内部函数）。
- * @param {object} event - 包含 ids 和 accountId 的事件对象
- * @param {object} models - 数据模型实例
- * @param {object} dbOrTransaction - 数据库或事务实例
- * @returns {Promise<{deleted: number}>}
- */
 async function deleteBills(event, models, dbOrTransaction) {
-  const { ids, accountId } = event.query;
-  const { isDeactivating } = event; // 检查是否来自停用流程
-  const { OPENID } = cloud.getWXContext();
+  const { ids, accountId } = event.query
+  const { isDeactivating } = event
+  const { OPENID } = cloud.getWXContext()
 
-  // 1. 第一次查询：根据传入的id和accountId获取初始账单列表
-  const initialBillsRes = await dbOrTransaction.collection('bill').where({
-    _id: _.in(ids),
-    account: _.eq(accountId),
-    _openid: _.eq(OPENID)
-  }).get();
-  const initialBills = initialBillsRes.data || [];
+  const initialBillsRes = await dbOrTransaction
+    .collection('bill')
+    .where({
+      _id: _.in(ids),
+      account: _.eq(accountId),
+      _openid: _.eq(OPENID),
+    })
+    .get()
+  const initialBills = initialBillsRes.data || []
 
-  // 2. 收集所有关联账单的ID
-  const relatedBillIds = initialBills.map(b => b.relatedBill).filter(Boolean);
+  const relatedBillIds = initialBills.map((b) => b.relatedBill).filter(Boolean)
 
-  // 3. 合并初始ID和关联ID，得到最终需要处理的完整ID列表
-  const finalBillIds = Array.from(new Set([...ids, ...relatedBillIds]));
+  const finalBillIds = Array.from(new Set([...ids, ...relatedBillIds]))
 
   if (finalBillIds.length === 0) {
-    return { deleted: 0 };
+    return { deleted: 0 }
   }
 
-  // 4. 第二次查询：获取所有最终要删除的账单的完整信息
-  const billsRes = await dbOrTransaction.collection('bill').where({
-    _id: _.in(finalBillIds),
-    _openid: _.eq(OPENID) // 权限校验，确保只能删除自己的账单
-  }).get();
-  const finalBillsToDelete = billsRes.data;
+  const billsRes = await dbOrTransaction
+    .collection('bill')
+    .where({
+      _id: _.in(finalBillIds),
+      _openid: _.eq(OPENID),
+    })
+    .get()
+  const finalBillsToDelete = billsRes.data
 
-  // 5. 按账户ID对账单进行分组，并计算每个账户的余额、收入、支出变化量
   const accountChanges = finalBillsToDelete.reduce((acc, bill) => {
-    const { account, amount } = bill;
+    const { account, amount } = bill
     if (!acc[account]) {
-      acc[account] = { balanceIncrement: 0, incomeIncrement: 0, expenseIncrement: 0 };
+      acc[account] = { balanceIncrement: 0, incomeIncrement: 0, expenseIncrement: 0 }
     }
-    acc[account].balanceIncrement -= amount;
+    acc[account].balanceIncrement -= amount
     if (amount > 0) {
-      acc[account].incomeIncrement -= amount;
+      acc[account].incomeIncrement -= amount
     } else {
-      acc[account].expenseIncrement -= amount;
+      acc[account].expenseIncrement -= amount
     }
-    return acc;
-  }, {});
+    return acc
+  }, {})
 
-  // 6. 串行更新所有受影响的账户
   for (const id of Object.keys(accountChanges)) {
-    const changes = accountChanges[id];
-    // 只有在停用账本的流程中，才跳过对主账本的余额更新
+    const changes = accountChanges[id]
     if (isDeactivating && id === accountId) {
-      continue;
+      continue
     }
     await updateAccount(
       {
@@ -465,79 +397,78 @@ async function deleteBills(event, models, dbOrTransaction) {
         },
       },
       models,
-      dbOrTransaction
-    );
+      dbOrTransaction,
+    )
   }
 
-  // 7. 一次性删除所有相关账单
-  const deleteResult = await dbOrTransaction.collection('bill').where({
-    _id: _.in(finalBillIds),
-    _openid: _.eq(OPENID)
-  }).remove();
+  const deleteResult = await dbOrTransaction
+    .collection('bill')
+    .where({
+      _id: _.in(finalBillIds),
+      _openid: _.eq(OPENID),
+    })
+    .remove()
 
-  return { deleted: deleteResult.stats.removed };
+  return { deleted: deleteResult.stats.removed }
 }
 
-/**
- * 核心停用账本逻辑（内部函数）。
- * @param {object} event - 包含 accountId 的事件对象
- * @param {object} models - 数据模型实例
- * @param {object} dbOrTransaction - 数据库或事务实例
- */
 async function deactivateAccount(event, models, dbOrTransaction) {
   const { accountId } = event.query
   const { OPENID } = cloud.getWXContext()
 
-  // 1. 验证账本是否存在且属于当前用户
   const accountRes = await dbOrTransaction.collection('account').doc(accountId).get()
   if (!accountRes.data || accountRes.data._openid !== OPENID) {
     throw new BizError(`找不到 ID 为 ${accountId} 的账本，或没有权限删除。`)
   }
 
-  // 2. 查找本账本的所有账单ID
-  const billsInAccountRes = await dbOrTransaction.collection('bill').where({
-    account: _.eq(accountId),
-    _openid: _.eq(OPENID),
-  }).get()
-  const billIdsInAccount = (billsInAccountRes.data || []).map(b => b._id)
+  const billsInAccountRes = await dbOrTransaction
+    .collection('bill')
+    .where({
+      account: _.eq(accountId),
+      _openid: _.eq(OPENID),
+    })
+    .get()
+  const billIdsInAccount = (billsInAccountRes.data || []).map((b) => b._id)
 
-  // 3. 查找与本账本账单相关联的其他账单
-  const relatedBillsRes = await dbOrTransaction.collection('bill').where({
-    relatedBill: _.in(billIdsInAccount),
-    _openid: _.eq(OPENID),
-  }).get()
+  const relatedBillsRes = await dbOrTransaction
+    .collection('bill')
+    .where({
+      relatedBill: _.in(billIdsInAccount),
+      _openid: _.eq(OPENID),
+    })
+    .get()
   const relatedBills = relatedBillsRes.data || []
 
-  // 4. 将这些关联账单的 relatedBill 字段备份到 deletedRelatedBill，然后移除
   if (relatedBills.length > 0) {
-    // 分批并行更新，平衡效率与稳定性
-    const batchSize = 3 // 每次处理3个
+    const batchSize = 3
     for (let i = 0; i < relatedBills.length; i += batchSize) {
       const batch = relatedBills.slice(i, i + batchSize)
-      const updatePromises = batch.map(bill => {
-        return dbOrTransaction.collection('bill').doc(bill._id).update({
-          data: {
-            // 将对方账单（即被停用账本中的账单）的ID存入 deletedRelatedBill
-            deletedRelatedBill: bill.relatedBill,
-            // 移除 relatedBill 字段
-            relatedBill: _.remove(),
-          },
-        })
+      const updatePromises = batch.map((bill) => {
+        return dbOrTransaction
+          .collection('bill')
+          .doc(bill._id)
+          .update({
+            data: {
+              deletedRelatedBill: bill.relatedBill,
+              relatedBill: _.remove(),
+            },
+          })
       })
       await Promise.all(updatePromises)
     }
   }
 
-  // 5. 删除本账本的所有账单
   let deletedCount = 0
   if (billIdsInAccount.length > 0) {
-    const deleteResult = await dbOrTransaction.collection('bill').where({
-      _id: _.in(billIdsInAccount)
-    }).remove()
+    const deleteResult = await dbOrTransaction
+      .collection('bill')
+      .where({
+        _id: _.in(billIdsInAccount),
+      })
+      .remove()
     deletedCount = deleteResult.stats.removed
   }
 
-  // 6. 删除账本自身
   await dbOrTransaction.collection('account').doc(accountId).remove()
 
   return {
@@ -548,7 +479,7 @@ async function deactivateAccount(event, models, dbOrTransaction) {
 }
 
 async function getCategoryByNames(event, models, dbOrTransaction) {
-  const { categories: categoriesInfo } = event.query || {} // 接收一个 {name, type} 对象数组
+  const { categories: categoriesInfo } = event.query || {}
   const { OPENID } = cloud.getWXContext()
   const dbInstance = dbOrTransaction || db
 
@@ -557,14 +488,16 @@ async function getCategoryByNames(event, models, dbOrTransaction) {
   }
 
   const finalCategories = []
-  const categoryMap = new Map() // 使用 Map 来跟踪已处理的分类，避免重复
+  const categoryMap = new Map()
 
-  // 1. 先批量查找所有用户自己的私有分类
-  const orConditions = categoriesInfo.map(info => ({ name: info.name, type: info.type }))
-  const { data: privateCategories } = await dbInstance.collection('category').where({
-    _openid: OPENID,
-    $or: orConditions
-  }).get()
+  const orConditions = categoriesInfo.map((info) => ({ name: info.name, type: info.type }))
+  const { data: privateCategories } = await dbInstance
+    .collection('category')
+    .where({
+      _openid: OPENID,
+      $or: orConditions,
+    })
+    .get()
 
   for (const cat of privateCategories) {
     const key = `${cat.name}-${cat.type}`
@@ -574,14 +507,18 @@ async function getCategoryByNames(event, models, dbOrTransaction) {
     }
   }
 
-  // 2. 找出尚未匹配到的分类，再去公共分类里找
-  const remainingInfos = categoriesInfo.filter(info => !categoryMap.has(`${info.name}-${info.type}`))
+  const remainingInfos = categoriesInfo.filter(
+    (info) => !categoryMap.has(`${info.name}-${info.type}`),
+  )
   if (remainingInfos.length > 0) {
-    const publicOrConditions = remainingInfos.map(info => ({ name: info.name, type: info.type }))
-    const { data: publicCategories } = await dbInstance.collection('category').where({
-      _openid: _.exists(false),
-      $or: publicOrConditions
-    }).get()
+    const publicOrConditions = remainingInfos.map((info) => ({ name: info.name, type: info.type }))
+    const { data: publicCategories } = await dbInstance
+      .collection('category')
+      .where({
+        _openid: _.exists(false),
+        $or: publicOrConditions,
+      })
+      .get()
 
     for (const cat of publicCategories) {
       const key = `${cat.name}-${cat.type}`
@@ -592,10 +529,11 @@ async function getCategoryByNames(event, models, dbOrTransaction) {
     }
   }
 
-  // 3. 最后，找出仍未匹配到的，这些是需要新建的
-  const categoriesToCreate = categoriesInfo.filter(info => !categoryMap.has(`${info.name}-${info.type}`))
+  const categoriesToCreate = categoriesInfo.filter(
+    (info) => !categoryMap.has(`${info.name}-${info.type}`),
+  )
   if (categoriesToCreate.length > 0) {
-    const newCategoriesData = categoriesToCreate.map(info => ({
+    const newCategoriesData = categoriesToCreate.map((info) => ({
       name: info.name,
       type: info.type,
       _openid: OPENID,
@@ -607,10 +545,12 @@ async function getCategoryByNames(event, models, dbOrTransaction) {
       data: newCategoriesData,
     })
 
-    // 获取新创建的分类的完整文档
-    const { data: newCreatedCategories } = await dbInstance.collection('category').where({
-      _id: _.in(createResult._ids)
-    }).get()
+    const { data: newCreatedCategories } = await dbInstance
+      .collection('category')
+      .where({
+        _id: _.in(createResult._ids),
+      })
+      .get()
 
     finalCategories.push(...newCreatedCategories)
   }
@@ -623,26 +563,25 @@ async function getTagsByNames(event, models, dbOrTransaction) {
   const { OPENID } = cloud.getWXContext()
   const dbInstance = dbOrTransaction || db
 
-
   if (!names || names.length === 0) {
     return []
   }
 
-  // 1. 查找已存在的标签
-  const { data: existingData } = await dbInstance.collection('tag').where({
-    name: _.in(names),
-    _openid: { $eq: OPENID },
-  }).get()
+  const { data: existingData } = await dbInstance
+    .collection('tag')
+    .where({
+      name: _.in(names),
+      _openid: { $eq: OPENID },
+    })
+    .get()
 
   const existingTags = existingData.records || []
-  const existingTagMap = new Map(existingTags.map(t => [t.name, t]))
+  const existingTagMap = new Map(existingTags.map((t) => [t.name, t]))
 
-  // 2. 找出需要新建的标签
-  const tagsToCreate = names.filter(name => !existingTagMap.has(name))
+  const tagsToCreate = names.filter((name) => !existingTagMap.has(name))
 
-  // 3. 批量创建新标签
   if (tagsToCreate.length > 0) {
-    const newTagsData = tagsToCreate.map(name => ({
+    const newTagsData = tagsToCreate.map((name) => ({
       name,
       _openid: OPENID,
     }))
@@ -651,15 +590,16 @@ async function getTagsByNames(event, models, dbOrTransaction) {
       data: newTagsData,
     })
 
-    // 4. 重新获取所有相关的标签以包含新建的
-    const { data: allData } = await dbInstance.collection('tag').where({
+    const { data: allData } = await dbInstance
+      .collection('tag')
+      .where({
         name: _.in(names),
         _openid: { $eq: OPENID },
-    }).get()
+      })
+      .get()
     return allData.records || []
   }
 
-  // 5. 如果没有需要创建的，直接返回已存在的
   return existingTags
 }
 
@@ -685,11 +625,9 @@ async function saveBills(bills, accountId, models, dbOrTransaction) {
     const isTransfer = bill.category.name === '转账' || bill.category.name === '收转账'
     let savedBill
     if (isTransfer) {
-      // 为了调用 saveTransfer，我们需要模拟一个 event 对象
       const transferEvent = { body: { bill }, query: { accountId } }
       savedBill = await saveTransfer(transferEvent, models, dbOrTransaction)
     } else {
-      // 复用单个保存的逻辑
       savedBill = await saveBill(bill, accountId, models, dbOrTransaction)
     }
     savedBills.push(savedBill)
@@ -697,20 +635,19 @@ async function saveBills(bills, accountId, models, dbOrTransaction) {
   return savedBills
 }
 
-
 module.exports = {
   saveBill,
-  saveBills, // 导出新的 _saveBills
+  saveBills,
   updateAccount,
   parseMoney,
   populateTagsForBills,
-  populateCategoriesForBills, // 导出新函数
+  populateCategoriesForBills,
   saveTransfer,
   deleteBills,
   deactivateAccount,
-  BizError,
   getCategoryByNames,
   getTagsByNames,
   tryParseJSON,
   tryStringifyJSON,
+  BizError,
 }

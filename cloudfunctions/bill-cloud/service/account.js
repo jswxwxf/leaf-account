@@ -13,24 +13,16 @@ const {
 const db = cloud.database()
 const _ = db.command
 
-/**
- * 获取当前用户的账户信息。
- * @param {object} event - 云函数的原始 event 对象
- * @param {object} models - 数据模型实例
- * @param {object} [options] - 其他选项
- * @param {boolean} [options.withId=false] - 是否返回 _id 字段
- */
 async function getAccount(event, models) {
   const { name = 'leaf-maple', accountId } = event.query || {}
   const { OPENID } = cloud.getWXContext()
 
-  // 如果传入 accountId，则优先使用 ID 查询
   if (accountId) {
     const accountRes = await models.account.get({
       filter: {
         where: {
           _id: { $eq: accountId },
-          _openid: { $eq: OPENID }, // 确保只能获取自己的
+          _openid: { $eq: OPENID },
         },
       },
     })
@@ -39,11 +31,9 @@ async function getAccount(event, models) {
       delete account._openid
       return account
     }
-    // 如果按 ID 找不到，抛出错误
     throw new BizError(`找不到 ID 为 ${accountId} 的账本，或没有权限访问。`)
   }
 
-  // 1. 尝试查找用户自己的账本
   const userAccountRes = await models.account.list({
     filter: {
       where: {
@@ -61,7 +51,6 @@ async function getAccount(event, models) {
     return account
   }
 
-  // 2. 如果找不到，尝试查找公共账本
   const publicAccountRes = await models.account.list({
     filter: {
       where: {
@@ -73,7 +62,6 @@ async function getAccount(event, models) {
     pageSize: 1,
   })
 
-  // 3. 如果找到公共账本，为用户复制一份
   if (publicAccountRes.data && publicAccountRes.data.records.length > 0) {
     const publicAccount = publicAccountRes.data.records[0]
     const newAccountData = {
@@ -84,13 +72,12 @@ async function getAccount(event, models) {
       updatedBy: OPENID,
       _openid: OPENID,
     }
-    delete newAccountData._id // 删除旧的 _id 以创建新记录
+    delete newAccountData._id
 
     const createRes = await models.account.create({
       data: newAccountData,
     })
 
-    // 返回新创建的账本
     const createdAccount = await models.account.get({
       filter: {
         where: {
@@ -102,7 +89,6 @@ async function getAccount(event, models) {
     return createdAccount.data
   }
 
-  // 4. 如果都找不到，抛出错误
   throw new BizError(`名为 "${name}" 的账本不存在，请检查账本名称或联系管理员。`)
 }
 
@@ -115,7 +101,6 @@ async function reconcileAccount(event, models) {
     throw new Error('缺少有效的 actualBalance 参数')
   }
 
-  // 1. 获取当前系统余额
   const currentAccount = await getAccount(
     { ...event, query: { ...event.query, accountId } },
     models,
@@ -123,12 +108,10 @@ async function reconcileAccount(event, models) {
   const systemBalance = currentAccount.balance
   const difference = actualBalance - systemBalance
 
-  // 如果没有差额，则无需操作
   if (Math.abs(difference) < 0.01) {
     return currentAccount
   }
 
-  // 2. 确定调账类型和分类
   const isIncome = difference > 0
   const categoryName = isIncome ? '增余额' : '减余额'
   const categoryType = isIncome ? '10' : '20'
@@ -140,7 +123,7 @@ async function reconcileAccount(event, models) {
       where: {
         name: { $eq: categoryName },
         type: { $eq: categoryType },
-        _openid: { $empty: true }, // 只使用内置的分类
+        _openid: { $empty: true },
       },
     },
     page: 1,
@@ -152,7 +135,6 @@ async function reconcileAccount(event, models) {
   }
   const category = categories[0]
 
-  // 3. 构建调账账单
   const reconcileBill = {
     amount: difference,
     category: {
@@ -164,9 +146,8 @@ async function reconcileAccount(event, models) {
     note: `对账调整`,
   }
 
-  // 4. 创建一个新的 event 对象来调用 saveBill
   const saveBillEvent = {
-    ...event, // 继承父 event 的上下文
+    ...event,
     query: {
       accountId,
     },
@@ -175,14 +156,9 @@ async function reconcileAccount(event, models) {
     },
   }
 
-  // 5. 调用 saveBill 来创建账单并自动更新账户余额
-  // saveBill 内部处理事务，无需在这里手动开启
-  // 延迟加载，避免循环依赖
   const { saveBill } = require('./bill.js')
   await saveBill(saveBillEvent, models)
 
-  // 6. 返回更新后的账户信息
-  // 此时账户信息已经被 saveBill 更新，所以重新获取一次
   return getAccount({ ...event, query: { ...event.query, accountId } }, models)
 }
 
@@ -190,7 +166,6 @@ async function getAccounts(event, models) {
   const { opened } = event.query || {}
   const { OPENID } = cloud.getWXContext()
 
-  // 获取用户的所有私有账本
   const privateAccountsRes = await models.account.list({
     filter: {
       where: {
@@ -198,19 +173,17 @@ async function getAccounts(event, models) {
       },
     },
     orderBy: [{ createdAt: 'asc' }],
-    pageSize: 100, // 假设用户账本不会超过 100 个
+    pageSize: 100,
   })
   const privateAccounts = (privateAccountsRes.data.records || []).map((acc) => {
     delete acc._openid
     return { ...acc, isOpened: true }
   })
 
-  // 如果只想看已启用的
   if (opened === 'true' || opened === true) {
     return privateAccounts
   }
 
-  // 获取所有公共账本
   const publicAccountsRes = await models.account.list({
     filter: {
       where: {
@@ -218,30 +191,23 @@ async function getAccounts(event, models) {
       },
     },
     orderBy: [{ createdAt: 'asc' }],
-    pageSize: 100, // 假设公共账本不会超过 100 个
+    pageSize: 100,
   })
   const publicAccounts = (publicAccountsRes.data.records || []).map((acc) => {
     delete acc._openid
     return { ...acc, isOpened: false }
   })
 
-  // 过滤掉用户已经拥有的公共账本
   const privateAccountNames = new Set(privateAccounts.map((a) => a.name))
   const availablePublicAccounts = publicAccounts.filter((pa) => !privateAccountNames.has(pa.name))
 
-  // 如果只想看未启用的
   if (opened === 'false' || opened === false) {
     return availablePublicAccounts
   }
 
-  // 默认：合并并返回
   return [...privateAccounts, ...availablePublicAccounts]
 }
-/**
- * 停用一个账本（实质是删除用户的私有账本记录）。
- * @param {object} event - 云函数的原始 event 对象
- * @param {object} models - 数据模型实例
- */
+
 async function deactivateAccount(event, models) {
   const transaction = await db.startTransaction()
   try {
@@ -258,11 +224,6 @@ async function deactivateAccount(event, models) {
   }
 }
 
-/**
- * 更新账户信息（外层函数，处理事务）。
- * @param {object} event - 云函数的原始 event 对象
- * @param {object} models - 数据模型实例
- */
 async function updateAccount(event, models) {
   const { updateAccount: _updateAccount } = require('./helper.js')
   const transaction = await db.startTransaction()
@@ -311,16 +272,13 @@ async function getAccountYears(event, models) {
 }
 
 async function exportAccount(event, models) {
-  // 1. 创建任务
   const { taskId } = await createTask({}, models)
 
-  // 2. 异步执行导出逻辑
   setTimeout(async () => {
     const { accountId, year } = event.query
     const { OPENID } = cloud.getWXContext()
 
     try {
-      // 2.1 更新任务状态为处理中
       await updateTask(
         {
           query: { taskId },
@@ -356,7 +314,6 @@ async function exportAccount(event, models) {
       allBills = await populateCategoriesForBills(allBills, models)
       allBills = await populateTagsForBills(allBills, models)
 
-      // 更新状态：数据拉取和处理完成
       await updateTask(
         {
           query: { taskId },
@@ -394,30 +351,15 @@ async function exportAccount(event, models) {
 
       const headerRow = worksheet.getRow(2)
       headerRow.values = [
-        '日期',
-        '类型',
-        '分类',
-        '金额',
-        '备注',
-        '标签',
-        '每日收入',
-        '每日支出',
-        'ID',
-        '时间戳',
+        '日期', '类型', '分类', '金额', '备注', '标签', '每日收入', '每日支出', 'ID', '时间戳',
       ]
       headerRow.font = { name: 'Calibri', size: 13, bold: true }
 
       worksheet.columns = [
-        { key: 'date', width: 25 }, // A
-        { key: 'type', width: 10 }, // B
-        { key: 'category', width: 15 }, // C
-        { key: 'amount', width: 15 }, // D
-        { key: 'note', width: 30 }, // E
-        { key: 'tags', width: 20 }, // F
-        { key: 'dailyIncome', width: 15 }, // G
-        { key: 'dailyExpense', width: 15 }, // H
-        { key: '_id', width: 30 }, // I
-        { key: 'timestamp', width: 18 }, // J
+        { key: 'date', width: 25 }, { key: 'type', width: 10 }, { key: 'category', width: 15 },
+        { key: 'amount', width: 15 }, { key: 'note', width: 30 }, { key: 'tags', width: 20 },
+        { key: 'dailyIncome', width: 15 }, { key: 'dailyExpense', width: 15 },
+        { key: '_id', width: 30 }, { key: 'timestamp', width: 18 },
       ]
 
       worksheet.addRows(formattedBills)
@@ -452,7 +394,6 @@ async function exportAccount(event, models) {
 
       const buffer = await workbook.xlsx.writeBuffer()
 
-      // 更新状态：Excel 文件生成完成
       await updateTask(
         {
           query: { taskId },
@@ -495,133 +436,100 @@ async function exportAccount(event, models) {
 }
 
 async function importAccount(event, models) {
-  // 1. 创建任务
   const { taskId } = await createTask({}, models)
 
-  // 2. 异步执行导入逻辑
   setTimeout(async () => {
     const { accountId, fileID } = event.query
     const { OPENID } = cloud.getWXContext()
-    const transaction = await db.startTransaction()
     const { saveBills: _saveBills } = require('./helper.js')
 
     try {
-      // 2.1 更新任务状态为处理中
-      await updateTask(
-        {
-          query: { taskId },
-          body: { status: 'processing', message: { text: '正在下载并解析文件...' } },
-        },
-        models,
-      )
+      await updateTask({
+        query: { taskId },
+        body: { status: 'processing', message: { text: '正在下载并解析文件...' } },
+      }, models)
 
-      // 2.2 下载文件
       const downloadRes = await cloud.downloadFile({ fileID })
       const buffer = downloadRes.fileContent
-
-      // 2.3 解析 Excel
       const workbook = new ExcelJS.Workbook()
       await workbook.xlsx.load(buffer)
       const worksheet = workbook.worksheets[0]
 
-      const billsToSave = []
+      const billsFromExcel = []
       worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-        if (rowNumber <= 2) return // 跳过标题和表头
-
+        if (rowNumber <= 2) return;
         const type = row.getCell(2).value.trim()
         const categoryName = row.getCell(3).value.trim()
         const amount = parseFloat(row.getCell(4).value)
         const note = row.getCell(5).value || ''
         const tagsRaw = row.getCell(6).value || ''
-        const datetime = new Date(row.getCell(10).value).getTime() // 使用时间戳列
+        const datetime = new Date(row.getCell(10).value).getTime()
+        const originBill = row.getCell(9).value || null
 
-        if (!type || !categoryName || isNaN(amount) || isNaN(datetime)) {
+        if (!type || !categoryName || isNaN(amount) || isNaN(datetime) || !originBill) {
           console.warn(`Skipping invalid row ${rowNumber}:`, row.values)
           return
         }
-
         const tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean)
-
-        billsToSave.push({
+        billsFromExcel.push({
           type: type === '收入' ? '10' : '20',
-          categoryName,
-          amount,
-          note,
-          datetime,
-          tags,
+          categoryName, amount, note, datetime, tags, originBill,
         })
       })
 
-      await updateTask(
-        {
-          query: { taskId },
-          body: {
-            status: 'processing',
-            message: { text: `文件解析完成，正在导入 ${billsToSave.length} 条账单...` },
-          },
-        },
-        models,
-      )
+      const totalCount = billsFromExcel.length
 
-      // 2.4 批量预处理分类和标签
-      const { getCategoryByNames, getTagsByNames } = require('./helper.js')
+      const originBillIds = billsFromExcel.map(b => b.originBill)
+      const { data: existingBills } = await db.collection('bill').where({
+        originBill: _.in(originBillIds),
+        account: accountId,
+        _openid: OPENID,
+      }).get()
+      const existingOriginIds = new Set(existingBills.map(b => b.originBill))
 
-      // 预处理标签
-      const tagNames = [...new Set(billsToSave.flatMap((b) => b.tags))]
-      const tags = await getTagsByNames({ query: { names: tagNames } }, models, transaction)
-      const tagMap = new Map(tags.map((t) => [t.name, t]))
+      let processedCount = existingOriginIds.size
+      await updateTask({
+        query: { taskId },
+        body: { status: 'processing', message: { text: `文件解析完成${processedCount > 0 ? `，已跳过 ${processedCount} 条已导入账单` : ''}...`, progress: Math.round((processedCount/totalCount) * 100) } },
+      }, models)
 
-      // 预处理分类
-      const categoriesInfo = [...new Map(billsToSave.map(b => [`${b.categoryName}-${b.type}`, b])).values()]
-        .map(b => ({ name: b.categoryName, type: b.type }))
-      const categories = await getCategoryByNames({ query: { categories: categoriesInfo } }, models, transaction)
-      const categoryMap = new Map(categories.map(c => [`${c.name}-${c.type}`, c]))
+      const newBillsToProcess = billsFromExcel.filter(b => !existingOriginIds.has(b.originBill))
 
-      // 2.5 批量保存账单
-      const BATCH_SIZE = 10
-      let processedCount = 0
-      const totalCount = billsToSave.length
+      if (newBillsToProcess.length > 0) {
+          const { getCategoryByNames, getTagsByNames } = require('./helper.js')
+          const tagNames = [...new Set(newBillsToProcess.flatMap(b => b.tags))]
+          const tags = await getTagsByNames({ query: { names: tagNames } }, models)
+          const tagMap = new Map(tags.map(t => [t.name, t]))
+          const categoriesInfo = [...new Map(newBillsToProcess.map(b => [`${b.categoryName}-${b.type}`, b])).values()].map(b => ({ name: b.categoryName, type: b.type }))
+          const categories = await getCategoryByNames({ query: { categories: categoriesInfo } }, models)
+          const categoryMap = new Map(categories.map(c => [`${c.name}-${c.type}`, c]))
 
-      // 先将所有账单数据准备好（填充 category 和 tags）
-      const processedBills = []
-      for (const billData of billsToSave) {
-        const category = categoryMap.get(`${billData.categoryName}-${billData.type}`)
-        if (!category) {
-          console.warn(`Category not found: ${billData.categoryName}`)
-          continue
-        }
-        const tagIds = billData.tags.map((tagName) => tagMap.get(tagName)?._id).filter(Boolean)
-        processedBills.push({
-          ...billData,
-          category: { _id: category._id, name: category.name, type: category.type },
-          tags: tagIds,
-        })
+          const processedNewBills = newBillsToProcess.map(billData => {
+            const category = categoryMap.get(`${billData.categoryName}-${billData.type}`)
+            if (!category) return null
+            const tagIds = billData.tags.map(tagName => tagMap.get(tagName)?._id).filter(Boolean)
+            return { ...billData, category, tags: tagIds }
+          }).filter(Boolean)
+
+          const BATCH_SIZE = 10
+          for (let i = 0; i < processedNewBills.length; i += BATCH_SIZE) {
+            const batch = processedNewBills.slice(i, i + BATCH_SIZE)
+            const transaction = await db.startTransaction()
+            try {
+              await _saveBills(batch, accountId, models, transaction)
+              await transaction.commit()
+              processedCount += batch.length
+              await updateTask({
+                query: { taskId },
+                body: { status: 'processing', message: { text: `正在导入... (${processedCount}/${totalCount})`, progress: Math.round((processedCount/totalCount) * 100) } },
+              }, models)
+            } catch(batchError) {
+              await transaction.rollback()
+              throw batchError
+            }
+          }
       }
 
-      // 分批执行保存
-      for (let i = 0; i < processedBills.length; i += BATCH_SIZE) {
-        const batch = processedBills.slice(i, i + BATCH_SIZE)
-        if (batch.length > 0) {
-          await _saveBills(batch, accountId, models, transaction)
-          processedCount += batch.length
-
-          // 每处理完一个批次，更新一次进度
-          const progress = Math.round((processedCount / totalCount) * 100)
-          await updateTask(
-            {
-              query: { taskId },
-              body: {
-                status: 'processing',
-                message: { text: `正在导入... (${processedCount}/${totalCount})`, progress },
-              },
-            },
-            models,
-          )
-        }
-      }
-
-      await transaction.commit()
-      // 2.6 更新最终状态
       await updateTask(
         {
           query: { taskId },
@@ -630,7 +538,6 @@ async function importAccount(event, models) {
         models,
       )
     } catch (e) {
-      await transaction.rollback()
       console.error('导入任务失败:', e)
       await updateTask(
         {

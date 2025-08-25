@@ -22,7 +22,6 @@ async function getCategories(event, models) {
     whereClauses.push({ type: { $eq: type } })
   }
 
-  // 如果只有一个查询条件，则不需要 $and
   const finalWhere = whereClauses.length > 1 ? { $and: whereClauses } : whereClauses[0]
 
   const { data } = await models.category.list({
@@ -31,7 +30,6 @@ async function getCategories(event, models) {
     pageSize: 1000,
   })
 
-  // 为每个分类添加 isBuiltIn 标志
   const recordsWithFlag = data.records.map((record) => ({
     ...record,
     isBuiltIn: !record._openid,
@@ -55,7 +53,6 @@ async function addCategory(event, models) {
   }
   category.name = categoryName
 
-  // 全局检查是否存在同名同类型的分类
   const { total } = await db.collection('category').where({
     name: category.name,
     type: category.type
@@ -98,7 +95,6 @@ async function deleteCategory(event, models) {
     throw new Error('缺少分类ID')
   }
 
-  // 检查是否有账单正在使用该分类
   const {
     data: { total },
   } = await models.bill.list({
@@ -121,7 +117,7 @@ async function deleteCategory(event, models) {
     filter: {
       where: {
         _id: { $eq: id },
-        _openid: { $eq: OPENID }, // 确保只能删除自己的分类
+        _openid: { $eq: OPENID },
       },
     },
   })
@@ -157,9 +153,8 @@ async function updateCategory(event, models) {
   }
 
   if (data.name) {
-    // 全局检查是否存在同名同类型的分类，并排除自身
     const { total } = await db.collection('category').where({
-      _id: _.neq(_id), // 排除当前正在更新的文档
+      _id: _.neq(_id),
       name: data.name,
       type: data.type
     }).count()
@@ -173,7 +168,7 @@ async function updateCategory(event, models) {
     filter: {
       where: {
         _id: { $eq: _id },
-        _openid: { $eq: OPENID }, // 确保只能更新自己的分类
+        _openid: { $eq: OPENID },
       },
     },
     data: { ...data, usedAt: Date.now() },
@@ -197,7 +192,6 @@ async function getCategoriesByIds(event, models) {
     return []
   }
 
-  // 确保只能查询到自己的或公共的分类
   const { data } = await models.category.list({
     filter: {
       where: {
@@ -207,7 +201,7 @@ async function getCategoriesByIds(event, models) {
         ],
       },
     },
-    pageSize: 1000, // 假设一次查询的ID数量不会超过1000
+    pageSize: 1000,
   })
 
   return data.records || []
@@ -222,4 +216,3 @@ module.exports = {
   deleteCategory,
   updateCategory,
 }
-
