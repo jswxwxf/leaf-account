@@ -13,6 +13,14 @@ const {
 const db = cloud.database()
 const _ = db.command
 
+/**
+ * 获取或创建用户账本。
+ * 如果提供了 accountId，则直接获取该账本。
+ * 如果提供了 name，则先查找用户自己的账本，若不存在，则从公共模板创建。
+ * @param {object} event - 云函数事件对象
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<object>} - 账本对象
+ */
 async function getAccount(event, models) {
   const { name = 'leaf-maple', accountId } = event.query || {}
   const { OPENID } = cloud.getWXContext()
@@ -92,6 +100,13 @@ async function getAccount(event, models) {
   throw new BizError(`名为 "${name}" 的账本不存在，请检查账本名称或联系管理员。`)
 }
 
+/**
+ * 对账功能。
+ * 计算实际余额与系统余额的差异，并创建一条调整账单以抹平差异。
+ * @param {object} event - 云函数事件对象，body 中应包含 actualBalance
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<object>} - 更新后的账本对象
+ */
 async function reconcileAccount(event, models) {
   const { accountId } = event.query
   const { actualBalance } = event.body
@@ -162,6 +177,13 @@ async function reconcileAccount(event, models) {
   return getAccount({ ...event, query: { ...event.query, accountId } }, models)
 }
 
+/**
+ * 获取所有可用账本列表。
+ * 根据 `opened` 参数可以筛选已启用、未启用或所有账本。
+ * @param {object} event - 云函数事件对象
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<Array<object>>} - 账本列表
+ */
 async function getAccounts(event, models) {
   const { opened } = event.query || {}
   const { OPENID } = cloud.getWXContext()
@@ -208,6 +230,13 @@ async function getAccounts(event, models) {
   return [...privateAccounts, ...availablePublicAccounts]
 }
 
+/**
+ * 停用（删除）一个账本及其所有关联数据。
+ * 这是一个事务性操作，会回滚所有更改如果中途出错。
+ * @param {object} event - 云函数事件对象
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<object>} - 操作结果
+ */
 async function deactivateAccount(event, models) {
   const transaction = await db.startTransaction()
   try {
@@ -224,6 +253,13 @@ async function deactivateAccount(event, models) {
   }
 }
 
+/**
+ * 更新账本信息（例如，重命名）。
+ * 这是一个事务性操作。
+ * @param {object} event - 云函数事件对象
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<object>} - 更新后的账本对象
+ */
 async function updateAccount(event, models) {
   const { updateAccount: _updateAccount } = require('./helper.js')
   const transaction = await db.startTransaction()
@@ -241,6 +277,12 @@ async function updateAccount(event, models) {
   }
 }
 
+/**
+ * 获取指定账本中存在账单的所有年份。
+ * @param {object} event - 云函数事件对象
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<Array<number>>} - 年份数组
+ */
 async function getAccountYears(event, models) {
   const { accountId } = event.query
   const { OPENID } = cloud.getWXContext()
@@ -271,6 +313,18 @@ async function getAccountYears(event, models) {
   return result.list.map((item) => item._id)
 }
 
+/**
+ * 导出账本的所有账单数据为 Excel 文件。
+ * 这是一个异步任务，会逐步更新任务进度。
+ * 1. 拉取所有账单数据。
+ * 2. 关联账单的分类和标签信息。
+ * 3. 生成 Excel 文件。
+ * 4. 上传文件到云存储。
+ * 5. 返回文件 ID。
+ * @param {object} event - 云函数事件对象
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<{taskId: string}>} - 异步任务ID
+ */
 async function exportAccount(event, models) {
   const { taskId } = await createTask({}, models)
 
@@ -435,6 +489,17 @@ async function exportAccount(event, models) {
   return { taskId }
 }
 
+/**
+ * 从 Excel 文件导入账单数据。
+ * 这是一个危险操作，会先清空目标账本的所有现有数据。
+ * 这是一个异步任务，会逐步更新任务进度。
+ * 1. 解析上传的 Excel 文件。
+ * 2. 清空旧数据。
+ * 3. 批量导入新数据。
+ * @param {object} event - 云函数事件对象, query 中应包含 fileID
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<{taskId: string}>} - 异步任务ID
+ */
 async function importAccount(event, models) {
   const { taskId } = await createTask({}, models)
 

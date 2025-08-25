@@ -4,6 +4,10 @@ const { getTagsByIds } = require('./tag.js')
 const db = cloud.database()
 const _ = db.command
 
+/**
+ * 自定义业务逻辑错误类。
+ * 用于在事务中区分业务错误和系统错误，以便正确处理回滚。
+ */
 class BizError extends Error {
   constructor(message) {
     super(message)
@@ -11,6 +15,14 @@ class BizError extends Error {
   }
 }
 
+/**
+ * 更新账户核心逻辑。
+ * 可用于增加/减少余额、收入、支出，或修改标题。
+ * @param {object} event - 云函数事件对象
+ * @param {object} models - 数据模型实例
+ * @param {object} [dbOrTransaction] - 可选的数据库或事务实例
+ * @returns {Promise<object>} - 更新后的账户对象
+ */
 async function updateAccount(event, models, dbOrTransaction) {
   const { accountId } = event.query || {}
   const { balanceIncrement, incomeIncrement, expenseIncrement } = event.body || {}
@@ -60,6 +72,11 @@ async function updateAccount(event, models, dbOrTransaction) {
   throw new Error('更新用户账户失败')
 }
 
+/**
+ * 将任意值解析为标准的货币格式（保留两位小数的数字）。
+ * @param {*} amount - 需要解析的金额
+ * @returns {number} - 格式化后的金额
+ */
 function parseMoney(amount) {
   const num = parseFloat(amount)
   if (isNaN(num)) {
@@ -68,6 +85,12 @@ function parseMoney(amount) {
   return Number(num.toFixed(2))
 }
 
+/**
+ * 尝试将字符串解析为 JSON 对象。
+ * 如果解析失败，则返回原始字符串。
+ * @param {string} str - 需要解析的字符串
+ * @returns {object|string} - 解析后的对象或原始字符串
+ */
 function tryParseJSON(str) {
   if (typeof str !== 'string') {
     return str
@@ -79,6 +102,11 @@ function tryParseJSON(str) {
   }
 }
 
+/**
+ * 尝试将 JavaScript 值转换为 JSON 字符串。
+ * @param {*} value - 需要转换的值
+ * @returns {string} - JSON 字符串或原始值的字符串表示
+ */
 function tryStringifyJSON(value) {
   if (typeof value === 'object' && value !== null) {
     try {
@@ -90,6 +118,12 @@ function tryStringifyJSON(value) {
   return value
 }
 
+/**
+ * 为账单列表填充完整的标签对象。
+ * @param {Array<object>} bills - 账单列表，其中 tags 字段为 ID 数组
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<Array<object>>} - 填充了完整标签对象的账单列表
+ */
 async function populateTagsForBills(bills, models) {
   if (bills.length > 0) {
     const allTagIds = [...new Set(bills.flatMap((bill) => bill.tags || []).filter(Boolean))]
@@ -108,6 +142,14 @@ async function populateTagsForBills(bills, models) {
   return bills
 }
 
+/**
+ * 保存单条账单的核心逻辑（创建或更新）。
+ * @param {object} billToSave - 要保存的账单对象
+ * @param {string} accountId - 账户 ID
+ * @param {object} models - 数据模型实例
+ * @param {object} [dbOrTransaction] - 可选的数据库或事务实例
+ * @returns {Promise<object>} - 保存后的账单对象
+ */
 async function saveBill(billToSave, accountId, models, dbOrTransaction) {
   const { OPENID } = cloud.getWXContext()
   const originalBill = { ...billToSave }
@@ -312,6 +354,12 @@ async function saveTransfer(event, models, dbOrTransaction) {
   }
 }
 
+/**
+ * 为账单列表填充完整的分类对象。
+ * @param {Array<object>} bills - 账单列表，其中 category 字段为 ID
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<Array<object>>} - 填充了完整分类对象的账单列表
+ */
 async function populateCategoriesForBills(bills, models) {
   if (!bills || bills.length === 0) {
     return []
@@ -336,6 +384,14 @@ async function populateCategoriesForBills(bills, models) {
   })
 }
 
+/**
+ * 删除账单的核心逻辑。
+ * 会自动处理关联的转账账单，并更新相关账户的余额。
+ * @param {object} event - 云函数事件对象
+ * @param {object} models - 数据模型实例
+ * @param {object} [dbOrTransaction] - 可选的数据库或事务实例
+ * @returns {Promise<{deleted: number}>} - 包含删除数量的对象
+ */
 async function deleteBills(event, models, dbOrTransaction) {
   const { ids, accountId } = event.query
   const { isDeactivating } = event
@@ -412,6 +468,14 @@ async function deleteBills(event, models, dbOrTransaction) {
   return { deleted: deleteResult.stats.removed }
 }
 
+/**
+ * 停用（删除）账本的核心逻辑。
+ * 会删除账本下的所有账单，并处理关联的转账记录。
+ * @param {object} event - 云函数事件对象
+ * @param {object} models - 数据模型实例
+ * @param {object} dbOrTransaction - 数据库事务实例
+ * @returns {Promise<object>} - 操作结果
+ */
 async function deactivateAccount(event, models, dbOrTransaction) {
   const { accountId } = event.query
   const { OPENID } = cloud.getWXContext()
@@ -478,6 +542,14 @@ async function deactivateAccount(event, models, dbOrTransaction) {
   }
 }
 
+/**
+ * 根据名称和类型批量获取分类。
+ * 如果分类不存在，则会自动为当前用户创建。
+ * @param {object} event - 云函数事件对象
+ * @param {object} models - 数据模型实例
+ * @param {object} [dbOrTransaction] - 可选的数据库或事务实例
+ * @returns {Promise<Array<object>>} - 分类对象列表
+ */
 async function getCategoryByNames(event, models, dbOrTransaction) {
   const { categories: categoriesInfo } = event.query || {}
   const { OPENID } = cloud.getWXContext()
@@ -558,6 +630,14 @@ async function getCategoryByNames(event, models, dbOrTransaction) {
   return finalCategories
 }
 
+/**
+ * 根据名称批量获取标签。
+ * 如果标签不存在，则会自动为当前用户创建。
+ * @param {object} event - 云函数事件对象
+ * @param {object} models - 数据模型实例
+ * @param {object} [dbOrTransaction] - 可选的数据库或事务实例
+ * @returns {Promise<Array<object>>} - 标签对象列表
+ */
 async function getTagsByNames(event, models, dbOrTransaction) {
   const { names } = event.query || {}
   const { OPENID } = cloud.getWXContext()
