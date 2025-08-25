@@ -507,8 +507,8 @@ async function importAccount(event, models) {
           const processedNewBills = newBillsToProcess.map(billData => {
             const category = categoryMap.get(`${billData.categoryName}-${billData.type}`)
             if (!category) return null
-            const tagIds = billData.tags.map(tagName => tagMap.get(tagName)?._id).filter(Boolean)
-            return { ...billData, category, tags: tagIds }
+            const tags = billData.tags.map(tagName => tagMap.get(tagName)).filter(Boolean)
+            return { ...billData, category, tags }
           }).filter(Boolean)
 
           const BATCH_SIZE = 10

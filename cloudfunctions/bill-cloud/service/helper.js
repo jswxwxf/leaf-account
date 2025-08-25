@@ -149,7 +149,7 @@ async function saveBill(billToSave, accountId, models, dbOrTransaction) {
       (dataToSave.amount > 0 ? dataToSave.amount : 0) - (oldBill.amount > 0 ? oldBill.amount : 0),
     )
     const expenseIncrement = parseMoney(
-      (dataToSave.amount < 0 ? dataToSave.amount : 0) - (oldBill.amount < 0 ? oldBill.amount : 0),
+      (oldBill.amount < 0 ? Math.abs(oldBill.amount) : 0) - (dataToSave.amount < 0 ? Math.abs(dataToSave.amount) : 0),
     )
 
     await updateAccount(
@@ -165,7 +165,7 @@ async function saveBill(billToSave, accountId, models, dbOrTransaction) {
   } else {
     const balanceIncrement = dataToSave.amount
     const incomeIncrement = balanceIncrement > 0 ? balanceIncrement : 0
-    const expenseIncrement = balanceIncrement < 0 ? balanceIncrement : 0
+    const expenseIncrement = balanceIncrement < 0 ? Math.abs(balanceIncrement) : 0
 
     await updateAccount(
       { query: { accountId }, body: { balanceIncrement, incomeIncrement, expenseIncrement } },
@@ -575,7 +575,7 @@ async function getTagsByNames(event, models, dbOrTransaction) {
     })
     .get()
 
-  const existingTags = existingData.records || []
+  const existingTags = existingData || []
   const existingTagMap = new Map(existingTags.map((t) => [t.name, t]))
 
   const tagsToCreate = names.filter((name) => !existingTagMap.has(name))
@@ -597,7 +597,7 @@ async function getTagsByNames(event, models, dbOrTransaction) {
         _openid: { $eq: OPENID },
       })
       .get()
-    return allData.records || []
+    return allData || []
   }
 
   return existingTags
