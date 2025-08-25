@@ -477,34 +477,38 @@ async function importAccount(event, models) {
         })
       })
 
-      const totalCount = billsFromExcel.length
-
-      const originBillIds = billsFromExcel.map(b => b.originBill)
-      const { data: existingBills } = await db.collection('bill').where({
-        originBill: _.in(originBillIds),
-        account: accountId,
-        _openid: OPENID,
-      }).get()
-      const existingOriginIds = new Set(existingBills.map(b => b.originBill))
-
-      let processedCount = existingOriginIds.size
       await updateTask({
         query: { taskId },
-        body: { status: 'processing', message: { text: `文件解析完成${processedCount > 0 ? `，已跳过 ${processedCount} 条已导入账单` : ''}...`, progress: Math.round((processedCount/totalCount) * 100) } },
+        body: { status: 'processing', message: { text: '文件解析完成，正在清空旧数据...' } },
       }, models)
 
-      const newBillsToProcess = billsFromExcel.filter(b => !existingOriginIds.has(b.originBill))
+      // 清空账本数据
+      await db.collection('bill').where({ account: accountId, _openid: OPENID }).remove()
+      await db.collection('category').where({ account: accountId, _openid: OPENID }).remove()
+      await db.collection('tag').where({ account: accountId, _openid: OPENID }).remove()
+      await models.account.update({
+        filter: { where: { _id: { $eq: accountId } } },
+        data: { balance: 0 },
+      })
 
-      if (newBillsToProcess.length > 0) {
+      let processedCount = 0
+      const totalCount = billsFromExcel.length
+
+      await updateTask({
+        query: { taskId },
+        body: { status: 'processing', message: { text: '旧数据已清空，准备导入新数据...' } },
+      }, models)
+
+      if (billsFromExcel.length > 0) {
           const { getCategoryByNames, getTagsByNames } = require('./helper.js')
-          const tagNames = [...new Set(newBillsToProcess.flatMap(b => b.tags))]
+          const tagNames = [...new Set(billsFromExcel.flatMap(b => b.tags))]
           const tags = await getTagsByNames({ query: { names: tagNames } }, models)
           const tagMap = new Map(tags.map(t => [t.name, t]))
-          const categoriesInfo = [...new Map(newBillsToProcess.map(b => [`${b.categoryName}-${b.type}`, b])).values()].map(b => ({ name: b.categoryName, type: b.type }))
+          const categoriesInfo = [...new Map(billsFromExcel.map(b => [`${b.categoryName}-${b.type}`, b])).values()].map(b => ({ name: b.categoryName, type: b.type }))
           const categories = await getCategoryByNames({ query: { categories: categoriesInfo } }, models)
           const categoryMap = new Map(categories.map(c => [`${c.name}-${c.type}`, c]))
 
-          const processedNewBills = newBillsToProcess.map(billData => {
+          const processedNewBills = billsFromExcel.map(billData => {
             const category = categoryMap.get(`${billData.categoryName}-${billData.type}`)
             if (!category) return null
             const tags = billData.tags.map(tagName => tagMap.get(tagName)).filter(Boolean)

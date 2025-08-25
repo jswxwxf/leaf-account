@@ -32,9 +32,14 @@ defineComponent({
       }
     }
 
+    const reset = () => {
+      fileName.value = ''
+    }
+
     return {
       fileName,
       onTap,
+      reset,
     }
   },
 })

@@ -134,7 +134,7 @@ function useTaskWorker() {
 
 defineComponent({
   // 将需要在模板中使用的数据和方法放在 setup 中返回
-  setup() {
+  setup(props, { selectComponent }) {
     const visible = ref(false)
     const currentAccount = ref(null)
     const mode = ref() // 'import' | 'export'
@@ -205,6 +205,10 @@ defineComponent({
     const show = async (account, options = {}) => {
       mode.value = options.mode || 'import'
       currentAccount.value = account
+
+      // 重置文件上传组件
+      selectComponent('#file-uploader')?.reset()
+      uploadFile.value = null
 
       await fetchYears(account._id)
 
