@@ -55,24 +55,14 @@ async function addCategory(event, models) {
   }
   category.name = categoryName
 
-  // 检查是否存在同名分类（包括用户自己的和内置的）
-  const {
-    data: { total },
-  } = await models.category.list({
-    filter: {
-      where: {
-        $and: [
-          { name: { $eq: category.name } },
-          { $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }] },
-        ],
-      },
-    },
-    getCount: true,
-    pageSize: 1,
-  })
+  // 全局检查是否存在同名同类型的分类
+  const { total } = await db.collection('category').where({
+    name: category.name,
+    type: category.type
+  }).count()
 
   if (total > 0) {
-    throw new BizError(`分类 "${category.name}" 已存在`)
+    throw new BizError(`类型为“${category.type === '10' ? '收入' : '支出'}”的分类 “${category.name}” 已存在`)
   }
 
   const result = await models.category.create({
@@ -167,27 +157,15 @@ async function updateCategory(event, models) {
   }
 
   if (data.name) {
-    // 检查是否存在同名分类（包括用户自己的和内置的，但排除当前正在更新的分类）
-    const {
-      data: { total, records },
-    } = await models.category.list({
-      filter: {
-        where: {
-          $and: [
-            { name: { $eq: data.name } },
-            { $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }] },
-          ],
-        },
-      },
-      getCount: true,
-      pageSize: 1,
-    })
+    // 全局检查是否存在同名同类型的分类，并排除自身
+    const { total } = await db.collection('category').where({
+      _id: _.neq(_id), // 排除当前正在更新的文档
+      name: data.name,
+      type: data.type
+    }).count()
 
     if (total > 0) {
-      const existingCategory = records[0]
-      if (existingCategory._id !== _id) {
-        throw new BizError(`分类 "${data.name}" 已存在或与内置分类同名`)
-      }
+      throw new BizError(`类型为“${data.type === '10' ? '收入' : '支出'}”的分类 “${data.name}” 已存在`)
     }
   }
 
@@ -236,17 +214,10 @@ async function getCategoriesByIds(event, models) {
 }
 
 
-async function getCategoryByNames(event, models) {
-  const { getCategoryByNames: _getCategoryByNames } = require('./helper.js')
-  return _getCategoryByNames(event, models, db)
-}
-
-
 module.exports = {
   getCategories,
   getCategoryIds,
   getCategoriesByIds,
-  getCategoryByNames,
   addCategory,
   deleteCategory,
   updateCategory,

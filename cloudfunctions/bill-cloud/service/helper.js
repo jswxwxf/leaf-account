@@ -277,22 +277,12 @@ async function saveTransfer(event, models, dbOrTransaction) {
   const main = async (tx) => {
     // 1. 获取源账户和目标账户的信息
     // 注意：在事务中，所有读操作也需要使用事务实例
-    const [sourceAccount, destinationAccount, transferOutCategory, transferInCategory] =
+    const [sourceAccount, destinationAccount, transferOutCategoryRes, transferInCategoryRes] =
       await Promise.all([
         getAccount({ query: { accountId: sourceAccountId } }, models, tx),
         getAccount({ query: { accountId: destinationAccountId } }, models, tx),
-        models.category.list(
-          {
-            filter: { where: { name: { $eq: '转账' }, _openid: { $empty: true } } },
-          },
-          tx,
-        ),
-        models.category.list(
-          {
-            filter: { where: { name: { $eq: '收转账' }, _openid: { $empty: true } } },
-          },
-          tx,
-        ),
+        dbInstance.collection('category').where({ name: '转账', _openid: _.exists(false) }).get(),
+        dbInstance.collection('category').where({ name: '收转账', _openid: _.exists(false) }).get()
       ])
 
     if (!sourceAccount) throw new Error('转账失败：找不到源账户')
@@ -304,13 +294,13 @@ async function saveTransfer(event, models, dbOrTransaction) {
       throw new BizError('账户余额不足，无法转账')
     }
 
-    if (!transferOutCategory.data || transferOutCategory.data.records.length === 0)
+    if (!transferOutCategoryRes.data || transferOutCategoryRes.data.length === 0)
       throw new Error('转账失败：找不到内置分类“转账”')
-    if (!transferInCategory.data || transferInCategory.data.records.length === 0)
+    if (!transferInCategoryRes.data || transferInCategoryRes.data.length === 0)
       throw new Error('转账失败：找不到内置分类“收转账”')
 
-    const transferOutCat = transferOutCategory.data.records[0]
-    const transferInCat = transferInCategory.data.records[0]
+    const transferOutCat = transferOutCategoryRes.data[0]
+    const transferInCat = transferInCategoryRes.data[0]
 
     // 2. 构建转出和转入账单
     const billOut = {
@@ -558,49 +548,74 @@ async function deactivateAccount(event, models, dbOrTransaction) {
 }
 
 async function getCategoryByNames(event, models, dbOrTransaction) {
-  const { names, type } = event.query || {}
+  const { categories: categoriesInfo } = event.query || {} // 接收一个 {name, type} 对象数组
   const { OPENID } = cloud.getWXContext()
   const dbInstance = dbOrTransaction || db
 
-  if (!names || names.length === 0) {
+  if (!categoriesInfo || categoriesInfo.length === 0) {
     return []
   }
 
-  // 1. 查找已存在的分类
-  const { data: existingData } = await dbInstance.collection('category').where({
-    name: _.in(names),
-    $or: [{ _openid: { $eq: OPENID } }, { _openid: { $empty: true } }],
+  const finalCategories = []
+  const categoryMap = new Map() // 使用 Map 来跟踪已处理的分类，避免重复
+
+  // 1. 先批量查找所有用户自己的私有分类
+  const orConditions = categoriesInfo.map(info => ({ name: info.name, type: info.type }))
+  const { data: privateCategories } = await dbInstance.collection('category').where({
+    _openid: OPENID,
+    $or: orConditions
   }).get()
 
-  const existingCategories = existingData.records || []
-  const existingCategoryMap = new Map(existingCategories.map(c => [c.name, c]))
+  for (const cat of privateCategories) {
+    const key = `${cat.name}-${cat.type}`
+    if (!categoryMap.has(key)) {
+      finalCategories.push(cat)
+      categoryMap.set(key, cat)
+    }
+  }
 
-  // 2. 找出需要新建的分类
-  const categoriesToCreate = names.filter(name => !existingCategoryMap.has(name))
+  // 2. 找出尚未匹配到的分类，再去公共分类里找
+  const remainingInfos = categoriesInfo.filter(info => !categoryMap.has(`${info.name}-${info.type}`))
+  if (remainingInfos.length > 0) {
+    const publicOrConditions = remainingInfos.map(info => ({ name: info.name, type: info.type }))
+    const { data: publicCategories } = await dbInstance.collection('category').where({
+      _openid: _.exists(false),
+      $or: publicOrConditions
+    }).get()
 
-  // 3. 批量创建新分类
+    for (const cat of publicCategories) {
+      const key = `${cat.name}-${cat.type}`
+      if (!categoryMap.has(key)) {
+        finalCategories.push(cat)
+        categoryMap.set(key, cat)
+      }
+    }
+  }
+
+  // 3. 最后，找出仍未匹配到的，这些是需要新建的
+  const categoriesToCreate = categoriesInfo.filter(info => !categoryMap.has(`${info.name}-${info.type}`))
   if (categoriesToCreate.length > 0) {
-    const newCategoriesData = categoriesToCreate.map(name => ({
-      name,
-      type: type || '20', // 如果没有提供类型，默认为支出
+    const newCategoriesData = categoriesToCreate.map(info => ({
+      name: info.name,
+      type: info.type,
       _openid: OPENID,
+      createdAt: Date.now(),
       usedAt: Date.now(),
     }))
 
-    await dbInstance.collection('category').add({
+    const createResult = await dbInstance.collection('category').add({
       data: newCategoriesData,
     })
 
-    // 4. 重新获取所有相关的分类以包含新建的
-     const { data: allData } = await dbInstance.collection('category').where({
-        name: _.in(names),
-        _openid: { $eq: OPENID },
-      }).get()
-    return allData.records || []
+    // 获取新创建的分类的完整文档
+    const { data: newCreatedCategories } = await dbInstance.collection('category').where({
+      _id: _.in(createResult._ids)
+    }).get()
+
+    finalCategories.push(...newCreatedCategories)
   }
 
-  // 5. 如果没有需要创建的，直接返回已存在的
-  return existingCategories
+  return finalCategories
 }
 
 async function getTagsByNames(event, models, dbOrTransaction) {
@@ -648,8 +663,44 @@ async function getTagsByNames(event, models, dbOrTransaction) {
   return existingTags
 }
 
+/**
+ * 核心批量保存账单逻辑（内部函数）。
+ * @param {Array<object>} bills - 准备存入数据库的账单对象数组
+ * @param {string} accountId - 账户 ID
+ * @param {object} models - 数据模型实例
+ * @param {object} dbOrTransaction - 数据库事务实例
+ * @returns {Array<object>} - 保存后的账单对象数组
+ */
+async function saveBills(bills, accountId, models, dbOrTransaction) {
+  if (!Array.isArray(bills) || bills.length === 0) {
+    throw new Error('请求中缺少 bills 数组')
+  }
+
+  const savedBills = []
+
+  for (const bill of bills) {
+    if (!bill.category) {
+      throw new Error('批量保存的账单中存在缺少 category 的项')
+    }
+    const isTransfer = bill.category.name === '转账' || bill.category.name === '收转账'
+    let savedBill
+    if (isTransfer) {
+      // 为了调用 saveTransfer，我们需要模拟一个 event 对象
+      const transferEvent = { body: { bill }, query: { accountId } }
+      savedBill = await saveTransfer(transferEvent, models, dbOrTransaction)
+    } else {
+      // 复用单个保存的逻辑
+      savedBill = await saveBill(bill, accountId, models, dbOrTransaction)
+    }
+    savedBills.push(savedBill)
+  }
+  return savedBills
+}
+
+
 module.exports = {
   saveBill,
+  saveBills, // 导出新的 _saveBills
   updateAccount,
   parseMoney,
   populateTagsForBills,

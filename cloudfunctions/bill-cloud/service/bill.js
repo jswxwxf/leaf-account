@@ -8,6 +8,7 @@ const {
   populateTagsForBills,
   populateCategoriesForBills,
   saveBill: _saveBill,
+  saveBills: _saveBills, // 导入新的辅助函数
   deleteBills: _deleteBills,
 } = require('./helper.js')
 
@@ -58,31 +59,10 @@ async function saveBills(event, models) {
   const { bills } = event.body
   const { accountId } = event.query || {}
 
-  if (!Array.isArray(bills) || bills.length === 0) {
-    throw new Error('请求中缺少 bills 数组')
-  }
-
-  const { saveTransfer: _saveTransfer } = require('./helper.js')
   const transaction = await db.startTransaction()
-
   try {
-    const savedBills = []
-    for (const bill of bills) {
-      // 假设前端传入的 bill 中包含完整的 category 对象
-      if (!bill.category) {
-        throw new Error('批量保存的账单中存在缺少 category 的项')
-      }
-      const isTransfer = bill.category.name === '转账' || bill.category.name === '收转账'
-      let savedBill
-      if (isTransfer) {
-        const transferEvent = { body: { bill }, query: { accountId } }
-        savedBill = await _saveTransfer(transferEvent, models, transaction)
-      } else {
-        savedBill = await _saveBill(bill, accountId, models, transaction)
-      }
-      savedBills.push(savedBill)
-    }
-
+    // 直接调用 helper 函数，并传入事务
+    const savedBills = await _saveBills(bills, accountId, models, transaction)
     await transaction.commit()
     return savedBills
   } catch (e) {

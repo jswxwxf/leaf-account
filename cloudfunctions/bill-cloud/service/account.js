@@ -503,7 +503,7 @@ async function importAccount(event, models) {
     const { accountId, fileID } = event.query
     const { OPENID } = cloud.getWXContext()
     const transaction = await db.startTransaction()
-    const { saveBill: _saveBill } = require('./helper.js')
+    const { saveBills: _saveBills } = require('./helper.js')
 
     try {
       // 2.1 更新任务状态为处理中
@@ -557,46 +557,67 @@ async function importAccount(event, models) {
           query: { taskId },
           body: {
             status: 'processing',
-            message: { text: `文件解析完成，共发现 ${billsToSave.length} 条账单，正在导入...` },
+            message: { text: `文件解析完成，正在导入 ${billsToSave.length} 条账单...` },
           },
         },
         models,
       )
 
-      // 2.4 获取或创建分类和标签
-      // 2.4 获取或创建标签
-      const tagNames = [...new Set(billsToSave.flatMap((b) => b.tags))]
+      // 2.4 批量预处理分类和标签
       const { getCategoryByNames, getTagsByNames } = require('./helper.js')
+
+      // 预处理标签
+      const tagNames = [...new Set(billsToSave.flatMap((b) => b.tags))]
       const tags = await getTagsByNames({ query: { names: tagNames } }, models, transaction)
       const tagMap = new Map(tags.map((t) => [t.name, t]))
 
-      // 2.5 批量保存账单，并在循环内处理分类
+      // 预处理分类
+      const categoriesInfo = [...new Map(billsToSave.map(b => [`${b.categoryName}-${b.type}`, b])).values()]
+        .map(b => ({ name: b.categoryName, type: b.type }))
+      const categories = await getCategoryByNames({ query: { categories: categoriesInfo } }, models, transaction)
+      const categoryMap = new Map(categories.map(c => [`${c.name}-${c.type}`, c]))
+
+      // 2.5 批量保存账单
+      const BATCH_SIZE = 10
+      let processedCount = 0
+      const totalCount = billsToSave.length
+
+      // 先将所有账单数据准备好（填充 category 和 tags）
+      const processedBills = []
       for (const billData of billsToSave) {
-        // 根据金额动态确定分类类型
-        const categoryType = billData.amount > 0 ? '10' : '20'
-
-        // 每次只处理一个分类，确保类型正确
-        const categories = await getCategoryByNames(
-          { query: { names: [billData.categoryName], type: categoryType } },
-          models,
-          transaction
-        )
-
-        if (!categories || categories.length === 0) {
-           console.warn(`Category not found and could not be created: ${billData.categoryName}`)
-           continue
+        const category = categoryMap.get(`${billData.categoryName}-${billData.type}`)
+        if (!category) {
+          console.warn(`Category not found: ${billData.categoryName}`)
+          continue
         }
-        const category = categories[0]
-
-        const tagIds = billData.tags.map(tagName => tagMap.get(tagName)?._id).filter(Boolean)
-
-        const billToSave = {
+        const tagIds = billData.tags.map((tagName) => tagMap.get(tagName)?._id).filter(Boolean)
+        processedBills.push({
           ...billData,
           category: { _id: category._id, name: category.name, type: category.type },
           tags: tagIds,
+        })
+      }
+
+      // 分批执行保存
+      for (let i = 0; i < processedBills.length; i += BATCH_SIZE) {
+        const batch = processedBills.slice(i, i + BATCH_SIZE)
+        if (batch.length > 0) {
+          await _saveBills(batch, accountId, models, transaction)
+          processedCount += batch.length
+
+          // 每处理完一个批次，更新一次进度
+          const progress = Math.round((processedCount / totalCount) * 100)
+          await updateTask(
+            {
+              query: { taskId },
+              body: {
+                status: 'processing',
+                message: { text: `正在导入... (${processedCount}/${totalCount})`, progress },
+              },
+            },
+            models,
+          )
         }
-        // 直接调用 helper 里的 _saveBill，并传入事务
-        await _saveBill(billToSave, accountId, models, transaction)
       }
 
       await transaction.commit()

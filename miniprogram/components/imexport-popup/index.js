@@ -51,6 +51,22 @@ function useTaskWorker() {
     }
   }
 
+  const uploadAndGetFileID = async (uploadFile, accountName) => {
+    try {
+      statusText.value = '正在上传文件...'
+      const fileName = `${accountName}_import_${Date.now()}.xlsx`
+      const uploadResult = await wx.cloud.uploadFile({
+        cloudPath: `imports/${fileName}`,
+        filePath: uploadFile.path,
+      })
+      return uploadResult.fileID
+    } catch (error) {
+      console.error('上传文件失败', error)
+      wx.showToast({ title: '上传失败', icon: 'none' })
+      throw error
+    }
+  }
+
   const run = async (taskStarter) => {
     if (isRunning.value) return
     isRunning.value = true
@@ -74,16 +90,15 @@ function useTaskWorker() {
           statusText.value = message.text || ''
 
           if (task.status === 'processing') {
-            if (progress.value < 90) progress.value += 5
+            // 直接使用后端返回的真实进度
+            if (message.progress) {
+              progress.value = message.progress
+            }
           } else if (task.status === 'completed') {
             clearTaskInterval()
             progress.value = 100
-            try {
-              await downloadAndOpenFile(task.result.fileID)
-              resolve(task)
-            } catch (err) {
-              reject(err)
-            }
+            // 任务成功后，直接 resolve 任务对象，由调用方决定后续操作
+            resolve(task)
           } else if (task.status === 'failed') {
             clearTaskInterval()
             const err = new Error(message.text || '任务执行失败')
@@ -112,6 +127,8 @@ function useTaskWorker() {
     isRunning,
     run,
     stop: clearTaskInterval,
+    downloadAndOpenFile,
+    uploadAndGetFileID, // 暴露上传方法
   }
 }
 
@@ -131,6 +148,8 @@ defineComponent({
       isRunning: isTaskRunning,
       run: runTask,
       stop: stopTask,
+      downloadAndOpenFile,
+      uploadAndGetFileID,
     } = useTaskWorker()
 
     // Promise a+
@@ -142,21 +161,36 @@ defineComponent({
       year.value = res.data[0]
     }
 
-    const onFileChange = (payload) => {
-      uploadFile.value = payload
+    const onFileChange = (e) => {
+      uploadFile.value = e.detail
     }
 
     const onTap = async () => {
-      if (mode.value === 'export') {
-        await runTask(() => exportAccount(currentAccount.value._id, year.value))
-      } else {
-        if (!uploadFile.value) {
-          wx.showToast({ title: '请选择文件', icon: 'none' })
-          return
+      try {
+        if (mode.value === 'export') {
+          const task = await runTask(() => exportAccount(currentAccount.value._id, year.value))
+          // 导出成功后，手动调用下载
+          if (task && task.result && task.result.fileID) {
+            await downloadAndOpenFile(task.result.fileID)
+          }
+        } else {
+          if (!uploadFile.value) {
+            wx.showToast({ title: '请选择文件', icon: 'none' })
+            return
+          }
+          // 1. 调用独立的上传方法
+          const fileID = await uploadAndGetFileID(uploadFile.value, currentAccount.value.name)
+          // 2. 将 fileID 传给任务启动器
+          await runTask(() => importAccount(currentAccount.value._id, fileID))
+          // 导入成功后，直接提示
+          Toast.success('导入任务已成功')
         }
-        await runTask(() => importAccount(currentAccount.value._id, uploadFile.value.path))
+      } catch (err) {
+        // 错误已在 useTaskWorker 中处理，这里可以根据需要添加额外处理
+        console.error('onTap task failed:', err)
+      } finally {
+        onClose()
       }
-      onClose()
     }
 
     const onClose = () => {
