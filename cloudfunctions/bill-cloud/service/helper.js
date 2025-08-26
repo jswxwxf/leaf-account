@@ -261,10 +261,16 @@ async function saveTransfer(event, models, dbOrTransaction) {
   if (bill.originBill) {
     const counterpartRes = await (dbOrTransaction || db)
       .collection('bill')
-      .where({
-        relatedBill: bill.originBill,
-        _openid: OPENID,
-      })
+      .where(
+        _.or([
+          {
+            relatedBill: bill.originBill,
+          },
+          {
+            deletedRelatedBill: bill.originBill,
+          },
+        ]),
+      )
       .limit(1)
       .get()
 
@@ -277,10 +283,14 @@ async function saveTransfer(event, models, dbOrTransaction) {
         .doc(currentBill._id)
         .update({ data: { relatedBill: counterpartBill._id } })
       // Also update the counterpart's relatedBill to point to the new bill's ID
-      await (dbOrTransaction || db)
-        .collection('bill')
-        .doc(counterpartBill._id)
-        .update({ data: { relatedBill: currentBill._id } })
+      const counterpartUpdateData = {
+        relatedBill: currentBill._id,
+      }
+      // If the link was re-established via deletedRelatedBill, remove that field
+      if (counterpartBill.deletedRelatedBill === bill.originBill) {
+        counterpartUpdateData.deletedRelatedBill = _.remove()
+      }
+      await (dbOrTransaction || db).collection('bill').doc(counterpartBill._id).update({ data: counterpartUpdateData })
       return { ...currentBill, relatedBill: counterpartBill._id }
     }
   }
