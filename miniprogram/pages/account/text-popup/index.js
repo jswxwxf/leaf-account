@@ -36,7 +36,7 @@ defineComponent({
     }
 
     const handleChange = (e) => {
-      content.value = e.detail.value
+      content.value = e.detail
     }
 
     return {
