@@ -1,4 +1,5 @@
-import { defineComponent, onHide, ref } from '@vue-mini/core'
+import { defineComponent, ref } from '@vue-mini/core'
+import { onTabChange } from '@/utils/index.js'
 
 defineComponent({
   setup() {
@@ -8,7 +9,7 @@ defineComponent({
     let _resolve
     let _reject
 
-    onHide(() => {
+    onTabChange(() => {
       handleClose()
     })
 

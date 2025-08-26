@@ -1,5 +1,6 @@
-import { defineComponent, onHide, onReady, ref } from '@vue-mini/core'
+import { defineComponent, onReady, ref } from '@vue-mini/core'
 import { updateAccount } from '@/api/account.js'
+import { onTabChange } from '@/utils/index.js'
 
 defineComponent({
   setup(props, { selectComponent }) {
@@ -15,7 +16,7 @@ defineComponent({
       form.value = selectComponent('#form')
     })
 
-    onHide(() => {
+    onTabChange(() => {
       onClose()
     })
 

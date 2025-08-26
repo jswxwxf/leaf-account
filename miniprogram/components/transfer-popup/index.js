@@ -1,5 +1,6 @@
-import { defineComponent, onHide, ref } from '@vue-mini/core'
+import { defineComponent, ref } from '@vue-mini/core'
 import { getAccounts } from '@/api/account.js'
+import { onTabChange } from '@/utils/index.js'
 
 export default defineComponent({
   setup(props, { selectComponent }) {
@@ -21,7 +22,7 @@ export default defineComponent({
       accounts.value = res.data.filter((item) => item.name !== accountToFilter.name)
     }
 
-    onHide(() => {
+    onTabChange(() => {
       onClose()
     })
 

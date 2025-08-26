@@ -1,4 +1,5 @@
-import { defineComponent, ref, onReady, onHide } from '@vue-mini/core'
+import { defineComponent, ref, onReady } from '@vue-mini/core'
+import { onTabChange } from '@/utils/index.js'
 
 defineComponent({
   setup(props, { triggerEvent, selectComponent }) {
@@ -12,7 +13,7 @@ defineComponent({
       form.value = selectComponent('#reconcileForm')
     })
 
-    onHide(() => {
+    onTabChange(() => {
       handleClose()
     })
 

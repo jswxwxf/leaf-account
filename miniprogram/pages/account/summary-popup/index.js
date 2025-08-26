@@ -1,7 +1,8 @@
-import { defineComponent, ref, computed, watch, inject, onHide } from '@vue-mini/core'
+import { defineComponent, ref, computed, watch, inject } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
 import { getAllBills } from '@/api/bill.js'
 import { formatDate } from '@/utils/date.js'
+import { onTabChange } from '@/utils/index.js'
 import { generateSummaryText } from '@/service/bill-service.js'
 import { storeKey } from '../store'
 
@@ -28,7 +29,7 @@ defineComponent({
 
     watch(currentDate, generateSummary)
 
-    onHide(() => {
+    onTabChange(() => {
       handleClose()
     })
 

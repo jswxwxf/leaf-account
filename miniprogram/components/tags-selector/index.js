@@ -1,7 +1,8 @@
-import { defineComponent, ref, onReady, onHide } from '@vue-mini/core'
+import { defineComponent, ref, onReady } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast'
 import { getTags } from '@/api/tag.js'
 import { newTag, saveTags } from '@/service/tag-service.js'
+import { onTabChange } from '@/utils/index.js'
 
 function useNewTag(tags, selectedTags, tagForm) {
   const theNewTag = ref(newTag())
@@ -85,7 +86,7 @@ defineComponent({
 
     fetchTags()
 
-    onHide(() => {
+    onTabChange(() => {
       handleClose()
     })
 

@@ -1,4 +1,4 @@
-import { defineComponent, ref, provide, onReady, onUnload, watch, onLoad } from '@vue-mini/core'
+import { defineComponent, ref, provide, onReady, watch, onTabItemTap } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
 import Dialog from '@vant/weapp/dialog/dialog.js'
 import { reconcileAccount } from '@/api/account.js'
@@ -9,14 +9,8 @@ import { useOcr } from '@/composables/use-ocr.js'
 import { useAi } from '@/composables/use-ai.js'
 
 function useBillPopup(state, billPopupRef) {
-  const {
-    currentAccount,
-    typeValue,
-    monthValue,
-    searchText,
-    updateBills,
-    updateAccountSummary,
-  } = state
+  const { currentAccount, typeValue, monthValue, searchText, updateBills, updateAccountSummary } =
+    state
 
   const billPopped = ref(false)
 
@@ -309,6 +303,10 @@ defineComponent({
         return
       }
     }
+
+    onTabItemTap(() => {
+      getApp().globalData.currentTab.value = 'account'
+    })
 
     return {
       ...state,

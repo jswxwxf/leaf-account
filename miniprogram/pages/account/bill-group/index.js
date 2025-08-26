@@ -1,4 +1,5 @@
-import { computed, defineComponent, inject, onHide } from '@vue-mini/core'
+import { computed, defineComponent, inject } from '@vue-mini/core'
+import { onTabChange } from '@/utils/index.js'
 import { storeKey } from '../store'
 
 defineComponent({
@@ -15,7 +16,7 @@ defineComponent({
   setup(props, { triggerEvent, selectAllComponents }) {
     const { searchText } = inject(storeKey)
 
-    onHide(() => {
+    onTabChange(() => {
       selectAllComponents('.swipe-cell').forEach((cell) => {
         cell.close()
       })

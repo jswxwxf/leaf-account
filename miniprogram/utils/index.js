@@ -1,4 +1,4 @@
-import { ref } from '@vue-mini/core'
+import { ref, watch } from '@vue-mini/core'
 import { toRPN, calculateRPN } from './calculator.js'
 
 /**
@@ -148,4 +148,16 @@ export function promisic(func) {
 export const px2rpx = function (pxNumber) {
   const { screenWidth } = wx.getWindowInfo()
   return (750 / screenWidth) * pxNumber
+}
+
+/**
+ * 监听 currentTab 变化的钩子
+ * @param {(newTab: string, oldTab: string) => void} callback 回调函数
+ * @returns {() => void} 返回一个可以停止监听的函数
+ */
+export function onTabChange(callback) {
+  const stop = watch(getApp().globalData.currentTab, (newTab, oldTab) => {
+    callback(newTab, oldTab)
+  })
+  return stop
 }

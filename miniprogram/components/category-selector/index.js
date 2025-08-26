@@ -1,8 +1,9 @@
-import { defineComponent, ref, onMounted, onReady, onHide } from '@vue-mini/core'
+import { defineComponent, ref, onMounted, onReady } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
 import { getCategories, addCategory } from '@/api/category.js'
 import { newCategory } from '@/service/category-service.js'
 import { showAccountSelector } from '@/utils/helper.js'
+import { onTabChange } from '@/utils/index.js'
 
 function useNewCategory() {
   const theNewCategory = ref(newCategory())
@@ -76,7 +77,7 @@ defineComponent({
 
     fetchCategories()
 
-    onHide(() => {
+    onTabChange(() => {
       handleClose()
     })
 

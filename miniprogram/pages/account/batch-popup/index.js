@@ -1,7 +1,8 @@
-import { defineComponent, inject, nextTick, onHide, ref } from '@vue-mini/core'
+import { defineComponent, inject, nextTick, ref } from '@vue-mini/core'
 import { isEmpty } from 'lodash'
 import Toast from '@vant/weapp/toast/toast.js'
 import { parseDate } from '@/utils/date.js'
+import { onTabChange } from '@/utils/index.js'
 import { newBill } from '@/service/bill-service.js'
 import { storeKey, MAX_BATCH_BILLS } from '../store'
 
@@ -15,7 +16,7 @@ defineComponent({
 
     let _resolve, _reject
 
-    onHide(() => {
+    onTabChange(() => {
       handleClose()
     })
 

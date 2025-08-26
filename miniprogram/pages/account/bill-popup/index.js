@@ -1,4 +1,5 @@
-import { defineComponent, ref, onReady, inject, onHide, computed } from '@vue-mini/core'
+import { defineComponent, ref, onReady, inject, computed } from '@vue-mini/core'
+import { onTabChange } from '@/utils/index.js'
 import { storeKey } from '../store'
 
 defineComponent({
@@ -9,6 +10,10 @@ defineComponent({
     const bill = ref({})
     const billForm = ref()
 
+    onTabChange((newTab) => {
+      handleClose()
+    })
+
     onReady(() => {
       // 获取表单组件实例
       billForm.value = selectComponent('#billForm')
@@ -16,10 +21,6 @@ defineComponent({
     })
 
     let _resolve, _reject
-
-    onHide(() => {
-      handleClose()
-    })
 
     const show = (value) => {
       bill.value = value

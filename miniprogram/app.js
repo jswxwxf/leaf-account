@@ -10,6 +10,7 @@ createApp({
     account: ref({
       name: 'leaf-maple',
     }),
+    currentTab: ref('account'),
   },
   setup() {
     wx.cloud.init({

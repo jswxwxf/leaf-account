@@ -1,5 +1,6 @@
-import { defineComponent, onHide, onShow, ref } from '@vue-mini/core'
+import { defineComponent, onShow, ref } from '@vue-mini/core'
 import { getAccounts } from '@/api/account.js'
+import { onTabChange } from '@/utils/index.js'
 
 export default defineComponent({
   setup() {
@@ -19,7 +20,7 @@ export default defineComponent({
         .map((item) => ({ ...item, name: item.title }))
     }
 
-    onHide(() => {
+    onTabChange(() => {
       onClose()
     })
 

@@ -1,6 +1,13 @@
-import { defineComponent, ref, onShow, onReady, provide, onPullDownRefresh } from '@vue-mini/core'
+import {
+  defineComponent,
+  ref,
+  onReady,
+  provide,
+  onPullDownRefresh,
+  onTabItemTap,
+} from '@vue-mini/core'
 import Dialog from '@vant/weapp/dialog/dialog.js'
-import { getAccount, getAccounts, updateAccount, deactivateAccount } from '@/api/account.js'
+import { getAccount, updateAccount, deactivateAccount } from '@/api/account.js'
 import { saveTransfer } from '@/api/bill.js'
 import store, { storeKey } from './store'
 import { showImexportPopup } from '@/utils/helper.js'
@@ -130,6 +137,10 @@ defineComponent({
       // 重新获取账本列表，更新余额
       fetchAccounts()
     }
+
+    onTabItemTap(() => {
+      getApp().globalData.currentTab.value = 'cabinet'
+    })
 
     return {
       accounts,

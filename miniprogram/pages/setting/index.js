@@ -1,4 +1,4 @@
-import { defineComponent } from '@vue-mini/core'
+import { defineComponent, onTabItemTap } from '@vue-mini/core'
 import Dialog from '@vant/weapp/dialog/dialog'
 import { resetBills } from '@/api/bill.js'
 
@@ -40,6 +40,10 @@ defineComponent({
         url: '/pages/tag/index',
       })
     }
+
+    onTabItemTap(() => {
+      getApp().globalData.currentTab.value = 'setting'
+    })
 
     return {
       handleReset,
