@@ -382,7 +382,7 @@ async function deleteBill(event, models) {
         body: {
           balanceIncrement: parseMoney(-amountToDelete),
           incomeIncrement: parseMoney(amountToDelete > 0 ? -amountToDelete : 0),
-          expenseIncrement: parseMoney(amountToDelete < 0 ? -amountToDelete : 0),
+          expenseIncrement: parseMoney(amountToDelete < 0 ? amountToDelete : 0),
         },
       },
       models,
@@ -410,7 +410,7 @@ async function deleteBill(event, models) {
             body: {
               balanceIncrement: parseMoney(-relatedAmount),
               incomeIncrement: parseMoney(relatedAmount > 0 ? -relatedAmount : 0),
-              expenseIncrement: parseMoney(relatedAmount < 0 ? -relatedAmount : 0),
+              expenseIncrement: parseMoney(relatedAmount < 0 ? relatedAmount : 0),
             },
           },
           models,

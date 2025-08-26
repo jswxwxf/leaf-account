@@ -397,11 +397,13 @@ async function exportAccount(event, models) {
       }, models)
 
       const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
-      const formattedBills = allBills.map((bill) => {
-        const d = dayjs(bill.datetime)
+      const formattedBills = allBills.map((bill, index) => {
+        const rowNumber = index + 3 // Excel行号从3开始（标题占2行）
         return {
           _id: bill._id,
-          date: d.format('YYYY年MM月DD日') + ' ' + weekdays[d.day()],
+          date: {
+            formula: `TEXT(J${rowNumber}/1000/86400+25569+8/24, "yyyy""年""mm""月""dd""日"" aaaa")`,
+          },
           timestamp: bill.datetime,
           type: bill.category.type === '10' ? '收入' : '支出',
           category: bill.category.name,

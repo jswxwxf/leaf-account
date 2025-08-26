@@ -255,6 +255,36 @@ async function saveTransfer(event, models, dbOrTransaction) {
   const { category, amount, datetime, note } = bill
   const { getAccount } = require('./account.js')
 
+  const { OPENID } = cloud.getWXContext()
+
+  // For imported bills, try to find the counterpart and re-link
+  if (bill.originBill) {
+    const counterpartRes = await (dbOrTransaction || db)
+      .collection('bill')
+      .where({
+        relatedBill: bill.originBill,
+        _openid: OPENID,
+      })
+      .limit(1)
+      .get()
+
+    if (counterpartRes.data && counterpartRes.data.length > 0) {
+      const counterpartBill = counterpartRes.data[0]
+      const currentBill = await saveBill(bill, currentAccountId, models, dbOrTransaction)
+      // Re-establish the link
+      await (dbOrTransaction || db)
+        .collection('bill')
+        .doc(currentBill._id)
+        .update({ data: { relatedBill: counterpartBill._id } })
+      // Also update the counterpart's relatedBill to point to the new bill's ID
+      await (dbOrTransaction || db)
+        .collection('bill')
+        .doc(counterpartBill._id)
+        .update({ data: { relatedBill: currentBill._id } })
+      return { ...currentBill, relatedBill: counterpartBill._id }
+    }
+  }
+
   const targetAccountInfo = bill.category?.account
   if (!targetAccountInfo || !targetAccountInfo._id) {
     throw new Error('转账失败：目标账户信息不完整')
@@ -300,12 +330,15 @@ async function saveTransfer(event, models, dbOrTransaction) {
     const transferOutCat = transferOutCategoryRes.data[0]
     const transferInCat = transferInCategoryRes.data[0]
 
+    const noteForBillOut = isTransferOut ? (note || `向 ${destinationAccount.title} 转账`) : `向 ${destinationAccount.title} 转账`
+    const noteForBillIn = isTransferOut ? `从 ${sourceAccount.title} 转入` : (note || `从 ${sourceAccount.title} 转入`)
+
     const billOut = {
       ...bill,
       amount: -transferAmount,
       category: transferOutCat,
       account: sourceAccountId,
-      note: isTransferOut ? note : `向 ${destinationAccount.title} 转账`,
+      note: noteForBillOut,
     }
 
     const billIn = {
@@ -314,7 +347,7 @@ async function saveTransfer(event, models, dbOrTransaction) {
       amount: transferAmount,
       category: transferInCat,
       account: destinationAccountId,
-      note: isTransferOut ? `从 ${sourceAccount.title} 转入` : note,
+      note: noteForBillIn,
       tags: [],
     }
 
