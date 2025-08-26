@@ -197,7 +197,10 @@ defineComponent({
           // 导入成功后，直接提示
           Toast.success('导入任务已成功')
         }
-        onClose()
+        visible.value = false
+        if (_resolve) {
+          _resolve()
+        }
       } catch (err) {
         // 错误已在 useTaskWorker 中处理，这里可以根据需要添加额外处理
         console.error('onTap task failed:', err)

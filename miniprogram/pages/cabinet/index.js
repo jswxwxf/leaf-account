@@ -127,6 +127,8 @@ defineComponent({
         confirmButtonColor: '#fa5151',
       })
       await showImexportPopup(account, { mode: 'import' })
+      // 重新获取账本列表，更新余额
+      fetchAccounts()
     }
 
     return {
