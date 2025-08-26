@@ -14,6 +14,54 @@ const db = cloud.database()
 const _ = db.command
 
 /**
+ * 异步重算并更新指定账户的余额、总收入和总支出。
+ * 这是一个“即发即忘”的函数，用于后台数据校准。
+ * @param {string} accountId - 需要重算的账户ID
+ * @param {string} OPENID - 用户的 OPENID
+ */
+async function recalculateAccountBalance(accountId, OPENID) {
+  try {
+    const accountRes = await db.collection('account').doc(accountId).get()
+    if (!accountRes.data) return
+
+    const account = accountRes.data
+    const $ = db.command.aggregate
+    const aggregateResult = await db
+      .collection('bill')
+      .aggregate()
+      .match({ account: accountId, _openid: OPENID })
+      .group({
+        _id: null,
+        totalIncome: $.sum($.cond([$.gt(['$amount', 0]), '$amount', 0])),
+        totalExpense: $.sum($.cond([$.lt(['$amount', 0]), '$amount', 0])),
+      })
+      .end()
+
+    const summary = aggregateResult.list[0] || { totalIncome: 0, totalExpense: 0 }
+    const newTotalIncome = summary.totalIncome
+    const newTotalExpense = summary.totalExpense
+    const newBalance = newTotalIncome + newTotalExpense
+
+    if (
+      Math.abs(account.balance - newBalance) > 0.01 ||
+      Math.abs(account.totalIncome - newTotalIncome) > 0.01 ||
+      Math.abs(account.totalExpense - newTotalExpense) > 0.01
+    ) {
+      await db.collection('account').doc(accountId).update({
+        data: {
+          balance: newBalance,
+          totalIncome: newTotalIncome,
+          totalExpense: newTotalExpense,
+          updatedAt: Date.now(),
+        },
+      })
+    }
+  } catch (err) {
+    console.error(`Error recalculating account ${accountId}:`, err)
+  }
+}
+
+/**
  * 获取或创建用户账本。
  * 如果提供了 accountId，则直接获取该账本。
  * 如果提供了 name，则先查找用户自己的账本，若不存在，则从公共模板创建。
@@ -36,6 +84,7 @@ async function getAccount(event, models) {
     })
     if (accountRes.data) {
       const account = accountRes.data
+      setTimeout(() => recalculateAccountBalance(accountId, OPENID), 0)
       delete account._openid
       return account
     }
@@ -55,6 +104,7 @@ async function getAccount(event, models) {
 
   if (userAccountRes.data && userAccountRes.data.records.length > 0) {
     const account = userAccountRes.data.records[0]
+    setTimeout(() => recalculateAccountBalance(account._id, OPENID), 0)
     delete account._openid
     return account
   }
