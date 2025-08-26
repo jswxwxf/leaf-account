@@ -9,8 +9,8 @@
   <block wx:else>
     <account-summary hidden="{{ billPopped }}" @balance-tap="handleReconcile" />
 
-    <bill-popup id="bill-popup" class="shadow-md mb-1" />
-    <batch-popup id="batch-popup" class="shadow-md mb-1" />
+    <bill-popup id="bill-popup" />
+    <batch-popup id="batch-popup" />
 
     <!-- Bill List -->
     <view class="flex-1 relative">

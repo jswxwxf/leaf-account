@@ -6,7 +6,7 @@
   close-icon-position="bottom-right"
   custom-style="position: static;"
 >
-  <view class="h-full w-full bg-white flex flex-col border-b border-solid border-gray-300 max-h-[60vh]">
+  <view class="h-full w-full bg-neutral-50 flex flex-col max-h-[60vh]" style="--cell-background-color: #fafafa">
     <!-- Main Content: make it scrollable -->
     <view class="flex-1 overflow-y-auto px-1 pt-1">
       <!-- Rows -->

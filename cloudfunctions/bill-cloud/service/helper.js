@@ -480,11 +480,13 @@ async function deactivateAccount(event, models, dbOrTransaction) {
   const { accountId } = event.query
   const { OPENID } = cloud.getWXContext()
 
+  // 1. 验证用户对目标账本的所有权
   const accountRes = await dbOrTransaction.collection('account').doc(accountId).get()
   if (!accountRes.data || accountRes.data._openid !== OPENID) {
     throw new BizError(`找不到 ID 为 ${accountId} 的账本，或没有权限删除。`)
   }
 
+  // 2. 找到账本内的所有账单ID
   const billsInAccountRes = await dbOrTransaction
     .collection('bill')
     .where({
@@ -494,6 +496,8 @@ async function deactivateAccount(event, models, dbOrTransaction) {
     .get()
   const billIdsInAccount = (billsInAccountRes.data || []).map((b) => b._id)
 
+  // 3. 查找并处理与其他账本关联的转账账单
+  // 如果A账本的账单被B账本的转账账单关联，删除A账本时，需要处理B账本的关联记录
   const relatedBillsRes = await dbOrTransaction
     .collection('bill')
     .where({
@@ -503,8 +507,9 @@ async function deactivateAccount(event, models, dbOrTransaction) {
     .get()
   const relatedBills = relatedBillsRes.data || []
 
+  // 解除关联关系，防止留下悬空引用
   if (relatedBills.length > 0) {
-    const batchSize = 3
+    const batchSize = 3 // 分批处理，避免单次操作数据量过大
     for (let i = 0; i < relatedBills.length; i += batchSize) {
       const batch = relatedBills.slice(i, i + batchSize)
       const updatePromises = batch.map((bill) => {
@@ -513,7 +518,9 @@ async function deactivateAccount(event, models, dbOrTransaction) {
           .doc(bill._id)
           .update({
             data: {
+              // 将被删除的关联ID存起来，以备追溯
               deletedRelatedBill: bill.relatedBill,
+              // 原子操作：移除字段
               relatedBill: _.remove(),
             },
           })
@@ -522,6 +529,7 @@ async function deactivateAccount(event, models, dbOrTransaction) {
     }
   }
 
+  // 4. 删除账本内的所有账单
   let deletedCount = 0
   if (billIdsInAccount.length > 0) {
     const deleteResult = await dbOrTransaction
@@ -533,8 +541,10 @@ async function deactivateAccount(event, models, dbOrTransaction) {
     deletedCount = deleteResult.stats.removed
   }
 
+  // 5. 删除账本本身
   await dbOrTransaction.collection('account').doc(accountId).remove()
 
+  // 6. 返回操作结果
   return {
     success: true,
     message: '账本及其所有账单已删除，关联转账记录已处理',

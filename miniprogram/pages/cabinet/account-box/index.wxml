@@ -28,15 +28,15 @@
       <view class="flex flex-col text-xs bg-black/30 py-1 px-2 w-36 gap-1">
         <view class="flex justify-between gap-2">
           <text>收入</text>
-          <text>¥{{ utils.formatMoney(account.totalIncome) }}</text>
+          <text class="font-bold">¥{{ utils.formatMoney(account.totalIncome) }}</text>
         </view>
         <view class="flex justify-between gap-2">
           <text>支出</text>
-          <text>¥{{ utils.formatMoney(account.totalExpense) }}</text>
+          <text class="font-bold">¥{{ utils.formatMoney(account.totalExpense) }}</text>
         </view>
         <view class="flex justify-between gap-2">
           <text>余额</text>
-          <text>¥{{ utils.formatMoney(account.balance) }}</text>
+          <text class="font-bold">¥{{ utils.formatMoney(account.balance) }}</text>
         </view>
       </view>
     </view>
