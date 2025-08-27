@@ -17,6 +17,10 @@ defineComponent({
       type: String,
       value: 'text',
     },
+    disabled: {
+      type: Boolean,
+      value: false,
+    },
     ...formItemProps('note'),
   },
   setup(props, { triggerEvent }) {

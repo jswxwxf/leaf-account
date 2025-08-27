@@ -16,6 +16,10 @@ defineComponent({
       type: String,
       value: '请选择分类',
     },
+    disabled: {
+      type: Boolean,
+      value: false,
+    },
     ...formItemProps('category'),
   },
   setup(props, { triggerEvent }) {
@@ -23,6 +27,7 @@ defineComponent({
     const { clearError } = formState
 
     async function handleClick() {
+      if (props.disabled) return
       clearError()
       const result = await showCategorySelector()
       triggerEvent('change', result)

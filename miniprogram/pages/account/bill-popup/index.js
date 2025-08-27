@@ -56,10 +56,16 @@ defineComponent({
       }
     }
 
+    const isTransferEditing = computed(() => {
+      const currentBill = bill.value
+      return !!(currentBill && currentBill._id && currentBill.relatedBill)
+    })
+
     return {
       visible,
       bill,
       searchText,
+      isTransferEditing,
       show,
       handleClose,
       handleConfirm,

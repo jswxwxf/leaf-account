@@ -24,13 +24,17 @@ async function saveBill(event, models) {
   const { bill } = event.body
   const { accountId } = event.query || {}
 
-  // 前端传入的仍然是完整的 category 对象
-  if (!bill || !bill.category) {
-    throw new Error('请求中缺少 bill 或 category 对象')
-  }
+  // 判断是否为转账操作：
+  // 1. 新建转账时，category.name 会是 '转账' 或 '收转账'
+  // 2. 更新转账时，bill 会同时包含 _id 和 relatedBill
+  const isTransfer =
+    (bill.category && (bill.category.name === '转账' || bill.category.name === '收转账')) ||
+    (bill._id && bill.relatedBill)
 
-  // 业务逻辑判断依然使用传入的 category 对象
-  const isTransfer = bill.category.name === '转账' || bill.category.name === '收转账'
+  // 如果不是转账，则必须有 category
+  if (!isTransfer && !bill.category) {
+    throw new Error('请求中缺少 category 对象')
+  }
   const { saveTransfer: _saveTransfer } = require('./helper.js')
 
   const transaction = await db.startTransaction()
@@ -263,6 +267,7 @@ async function getBills(event, models) {
         category: true, // 字段名是 category, 其值为 ID
         tags: true,
         createdAt: true,
+        relatedBill: true,
       },
       filter: { where: periodWhereClause },
       orderBy: [{ datetime: 'desc' }],
@@ -337,6 +342,7 @@ async function getAllBills(event, models) {
       category: true, // 字段名是 category, 其值为 ID
       tags: true,
       createdAt: true,
+      relatedBill: true,
     },
     filter: { where },
     orderBy: [{ datetime: 'desc' }],

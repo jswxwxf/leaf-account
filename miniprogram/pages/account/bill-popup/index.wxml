@@ -25,6 +25,7 @@
           rule="required"
           data-field="category"
           @change="handleFormChange"
+          disabled="{{ isTransferEditing }}"
         />
         <money-field
           value="{{ bill.amount }}"
@@ -41,6 +42,7 @@
           rule="required|max:20"
           data-field="note"
           @change="handleFormChange"
+          disabled="{{ isTransferEditing }}"
         />
         <tags-field
           value="{{ bill.tags }}"
