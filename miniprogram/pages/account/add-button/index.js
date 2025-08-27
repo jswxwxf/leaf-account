@@ -17,7 +17,7 @@ defineComponent({
       // { name: '导入文件', value: 'import' },
       { name: '⚖️ 余额对账', value: 'reconcile' },
       { name: '📊 今日汇总', value: 'today-summary' },
-      { name: '📑 批量更新', value: 'batch-update' },
+      { name: '📑 批量修改', value: 'batch-edit' },
     ])
 
     const handleMainClick = (e) => {

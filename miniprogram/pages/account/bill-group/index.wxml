@@ -1,11 +1,17 @@
 <wxs src="../../../utils/utils.wxs" module="utils" />
 
-<view class="bg-white shadow-sm mb-2" hidden="{{ filteredBills.length === 0 }}">
+<view class="bg-white shadow-sm mb-2" hidden="{{ filteredBills.length === 0 }}" style="--checkbox-label-margin: 8px">
   <van-cell-group>
     <van-cell>
       <view slot="title" class="flex justify-between items-center">
         <view class="flex items-center {{ utils.isWeekend(item.datetime) ? 'text-orange-500' : 'text-gray-500' }}">
-          <text class="font-bold text-base">{{ utils.formatDateTime(item.datetime, 'YYYY年MM月DD日') }}</text>
+          <van-checkbox
+            shape="square"
+            icon-size="16px"
+            custom-class="{{ batchEditPopped ? '' : 'batch-checkbox--hidden' }}"
+          >
+            <text class="font-bold text-base">{{ utils.formatDateTime(item.datetime, 'YYYY年MM月DD日') }}</text>
+          </van-checkbox>
           <text class="text-sm ml-2">{{ utils.getDayOfWeek(item.datetime) }} {{ item.bills.length }} 笔</text>
         </view>
         <view class="text-xs text-gray-500">
@@ -15,18 +21,26 @@
       </view>
     </van-cell>
     <block wx:for="{{ filteredBills }}" wx:key="_id" wx:for-item="bill">
-      <van-swipe-cell class="swipe-cell" right-width="{{ 64 * 3 }}">
+      <van-swipe-cell class="swipe-cell" right-width="{{ 64 * 3 }}" disabled="{{ billPopped || batchEditPopped }}">
         <van-cell custom-class="{{ utils.isToday(bill.createdAt) ? 'bill-item--today' : '' }}">
           <view class="flex items-center">
-            <view class="flex-1 text-left min-w-0" @tap="handleCopyNote" data-bill="{{bill}}">
-              <view class="text-base text-black">{{ bill.category.name }}</view>
-              <view class="text-xs text-gray-500 overflow-hidden van-ellipsis">{{ bill.note }}</view>
-            </view>
+            <van-checkbox
+              value="{{ batchChecked[bill._id] }}"
+              shape="square"
+              icon-size="16px"
+              @change="onBatchCheck"
+              custom-class="{{ batchEditPopped ? '' : 'batch-checkbox--hidden' }}"
+              class="flex-1 text-left min-w-0"
+              data-bill="{{bill}}"
+            >
+              <view @tap="handleCopyNote" data-bill="{{bill}}">
+                <view class="text-base text-black">{{ bill.category.name }}</view>
+                <view class="text-xs text-gray-500 overflow-hidden van-ellipsis">{{ bill.note }}</view>
+              </view>
+            </van-checkbox>
             <view wx:if="{{ bill.tags.length }}" class="flex items-end">
               <block wx:for="{{ bill.tags }}" wx:key="_id" wx:for-item="tag">
-                <bill-tag type="{{tag.type}}" custom-class="ml-1">
-                  {{ tag.name }}
-                </bill-tag>
+                <bill-tag type="{{tag.type}}" custom-class="ml-1">{{ tag.name }}</bill-tag>
               </block>
             </view>
             <view class="w-24 text-right font-bold {{ bill.amount > 0 ? 'text-green-500' : 'text-gray-800' }}">
@@ -35,9 +49,27 @@
           </view>
         </van-cell>
         <view slot="right" class="van-swipe-cell__right flex h-full">
-          <view class="h-full w-[64px] flex items-center justify-center text-white text-sm bg-blue-400 {{ disabled ? 'grayscale' : '' }}" @tap="handleCopy" data-bill="{{bill}}">复制</view>
-          <view class="h-full w-[64px] flex items-center justify-center text-white text-sm bg-green-500 {{ disabled ? 'grayscale' : '' }}" @tap="handleEdit" data-bill="{{bill}}">编辑</view>
-          <view class="h-full w-[64px] flex items-center justify-center text-white text-sm bg-red-500" @tap="handleDelete" data-bill="{{bill}}">删除</view>
+          <view
+            class="h-full w-[64px] flex items-center justify-center text-white text-sm bg-blue-400 {{ disabled ? 'grayscale' : '' }}"
+            @tap="handleCopy"
+            data-bill="{{bill}}"
+          >
+            复制
+          </view>
+          <view
+            class="h-full w-[64px] flex items-center justify-center text-white text-sm bg-green-500 {{ disabled ? 'grayscale' : '' }}"
+            @tap="handleEdit"
+            data-bill="{{bill}}"
+          >
+            编辑
+          </view>
+          <view
+            class="h-full w-[64px] flex items-center justify-center text-white text-sm bg-red-500"
+            @tap="handleDelete"
+            data-bill="{{bill}}"
+          >
+            删除
+          </view>
         </view>
       </van-swipe-cell>
     </block>

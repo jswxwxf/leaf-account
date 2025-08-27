@@ -7,7 +7,7 @@
 
   <!-- 正常页面内容 -->
   <block wx:else>
-    <account-summary hidden="{{ billPopped }}" @balance-tap="handleReconcile" />
+    <account-summary hidden="{{ billPopped || batchEditPopped }}" @balance-tap="handleReconcile" />
 
     <bill-popup id="bill-popup" />
     <batch-popup id="batch-popup" />
@@ -27,13 +27,7 @@
       >
         <view class="pb-16 pt-2 relative">
           <block wx:for="{{ dailyBills }}" wx:key="_id">
-            <bill-group
-              item="{{ item }}"
-              @copy="handleCopyBill"
-              @edit="handleEditBill"
-              @delete="handleDeleteBill"
-              disabled="{{ billPopped }}"
-            />
+            <bill-group item="{{ item }}" @copy="handleCopyBill" @edit="handleEditBill" @delete="handleDeleteBill" />
           </block>
           <!-- Loading and No More States -->
           <view class="py-4 text-center text-gray-500 text-sm">
@@ -52,7 +46,7 @@
 
     <!-- Fixed Add Button -->
     <view class="fixed bottom-16 right-4">
-      <add-button hidden="{{ billPopped }}" @click="handleAddBill" @select="handleActionSelect" />
+      <add-button hidden="{{ billPopped || batchEditPopped }}" @click="handleAddBill" @select="handleActionSelect" />
     </view>
   </block>
 </view>

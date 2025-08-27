@@ -1,4 +1,4 @@
-import { computed, defineComponent, inject } from '@vue-mini/core'
+import { computed, defineComponent, inject, watch } from '@vue-mini/core'
 import { onTabChange } from '@/utils/index.js'
 import { storeKey } from '../store'
 
@@ -14,13 +14,19 @@ defineComponent({
     },
   },
   setup(props, { triggerEvent, selectAllComponents }) {
-    const { searchText } = inject(storeKey)
+    const { searchText, billPopped, batchEditPopped, batchChecked, onBatchCheck } = inject(storeKey)
 
-    onTabChange(() => {
+    const clearSwipers = () => {
       selectAllComponents('.swipe-cell').forEach((cell) => {
         cell.close()
       })
+    }
+
+    onTabChange(() => {
+      clearSwipers()
     })
+    watch(batchEditPopped, clearSwipers)
+    watch(billPopped, clearSwipers)
 
     const handleCopy = (e) => {
       if (props.disabled) return
@@ -35,6 +41,7 @@ defineComponent({
     }
 
     const handleDelete = (e) => {
+      if (props.disabled) return
       const { bill } = e.currentTarget.dataset
       triggerEvent('delete', bill)
     }
@@ -58,11 +65,15 @@ defineComponent({
     })
 
     return {
+      billPopped,
+      batchEditPopped,
+      filteredBills,
+      batchChecked,
+      onBatchCheck,
       handleCopy,
       handleEdit,
       handleDelete,
       handleCopyNote,
-      filteredBills,
     }
   },
 })

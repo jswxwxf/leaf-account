@@ -37,8 +37,24 @@ export default function store() {
   // 前端搜索
   const searchText = ref('')
 
+  // 记账弹窗状态
+  const billPopped = ref(false)
+  const batchEditPopped = ref(false)
+
   function updateSearchText(e) {
     searchText.value = e.detail
+  }
+
+  // 批量编辑状态
+  const batchChecked = ref({})
+
+  function onBatchCheck(e) {
+    const { bill } = e.currentTarget.dataset
+    batchChecked.value[bill._id] = e.detail
+  }
+
+  function clearBatchCheck() {
+    batchChecked.value = {}
   }
 
   const notes = computed(() => {
@@ -214,6 +230,9 @@ export default function store() {
     totalBalance,
     loading,
     searchText,
+    billPopped,
+    batchEditPopped,
+    batchChecked,
     hasMore,
     notes,
     loadData,
@@ -222,6 +241,8 @@ export default function store() {
     updateBills,
     removeBills,
     updateSearchText,
+    onBatchCheck,
+    clearBatchCheck,
   }
 }
 

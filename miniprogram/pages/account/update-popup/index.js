@@ -1,10 +1,10 @@
-import { defineComponent, inject, ref } from '@vue-mini/core'
+import { defineComponent, inject, nextTick, ref } from '@vue-mini/core'
 import { onTabChange } from '@/utils/index.js'
 import { storeKey } from '../store'
 
 defineComponent({
   setup() {
-    const { searchText, updateSearchText, notes } = inject(storeKey)
+    const { searchText, updateSearchText, notes, clearBatchCheck } = inject(storeKey)
     const visible = ref(false)
 
     let _resolve, _reject
@@ -17,6 +17,7 @@ defineComponent({
     })
 
     const show = () => {
+      clearBatchCheck()
       visible.value = true
       return new Promise((resolve, reject) => {
         _resolve = resolve

@@ -9,10 +9,15 @@ import { useOcr } from '@/composables/use-ocr.js'
 import { useAi } from '@/composables/use-ai.js'
 
 function useBillPopup(state, billPopupRef) {
-  const { currentAccount, typeValue, monthValue, searchText, updateBills, updateAccountSummary } =
-    state
-
-  const billPopped = ref(false)
+  const {
+    currentAccount,
+    typeValue,
+    monthValue,
+    searchText,
+    updateBills,
+    updateAccountSummary,
+    billPopped,
+  } = state
 
   const processBill = async (initialBill) => {
     if (!billPopupRef.value) return
@@ -82,6 +87,8 @@ defineComponent({
       totalExpense,
       totalBalance,
       searchText,
+      billPopped,
+      batchEditPopped,
       removeBills,
       updateBills,
       updateAccountSummary,
@@ -97,7 +104,7 @@ defineComponent({
     const imagePath = ref('')
     const textContent = ref('')
 
-    const { billPopped, processBill } = useBillPopup(state, billPopup)
+    const { processBill } = useBillPopup(state, billPopup)
     const { handleOcr } = useProcessPhoto()
     const { analyzeBillsFromText } = useAi()
 
@@ -273,12 +280,12 @@ defineComponent({
       Toast.success('对账成功')
     }
 
-    const handleBatchUpdate = async () => {
-      billPopped.value = true
+    const handleBatchEdit = async () => {
+      batchEditPopped.value = true
       try {
         await updatePopup.value.show()
       } finally {
-        billPopped.value = false
+        batchEditPopped.value = false
       }
     }
 
@@ -313,8 +320,8 @@ defineComponent({
         handleTodaySummary()
         return
       }
-      if (action.detail.value === 'batch-update') {
-        handleBatchUpdate()
+      if (action.detail.value === 'batch-edit') {
+        handleBatchEdit()
         return
       }
     }
@@ -325,7 +332,6 @@ defineComponent({
 
     return {
       ...state,
-      billPopped,
       scrollTop,
       imagePath,
       textContent,
