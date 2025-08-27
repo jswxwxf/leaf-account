@@ -27,6 +27,7 @@ defineComponent({
     const { clearError } = formState
 
     async function handleClick() {
+      if (props.disabled) return
       clearError()
       const result = await showTagsSelector(props.value)
       triggerEvent('change', result)

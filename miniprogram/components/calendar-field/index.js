@@ -43,6 +43,7 @@ defineComponent({
     })
 
     const handleClick = async () => {
+      if (props.disabled) return
       clearError()
       const result = await showCalendar(props.value)
       triggerEvent('change', result)

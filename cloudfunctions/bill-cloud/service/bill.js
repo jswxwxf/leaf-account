@@ -527,7 +527,7 @@ async function deleteBills(event, models) {
  * @param {object} models - 数据模型实例
  */
 async function updateBills(event, models) {
-  const { ids } = event.query
+  const { ids, accountId } = event.query
   const data = event.body
   const { OPENID } = cloud.getWXContext()
 
@@ -539,23 +539,40 @@ async function updateBills(event, models) {
     throw { isBiz: true, message: '缺少更新数据' }
   }
 
-  // TODO: 后续需要更精细的权限控制和数据校验
-  // 例如：检查用户是否有权限更新这些账单
+  const updateData = { ...data }
 
+  // 如果更新数据中包含 category 对象，则提取其 ID
+  if (updateData.category && typeof updateData.category === 'object') {
+    updateData.category = updateData.category._id
+  }
+
+  // 如果更新数据中包含 tags 数组，则提取其 ID 列表
+  if (updateData.tags && Array.isArray(updateData.tags)) {
+    updateData.tags = updateData.tags.map((tag) => (typeof tag === 'object' ? tag._id : tag))
+  }
+
+  // 检查用户是否有权限更新这些账单
   try {
     const result = await db
       .collection('bill')
       .where({
         _id: _.in(ids),
         _openid: OPENID,
+        account: accountId, // 确保操作的是指定账户下的账单
       })
       .update({
         data: {
-          ...data,
+          ...updateData,
           updatedAt: db.serverDate(),
         },
       })
-    return result
+
+    if (result.stats.updated > 0) {
+      // 更新成功后，获取并返回最新的账单数据
+      const updatedBills = await getBillsByIds({ query: { ids } }, models)
+      return updatedBills
+    }
+    return []
   }
   catch (e) {
     // 记录详细错误，但向上抛出通用错误

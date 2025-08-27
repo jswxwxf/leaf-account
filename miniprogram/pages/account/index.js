@@ -2,7 +2,7 @@ import { defineComponent, ref, provide, onReady, watch, onTabItemTap } from '@vu
 import Toast from '@vant/weapp/toast/toast.js'
 import Dialog from '@vant/weapp/dialog/dialog.js'
 import { reconcileAccount } from '@/api/account.js'
-import { upsertBill, deleteBill, saveBills } from '@/api/bill.js'
+import { upsertBill, deleteBill, saveBills, updateBills as batchUpdateBills } from '@/api/bill.js'
 import { newBill } from '@/service/bill-service.js'
 import store, { MAX_BATCH_BILLS, storeKey } from './store'
 import { useOcr } from '@/composables/use-ocr.js'
@@ -284,7 +284,9 @@ defineComponent({
       batchEditPopped.value = true
       try {
         const { ids, data } = await updatePopup.value.show()
-        updateBills({ ids, accountId: currentAccount.value._id }, data)
+        const res = await batchUpdateBills({ ids, accountId: currentAccount.value._id }, data)
+        updateBills(res.data)
+        Toast.success('批量修改成功')
       } finally {
         batchEditPopped.value = false
       }
