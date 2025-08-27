@@ -73,9 +73,17 @@ export function upsertBill(bill, query = {}) {
  * @returns {Promise<any>}
  */
 export function updateBills(query = {}, data) {
+  const finalQuery = { ...query }
+
+  if (finalQuery.month) {
+    const { startTime, endTime } = getMonthRange(finalQuery.month)
+    finalQuery.startTime = startTime
+    finalQuery.endTime = endTime
+    delete finalQuery.month
+  }
   return post('bill-cloud', {
     $url: '/batch/bills/update',
-    query,
+    query: finalQuery,
     body: data,
   })
 }

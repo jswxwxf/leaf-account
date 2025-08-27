@@ -47,6 +47,7 @@ const WITH_ACCOUNT_ROUTES = [
   '/batch/bills',
   '/delete/bill',
   '/batch/bills/delete',
+  '/batch/bills/update',
 ]
 const WITH_SUMMARY_ROUTES = [
   '/upsert/bill',
@@ -54,6 +55,7 @@ const WITH_SUMMARY_ROUTES = [
   '/batch/bills',
   '/delete/bill',
   '/batch/bills/delete',
+  '/batch/bills/update',
 ]
 
 /**

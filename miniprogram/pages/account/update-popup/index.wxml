@@ -6,7 +6,10 @@
   close-icon-position="bottom-right"
   custom-style="position: static;"
 >
-  <view class="h-full w-full bg-neutral-50 flex flex-col max-h-[60vh] border-b border-b-slate-400" style="--cell-background-color: #fafafa">
+  <view
+    class="h-full w-full bg-neutral-50 flex flex-col max-h-[60vh] border-b border-b-slate-400"
+    style="--cell-background-color: #fafafa"
+  >
     <bill-form id="update-form">
       <van-cell-group border="{{ false }}" custom-class="flex-1 update-popup-cell-group pt-1 pl-4">
         <view class="flex items-center">
@@ -53,10 +56,12 @@
             checked-color="#07c160"
             @change="handleFieldChange"
             data-field="amount"
+            disabled="{{ hasConflictCategory }}"
           />
           <money-field
             label="更新金额"
             value="{{ updateData.amount }}"
+            placeholder="{{ hasConflictCategory  ? '分类不一致无法修改' : '请输入金额，支持简单运算' }}"
             data-field="amount"
             disabled="{{ !updateField.amount  }}"
             @change="handleFormChange"

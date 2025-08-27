@@ -67,12 +67,12 @@ defineComponent({
         return
       }
 
-      visible.value = false
       _resolve &&
         _resolve({
           ids: Object.keys(batchChecked.value).filter((id) => batchChecked.value[id]),
           data: updateData.value,
         })
+      visible.value = false
     }
 
     const handleFieldChange = (e) => {
@@ -98,10 +98,27 @@ defineComponent({
       return rawBills.value.some((bill) => checkedIds.includes(bill._id) && bill.relatedBill)
     })
 
+    const hasConflictCategory = computed(() => {
+      const checkedIds = Object.keys(batchChecked.value).filter((id) => batchChecked.value[id])
+      if (checkedIds.length < 2) return false
+
+      const checkedBills = rawBills.value.filter((bill) => checkedIds.includes(bill._id))
+      if (checkedBills.length < 2) return false
+
+      const firstType = checkedBills[0].category.type
+      return checkedBills.some((bill) => bill.category.type !== firstType)
+    })
+
     watch(hasTransferUpdating, (newVal) => {
       if (newVal) {
         updateField.value.category = false
         updateField.value.note = false
+      }
+    })
+
+    watch(hasConflictCategory, (newVal) => {
+      if (newVal) {
+        updateField.value.amount = false
       }
     })
 
@@ -111,6 +128,7 @@ defineComponent({
       updateField,
       updateData,
       hasTransferUpdating,
+      hasConflictCategory,
       show,
       handleClose,
       handleConfirm,

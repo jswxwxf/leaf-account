@@ -284,7 +284,16 @@ defineComponent({
       batchEditPopped.value = true
       try {
         const { ids, data } = await updatePopup.value.show()
-        const res = await batchUpdateBills({ ids, accountId: currentAccount.value._id }, data)
+        const res = await batchUpdateBills(
+          {
+            ids,
+            accountId: currentAccount.value._id,
+            month: monthValue.value,
+            type: typeValue.value,
+          },
+          data,
+        )
+        updateAccountSummary(res)
         updateBills(res.data)
         Toast.success('批量修改成功')
       } finally {

@@ -534,50 +534,149 @@ async function updateBills(event, models) {
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
     throw { isBiz: true, message: '缺少账单 ID' }
   }
-
   if (!data || Object.keys(data).length === 0) {
     throw { isBiz: true, message: '缺少更新数据' }
   }
 
-  const updateData = { ...data }
+  const transaction = await db.startTransaction()
 
-  // 如果更新数据中包含 category 对象，则提取其 ID
-  if (updateData.category && typeof updateData.category === 'object') {
-    updateData.category = updateData.category._id
-  }
-
-  // 如果更新数据中包含 tags 数组，则提取其 ID 列表
-  if (updateData.tags && Array.isArray(updateData.tags)) {
-    updateData.tags = updateData.tags.map((tag) => (typeof tag === 'object' ? tag._id : tag))
-  }
-
-  // 检查用户是否有权限更新这些账单
   try {
-    const result = await db
-      .collection('bill')
-      .where({
-        _id: _.in(ids),
-        _openid: OPENID,
-        account: accountId, // 确保操作的是指定账户下的账单
-      })
-      .update({
-        data: {
-          ...updateData,
-          updatedAt: db.serverDate(),
-        },
-      })
+    // 1. 获取所有待更新的旧账单
+    const oldBillsRes = await transaction.collection('bill').where({
+      _id: _.in(ids),
+      _openid: OPENID,
+      account: accountId,
+    }).get()
+
+    const oldBills = oldBillsRes.data
+    if (oldBills.length !== ids.length) {
+      await transaction.rollback()
+      throw new Error('部分账单不存在或无权限操作')
+    }
+
+    // 2. 准备更新数据
+    const updateData = { ...data, updatedAt: Date.now() }
+    if (updateData.category && typeof updateData.category === 'object') {
+      updateData.category = updateData.category._id
+    }
+    if (updateData.tags && Array.isArray(updateData.tags)) {
+      updateData.tags = updateData.tags.map(tag => (typeof tag === 'object' ? tag._id : tag))
+    }
+
+    // 根据 category 或旧金额，调整 amount 正负号
+    if (updateData.amount !== undefined) {
+      let amount = Math.abs(parseFloat(updateData.amount))
+      if (data.category && typeof data.category === 'object') {
+        // 优先使用传入的 category type
+        if (data.category.type === 10) { // 支出
+          updateData.amount = -amount
+        } else if (data.category.type === 20) { // 收入
+          updateData.amount = amount
+        }
+      } else if (oldBills.length > 0) {
+        // 如果不传 category，则参考旧金额的符号
+        const oldAmount = oldBills[0].amount
+        if (oldAmount < 0) {
+          updateData.amount = -amount
+        } else {
+          updateData.amount = amount
+        }
+      }
+    }
+
+    // 3. 计算账户余额和收支增量
+    let balanceIncrement = 0
+    let incomeIncrement = 0
+    let expenseIncrement = 0
+    const accountIncrements = {} // 用于存放不同账户的余额增量
+
+    if (updateData.amount !== undefined) {
+      const newAmount = parseFloat(updateData.amount)
+
+      // 逐笔计算新旧差额，以正确处理 category 变更（收入变为支出等）
+      for (const bill of oldBills) {
+        const oldAmount = bill.amount
+
+        // 撤销旧账单对账户的影响
+        balanceIncrement -= oldAmount
+        if (oldAmount > 0) incomeIncrement -= oldAmount
+        else expenseIncrement -= oldAmount
+
+        // 应用新账单对账户的影响
+        balanceIncrement += newAmount
+        if (newAmount > 0) incomeIncrement += newAmount
+        else expenseIncrement += newAmount
+
+        // 4. 处理关联转账账单
+        if (bill.relatedBill) {
+          const relatedBillId = bill.relatedBill
+          const relatedBillRes = await transaction.collection('bill').doc(relatedBillId).get()
+          const relatedBill = relatedBillRes.data
+          if (relatedBill) {
+            const relatedAccountId = relatedBill.account
+            const relatedOldAmount = relatedBill.amount
+            const relatedDiff = -newAmount - relatedOldAmount
+
+            if (!accountIncrements[relatedAccountId]) {
+              accountIncrements[relatedAccountId] = { balance: 0, income: 0, expense: 0 }
+            }
+            accountIncrements[relatedAccountId].balance += relatedDiff
+
+            // 更新关联账单的金额
+            await transaction.collection('bill').doc(relatedBillId).update({
+              data: {
+                amount: -newAmount,
+                updatedAt: Date.now()
+              }
+            })
+          }
+        }
+      }
+    }
+
+    // 5. 更新主账户余额
+    if (!accountIncrements[accountId]) {
+      accountIncrements[accountId] = { balance: 0, income: 0, expense: 0 }
+    }
+    accountIncrements[accountId].balance += balanceIncrement
+    accountIncrements[accountId].income += incomeIncrement
+    accountIncrements[accountId].expense += expenseIncrement
+
+    // 6. 统一更新所有受影响的账户
+    for (const accId in accountIncrements) {
+      const increments = accountIncrements[accId]
+      if (increments.balance !== 0 || increments.income !== 0 || increments.expense !== 0) {
+        await updateAccount({
+          query: { accountId: accId },
+          body: {
+            balanceIncrement: parseMoney(increments.balance),
+            incomeIncrement: parseMoney(increments.income),
+            expenseIncrement: parseMoney(increments.expense),
+          }
+        }, models, transaction)
+      }
+    }
+
+    // 7. 批量更新账单
+    const result = await transaction.collection('bill').where({
+      _id: _.in(ids),
+      _openid: OPENID,
+      account: accountId,
+    }).update({ data: updateData })
+
+
+    await transaction.commit()
 
     if (result.stats.updated > 0) {
-      // 更新成功后，获取并返回最新的账单数据
       const updatedBills = await getBillsByIds({ query: { ids } }, models)
       return updatedBills
     }
     return []
-  }
-  catch (e) {
-    // 记录详细错误，但向上抛出通用错误
+
+  } catch (e) {
+    await transaction.rollback()
     console.error('批量更新账单失败:', e)
-    throw new Error('批量更新账单失败')
+    throw new Error(`批量更新账单失败: ${e.message}`)
   }
 }
 
