@@ -91,6 +91,7 @@ defineComponent({
     const billPopup = ref(null)
     const batchPopup = ref(null)
     const reconcilePopup = ref(null)
+    const updatePopup = ref(null)
     const summaryPopup = ref(null)
     const textPopup = ref(null)
     const imagePath = ref('')
@@ -104,6 +105,7 @@ defineComponent({
       billPopup.value = selectComponent('#bill-popup')
       batchPopup.value = selectComponent('#batch-popup')
       reconcilePopup.value = selectComponent('#reconcile-popup')
+      updatePopup.value = selectComponent('#update-popup')
       summaryPopup.value = selectComponent('#summary-popup')
       textPopup.value = selectComponent('#text-popup')
     })
@@ -271,6 +273,15 @@ defineComponent({
       Toast.success('对账成功')
     }
 
+    const handleBatchUpdate = async () => {
+      billPopped.value = true
+      try {
+        await updatePopup.value.show()
+      } finally {
+        billPopped.value = false
+      }
+    }
+
     const handleTodaySummary = async () => {
       summaryPopup.value.show({
         createdAt: Date.now(),
@@ -300,6 +311,10 @@ defineComponent({
       }
       if (action.detail.value === 'today-summary') {
         handleTodaySummary()
+        return
+      }
+      if (action.detail.value === 'batch-update') {
+        handleBatchUpdate()
         return
       }
     }

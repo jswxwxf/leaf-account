@@ -6,6 +6,7 @@
     "bill-group": "./bill-group/index",
     "bill-popup": "./bill-popup/index",
     "batch-popup": "./batch-popup/index",
+    "update-popup": "./update-popup/index",
     "add-button": "./add-button/index",
     "calendar-helper": "/components/calendar-helper/index",
     "category-helper": "/components/category-helper/index",

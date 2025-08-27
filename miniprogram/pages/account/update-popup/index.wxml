@@ -1,0 +1,36 @@
+<van-popup
+  show="{{ visible }}"
+  position="top"
+  @close="handleClose"
+  overlay="{{false}}"
+  close-icon-position="bottom-right"
+  custom-style="position: static;"
+>
+  <view class="h-full w-full bg-neutral-50 flex flex-col max-h-[60vh]" style="--cell-background-color: #fafafa">
+    <!-- Main Content: make it scrollable -->
+    <view class="flex-1 overflow-y-auto px-1 pt-1">
+      <!-- 页面内容待实现 -->
+      <view class="text-center p-4 text-gray-500">
+        批量更新功能正在开发中...
+      </view>
+    </view>
+
+    <!-- Footer: stays at the bottom, original structure preserved -->
+    <view class="flex items-center py-4 border-t border-solid border-gray-100 px-4">
+      <view>
+        <van-button type="primary" size="small" @tap="handleConfirm" custom-class="w-20">确定</van-button>
+      </view>
+      <view class="flex-1">
+        <van-field
+          value="{{ searchText }}"
+          placeholder="在此输入检索已加载帐单备注"
+          bind:change="updateSearchText"
+          clearable
+        />
+      </view>
+      <view class="flex justify-end items-center space-x-6">
+        <view class="i-ep-close text-2xl" @tap="handleClose" />
+      </view>
+    </view>
+  </view>
+</van-popup>
