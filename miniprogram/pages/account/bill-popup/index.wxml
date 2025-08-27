@@ -6,7 +6,7 @@
   close-icon-position="bottom-right"
   custom-style="position: static;"
 >
-  <view class="h-full w-full bg-neutral-50 px-4 pt-2 flex flex-col max-h-screen" style="--cell-background-color: #fafafa;">
+  <view class="h-full w-full bg-neutral-50 px-4 pt-2 flex flex-col max-h-screen border-b border-b-slate-400" style="--cell-background-color: #fafafa;">
     <!-- Main Content: Form -->
     <bill-form id="bill-form">
       <van-cell-group border="{{ false }}" custom-class="flex-1 overflow-y-auto bill-popup-cell-group">
