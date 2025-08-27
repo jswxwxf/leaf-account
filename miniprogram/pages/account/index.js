@@ -284,6 +284,7 @@ defineComponent({
       batchEditPopped.value = true
       try {
         const { ids, data } = await updatePopup.value.show()
+        batchEditPopped.value = false
         const res = await batchUpdateBills(
           {
             ids,
