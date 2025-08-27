@@ -8,7 +8,9 @@
           <van-checkbox
             shape="square"
             icon-size="16px"
-            custom-class="{{ batchEditPopped ? '' : 'batch-checkbox--hidden' }}"
+            custom-class="{{ batchEditPopped ? 'batch-checkbox' : 'batch-checkbox--hidden' }}"
+            value="{{ allChecked }}"
+            bind:change="toggleAll"
           >
             <text class="font-bold text-base">{{ utils.formatDateTime(item.datetime, 'YYYY年MM月DD日') }}</text>
           </van-checkbox>
@@ -29,11 +31,11 @@
               shape="square"
               icon-size="16px"
               @change="onBatchCheck"
-              custom-class="{{ batchEditPopped ? '' : 'batch-checkbox--hidden' }}"
+              custom-class="{{ batchEditPopped ? 'batch-checkbox' : 'batch-checkbox--hidden' }}"
               class="flex-1 text-left min-w-0"
               data-bill="{{bill}}"
             >
-              <view @tap="handleCopyNote" data-bill="{{bill}}">
+              <view @tap.catch="handleCopyNote" data-bill="{{bill}}">
                 <view class="text-base text-black">{{ bill.category.name }}</view>
                 <view class="text-xs text-gray-500 overflow-hidden van-ellipsis">{{ bill.note }}</view>
               </view>

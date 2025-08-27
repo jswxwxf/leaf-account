@@ -4,7 +4,8 @@ import { storeKey } from '../store'
 
 defineComponent({
   setup() {
-    const { searchText, updateSearchText, notes, clearBatchCheck } = inject(storeKey)
+    const { searchText, updateSearchText, notes, clearBatchCheck, batchAllChecked, batchCheckAll } =
+      inject(storeKey)
     const visible = ref(false)
 
     let _resolve, _reject
@@ -39,10 +40,12 @@ defineComponent({
     return {
       visible,
       searchText,
+      batchAllChecked,
       show,
       handleClose,
       handleConfirm,
       updateSearchText,
+      batchCheckAll,
     }
   },
 })

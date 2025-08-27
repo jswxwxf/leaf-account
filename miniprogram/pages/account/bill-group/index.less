@@ -3,11 +3,18 @@
   @apply !bg-green-50;
 }
 
+.batch-checkbox {
+  .van-checkbox__label {
+    @apply w-full;
+  }
+}
+
 .batch-checkbox--hidden {
   .van-checkbox__icon {
     @apply hidden;
   }
   .van-checkbox__label {
     @apply pl-0;
+    @apply w-full;
   }
 }

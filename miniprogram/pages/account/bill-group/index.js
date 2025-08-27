@@ -64,7 +64,21 @@ defineComponent({
       })
     })
 
+    const allChecked = computed(() => {
+      if (filteredBills.value.length === 0) return false
+      return filteredBills.value.every((bill) => batchChecked.value[bill._id] === true)
+    })
+
+    const toggleAll = () => {
+      const shouldCheck = !allChecked.value
+      filteredBills.value.forEach((bill) => {
+        onBatchCheck(bill, shouldCheck)
+      })
+    }
+
     return {
+      allChecked,
+      toggleAll,
       billPopped,
       batchEditPopped,
       filteredBills,

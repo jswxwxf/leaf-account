@@ -48,9 +48,21 @@ export default function store() {
   // 批量编辑状态
   const batchChecked = ref({})
 
-  function onBatchCheck(e) {
-    const { bill } = e.currentTarget.dataset
-    batchChecked.value[bill._id] = e.detail
+  function onBatchCheck(e, value) {
+    const bill = e?.currentTarget?.dataset?.bill || e
+    batchChecked.value[bill._id] = value === undefined ? e.detail : value
+  }
+
+  const batchAllChecked = computed(() => {
+    if (rawBills.value.length === 0) return false
+    return rawBills.value.every((bill) => batchChecked.value[bill._id] === true)
+  })
+
+  const batchCheckAll = () => {
+    const shouldCheck = !batchAllChecked.value
+    rawBills.value.forEach((bill) => {
+      onBatchCheck(bill, shouldCheck)
+    })
   }
 
   function clearBatchCheck() {
@@ -233,6 +245,7 @@ export default function store() {
     billPopped,
     batchEditPopped,
     batchChecked,
+    batchAllChecked,
     hasMore,
     notes,
     loadData,
@@ -243,6 +256,7 @@ export default function store() {
     updateSearchText,
     onBatchCheck,
     clearBatchCheck,
+    batchCheckAll,
   }
 }
 
