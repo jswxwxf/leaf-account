@@ -16,6 +16,10 @@ defineComponent({
       type: String,
       value: '请选择标签',
     },
+    disabled: {
+      type: Boolean,
+      value: false
+    },
     ...formItemProps('tags'),
   },
   setup(props, { triggerEvent }) {

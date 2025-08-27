@@ -16,7 +16,7 @@ defineComponent({
 
     onReady(() => {
       // 获取表单组件实例
-      billForm.value = selectComponent('#billForm')
+      billForm.value = selectComponent('#bill-form')
       billForm.value.setExtra('notes', notes)
     })
 

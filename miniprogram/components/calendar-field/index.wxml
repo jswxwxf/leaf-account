@@ -7,5 +7,6 @@
   error-message="{{ showError ? errors[field][0].message : '' }}"
   is-link
   readonly
+  disabled="{{ disabled }}"
   @click-input="handleClick"
 />

@@ -7,11 +7,100 @@
   custom-style="position: static;"
 >
   <view class="h-full w-full bg-neutral-50 flex flex-col max-h-[60vh]" style="--cell-background-color: #fafafa">
-    <!-- Main Content: make it scrollable -->
-    <view class="flex-1 overflow-y-auto px-1 pt-1">
-      <!-- 页面内容待实现 -->
-      <view class="text-center p-4 text-gray-500">批量更新功能正在开发中...</view>
-    </view>
+    <bill-form id="update-form">
+      <van-cell-group border="{{ false }}" custom-class="flex-1 update-popup-cell-group pt-1 pl-4">
+        <view class="flex items-center">
+          <van-checkbox
+            value="{{ updateField.datetime }}"
+            shape="square"
+            icon-size="16px"
+            checked-color="#07c160"
+            @change="handleFieldChange"
+            data-field="datetime"
+          />
+          <calendar-field
+            label="更新日期"
+            value="{{ updateData.datetime }}"
+            data-field="datetime"
+            disabled="{{ !updateField.datetime  }}"
+            @change="handleFormChange"
+          />
+        </view>
+        <view class="flex items-center">
+          <van-checkbox
+            value="{{ updateField.category }}"
+            shape="square"
+            icon-size="16px"
+            checked-color="#07c160"
+            @change="handleFieldChange"
+            data-field="category"
+            disabled="{{ hasTransferUpdating }}"
+          />
+          <category-field
+            label="更新分类"
+            value="{{ updateData.category }}"
+            placeholder="{{ hasTransferUpdating  ? '有转账无法修改' : '请选择分类' }}"
+            data-field="category"
+            disabled="{{ !updateField.category  }}"
+            @change="handleFormChange"
+          />
+        </view>
+        <view class="flex items-center">
+          <van-checkbox
+            value="{{ updateField.amount }}"
+            shape="square"
+            icon-size="16px"
+            checked-color="#07c160"
+            @change="handleFieldChange"
+            data-field="amount"
+          />
+          <money-field
+            label="更新金额"
+            value="{{ updateData.amount }}"
+            data-field="amount"
+            disabled="{{ !updateField.amount  }}"
+            @change="handleFormChange"
+          />
+        </view>
+        <view class="flex items-center">
+          <van-checkbox
+            value="{{ updateField.note }}"
+            shape="square"
+            icon-size="16px"
+            checked-color="#07c160"
+            @change="handleFieldChange"
+            data-field="note"
+            disabled="{{ hasTransferUpdating }}"
+          />
+          <note-field
+            label="更新备注"
+            value="{{ updateData.note }}"
+            placeholder="{{ hasTransferUpdating  ? '有转账无法修改' : '请输入备注' }}"
+            data-field="note"
+            disabled="{{ !updateField.note  }}"
+            @change="handleFormChange"
+          />
+        </view>
+        <view class="flex items-center">
+          <van-checkbox
+            value="{{ updateField.tags }}"
+            shape="square"
+            icon-size="16px"
+            checked-color="#07c160"
+            @change="handleFieldChange"
+            data-field="tags"
+          />
+          <tags-field
+            label="更新标签"
+            value="{{ updateData.tags }}"
+            data-field="tags"
+            disabled="{{ !updateField.tags  }}"
+            @change="handleFormChange"
+            class="flex-1 pr-5"
+          />
+        </view>
+      </van-cell-group>
+    </bill-form>
 
     <!-- Footer: stays at the bottom, original structure preserved -->
     <view class="flex items-center py-4 border-t border-solid border-gray-100 px-4">

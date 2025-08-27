@@ -4,6 +4,7 @@
   placeholder="{{ placeholder }}"
   error="{{ showError ? false : fields[field] === false }}"
   error-message="{{ showError ? errors[field][0].message : '' }}"
+  disabled="{{ disabled }}"
   @focus="onFocus"
   @blur="onBlur"
 />

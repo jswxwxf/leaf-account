@@ -1,12 +1,24 @@
-import { defineComponent, inject, nextTick, ref } from '@vue-mini/core'
+import { computed, defineComponent, inject, onReady, ref, watch } from '@vue-mini/core'
 import { onTabChange } from '@/utils/index.js'
 import { storeKey } from '../store'
 
 defineComponent({
-  setup() {
-    const { searchText, updateSearchText, notes, clearBatchCheck, batchAllChecked, batchCheckAll } =
+  setup(props, { selectComponent }) {
+    const { rawBills, notes, batchChecked, clearBatchCheck, batchAllChecked, batchCheckAll } =
       inject(storeKey)
+
     const visible = ref(false)
+    const updateField = ref()
+    const updateData = ref()
+    const updateForm = ref()
+
+    const rules = {
+      datetime: 'required',
+      category: 'required',
+      amount: 'required|requiredMoney',
+      note: 'required|max:20',
+      tags: 'required',
+    }
 
     let _resolve, _reject
 
@@ -17,9 +29,18 @@ defineComponent({
       }
     })
 
+    onReady(() => {
+      // 获取表单组件实例
+      updateForm.value = selectComponent('#update-form')
+      updateForm.value.setExtra('notes', notes)
+    })
+
     const show = () => {
+      updateField.value = {}
+      updateData.value = {}
       clearBatchCheck()
       visible.value = true
+      updateForm.value.clearErrors()
       return new Promise((resolve, reject) => {
         _resolve = resolve
         _reject = reject
@@ -32,19 +53,70 @@ defineComponent({
     }
 
     const handleConfirm = async () => {
-      // 批量更新逻辑待实现
-      _resolve && _resolve()
+      const hasCheckedItems = Object.values(batchChecked.value).some((v) => v)
+      if (!hasCheckedItems) {
+        wx.showToast({
+          title: '请至少选择一笔账单',
+          icon: 'none',
+        })
+        return
+      }
+
+      const result = await updateForm.value.validate(updateData.value)
+      if (result.isInvalid) {
+        return
+      }
+
+      // _resolve &&
+      //   _resolve({
+      //     ids: Object.keys(batchChecked.value).filter((id) => batchChecked.value[id]),
+      //     data: updateData.value,
+      //   })
       visible.value = false
+      _resolve && _resolve()
     }
+
+    const handleFieldChange = (e) => {
+      const { field } = e.currentTarget.dataset
+      let value = e.detail
+      updateForm.value.registerRule(field, value ? rules[field] : null)
+      updateField.value[field] = value
+    }
+
+    const handleFormChange = (e) => {
+      const { field } = e.currentTarget.dataset
+      let value = e.detail
+      updateData.value[field] = value
+      if (value.note) {
+        updateData.value.note = value.note
+      }
+    }
+
+    const hasTransferUpdating = computed(() => {
+      const checkedIds = Object.keys(batchChecked.value).filter((id) => batchChecked.value[id])
+      if (checkedIds.length === 0) return false
+
+      return rawBills.value.some((bill) => checkedIds.includes(bill._id) && bill.relatedBill)
+    })
+
+    watch(hasTransferUpdating, (newVal) => {
+      if (newVal) {
+        updateField.value.category = false
+        updateField.value.note = false
+      }
+    })
 
     return {
       visible,
-      searchText,
       batchAllChecked,
+      updateField,
+      updateData,
+      hasTransferUpdating,
       show,
       handleClose,
       handleConfirm,
-      updateSearchText,
+      handleFieldChange,
+      handleFormChange,
       batchCheckAll,
     }
   },

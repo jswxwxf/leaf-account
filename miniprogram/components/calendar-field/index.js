@@ -25,6 +25,10 @@ defineComponent({
       type: Boolean,
       value: true,
     },
+    disabled: {
+      type: Boolean,
+      value: false
+    },
     ...formItemProps('datetime'),
   },
 

@@ -1,1 +1,3 @@
-/* 样式待实现 */
+.update-popup-cell-group {
+  --cell-font-size: 30rpx;
+}
