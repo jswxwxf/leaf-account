@@ -67,6 +67,20 @@ export function upsertBill(bill, query = {}) {
 }
 
 /**
+ * 批量更新账单
+ * @param {object} query - 查询条件，用于筛选要更新的账单，例如 { ids: [...] }
+ * @param {object} data - 要更新的数据
+ * @returns {Promise<any>}
+ */
+export function updateBills(query = {}, data) {
+  return post('bill-cloud', {
+    $url: '/batch/bills/update',
+    query,
+    body: data,
+  })
+}
+
+/**
  * 批量保存账单
  * @param {Bill[]} bills - 账单列表
  * @returns {Promise<any>}

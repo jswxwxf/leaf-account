@@ -521,6 +521,49 @@ async function deleteBills(event, models) {
   }
 }
 
+/**
+ * 批量更新账单。
+ * @param {object} event - 云函数的原始 event 对象
+ * @param {object} models - 数据模型实例
+ */
+async function updateBills(event, models) {
+  const { ids } = event.query
+  const data = event.body
+  const { OPENID } = cloud.getWXContext()
+
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    throw { isBiz: true, message: '缺少账单 ID' }
+  }
+
+  if (!data || Object.keys(data).length === 0) {
+    throw { isBiz: true, message: '缺少更新数据' }
+  }
+
+  // TODO: 后续需要更精细的权限控制和数据校验
+  // 例如：检查用户是否有权限更新这些账单
+
+  try {
+    const result = await db
+      .collection('bill')
+      .where({
+        _id: _.in(ids),
+        _openid: OPENID,
+      })
+      .update({
+        data: {
+          ...data,
+          updatedAt: db.serverDate(),
+        },
+      })
+    return result
+  }
+  catch (e) {
+    // 记录详细错误，但向上抛出通用错误
+    console.error('批量更新账单失败:', e)
+    throw new Error('批量更新账单失败')
+  }
+}
+
 module.exports = {
   saveBill,
   saveBills,
@@ -532,4 +575,5 @@ module.exports = {
   deleteBills,
   resetBills,
   saveTransfer,
+  updateBills,
 }

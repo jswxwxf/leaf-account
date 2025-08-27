@@ -67,13 +67,12 @@ defineComponent({
         return
       }
 
-      // _resolve &&
-      //   _resolve({
-      //     ids: Object.keys(batchChecked.value).filter((id) => batchChecked.value[id]),
-      //     data: updateData.value,
-      //   })
       visible.value = false
-      _resolve && _resolve()
+      _resolve &&
+        _resolve({
+          ids: Object.keys(batchChecked.value).filter((id) => batchChecked.value[id]),
+          data: updateData.value,
+        })
     }
 
     const handleFieldChange = (e) => {

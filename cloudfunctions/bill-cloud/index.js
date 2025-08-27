@@ -24,6 +24,7 @@ const {
   resetBills,
   getAllBills,
   saveTransfer,
+  updateBills,
 } = require('./service/bill.js')
 const {
   getAccount,
@@ -119,6 +120,20 @@ exports.main = (event, context) => {
       ctx.body = { code: 200, success: true, message: '批量保存成功', data }
     } catch (e) {
       console.error('/batch/bills error:', e)
+      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+    }
+  })
+
+  /**
+   * @desc 批量更新账单
+   */
+  app.router('/batch/bills/update', async (ctx) => {
+    try {
+      const data = await updateBills(event, models)
+      ctx.body = { code: 200, success: true, message: '批量更新成功', data }
+    }
+    catch (e) {
+      console.error('/batch/bill/update error:', e)
       ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
     }
   })

@@ -14,10 +14,9 @@ defineComponent({
       { name: '📸 识图记帐', value: 'photo' },
       { name: '⌨️ 文字记帐', value: 'text' },
       // { name: '语音记帐', value: 'voice' },
-      // { name: '导入文件', value: 'import' },
+      { name: '📑 批量修改', value: 'batch-edit' },
       { name: '⚖️ 余额对账', value: 'reconcile' },
       { name: '📊 今日汇总', value: 'today-summary' },
-      { name: '📑 批量修改', value: 'batch-edit' },
     ])
 
     const handleMainClick = (e) => {

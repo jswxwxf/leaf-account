@@ -283,7 +283,8 @@ defineComponent({
     const handleBatchEdit = async () => {
       batchEditPopped.value = true
       try {
-        await updatePopup.value.show()
+        const { ids, data } = await updatePopup.value.show()
+        updateBills({ ids, accountId: currentAccount.value._id }, data)
       } finally {
         batchEditPopped.value = false
       }
