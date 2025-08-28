@@ -44,6 +44,13 @@ export default function store() {
     }
   }
 
+  function clearRule() {
+    // 清空所有规则
+    for (const key in rules) {
+      delete rules[key]
+    }
+  }
+
   async function validate(data) {
     return new Promise(async (resolve) => {
       // 给 parseMoney 一点时间
@@ -82,6 +89,7 @@ export default function store() {
     clearErrors,
     clearError,
     registerRule,
+    clearRule,
     validate,
   }
 }

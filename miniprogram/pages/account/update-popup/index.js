@@ -45,9 +45,12 @@ defineComponent({
 
     const show = () => {
       updateField.value = {}
-      updateData.value = {}
+      updateData.value = {
+        tags: [],
+      }
       clearBatchCheck()
       visible.value = true
+      updateForm.value.clearRule()
       updateForm.value.clearErrors()
       return new Promise((resolve, reject) => {
         _resolve = resolve
@@ -65,6 +68,15 @@ defineComponent({
       if (!hasCheckedItems) {
         wx.showToast({
           title: '请至少选择一笔账单',
+          icon: 'none',
+        })
+        return
+      }
+
+      const hasUpdateField = Object.values(updateField.value).some((v) => v)
+      if (!hasUpdateField) {
+        wx.showToast({
+          title: '请至少选择一个要修改的字段',
           icon: 'none',
         })
         return

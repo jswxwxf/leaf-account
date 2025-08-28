@@ -564,7 +564,7 @@ async function updateBills(event, models) {
 
       let newAmount = Math.abs(parseFloat(updateData.amount))
       if (data.category && typeof data.category === 'object') {
-        if (data.category.type === 10) newAmount = -newAmount
+        if (data.category.type === '20') newAmount = -newAmount
       } else if (oldBills.length > 0) {
         if (oldBills[0].amount < 0) newAmount = -newAmount
       }

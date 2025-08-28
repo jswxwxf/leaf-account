@@ -47,7 +47,7 @@
       <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !enableTransfer }}" @tap="handleTransferOut">转出</van-button>
       <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !account.isOpened }}" @tap="handleExport">导出</van-button>
       <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !enableTransfer }}" @tap="handleTransferIn">转入</van-button>
-      <!-- <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !account.isOpened }}" @tap="handleImport">导入</van-button> -->
+      <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !account.isOpened }}" @tap="handleImport">导入</van-button>
     </view>
   </view>
 </view>
