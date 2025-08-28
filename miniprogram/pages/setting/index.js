@@ -17,6 +17,9 @@ defineComponent({
         const res = await resetBills()
         wx.hideLoading()
 
+        getApp().globalData.account.value = {
+          name: 'leaf-maple',
+        }
         await Dialog.alert({
           title: '操作成功',
           message: res.message,

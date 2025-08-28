@@ -142,6 +142,10 @@ export default function store() {
       wx.setNavigationBarTitle({
         title: `小叶记帐 - ${accountInfo.title}`,
       })
+      wx.setTabBarItem({
+        index: 0,
+        text: accountInfo.title,
+      })
     } catch (err) {
       error.value = err.message || '加载账本失败，请稍后重试'
       currentAccount.value = {}

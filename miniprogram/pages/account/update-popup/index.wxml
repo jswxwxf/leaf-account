@@ -20,10 +20,12 @@
             checked-color="#07c160"
             @change="handleFieldChange"
             data-field="datetime"
+            disabled="{{ hasTransferUpdating }}"
           />
           <calendar-field
             label="更新日期"
             value="{{ updateData.datetime }}"
+            placeholder="{{ hasTransferUpdating  ? '有转账不支持批量修改' : '请选择日期' }}"
             data-field="datetime"
             disabled="{{ !updateField.datetime  }}"
             @change="handleFormChange"
@@ -42,7 +44,7 @@
           <category-field
             label="更新分类"
             value="{{ updateData.category }}"
-            placeholder="{{ hasTransferUpdating  ? '有转账无法修改' : ( hasConflictCategory ? '分类不一致无法修改' : '请选择分类' ) }}"
+            placeholder="{{ hasTransferUpdating  ? '有转账不支持批量修改' : ( hasConflictCategory ? '分类不一致无法修改' : '请选择分类' ) }}"
             data-field="category"
             disabled="{{ !updateField.category  }}"
             @change="handleFormChange"
@@ -57,12 +59,12 @@
             checked-color="#07c160"
             @change="handleFieldChange"
             data-field="amount"
-            disabled="{{ hasConflictCategory }}"
+            disabled="{{ hasTransferUpdating || hasConflictCategory }}"
           />
           <money-field
             label="更新金额"
             value="{{ updateData.amount }}"
-            placeholder="{{ hasConflictCategory  ? '分类不一致无法修改' : '请输入金额，支持简单运算' }}"
+            placeholder="{{ hasTransferUpdating  ? '有转账不支持批量修改' : ( hasConflictCategory ? '分类不一致无法修改' : '请选择分类' ) }}"
             data-field="amount"
             disabled="{{ !updateField.amount  }}"
             @change="handleFormChange"
@@ -81,7 +83,7 @@
           <note-field
             label="更新备注"
             value="{{ updateData.note }}"
-            placeholder="{{ hasTransferUpdating  ? '有转账无法修改' : '请输入备注' }}"
+            placeholder="{{ hasTransferUpdating  ? '有转账不支持批量修改' : '请输入备注' }}"
             data-field="note"
             disabled="{{ !updateField.note  }}"
             @change="handleFormChange"
@@ -95,10 +97,12 @@
             checked-color="#07c160"
             @change="handleFieldChange"
             data-field="tags"
+            disabled="{{ hasTransferUpdating }}"
           />
           <tags-field
             label="更新标签"
             value="{{ updateData.tags }}"
+            placeholder="{{ hasTransferUpdating  ? '有转账不支持批量修改' : '请选择标签' }}"
             data-field="tags"
             disabled="{{ !updateField.tags  }}"
             @change="handleFormChange"

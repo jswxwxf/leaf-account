@@ -55,7 +55,7 @@ defineComponent({
     const categories = ref([])
     const errors = ref()
     const categoryForm = ref()
-    const options = ref()
+    const options = ref({})
 
     const {
       theNewCategory,
