@@ -20,6 +20,14 @@ defineComponent({
       tags: 'required',
     }
 
+    const categoryOptions = computed(() => {
+      return {
+        disableNew: true,
+        disableTransfer: true,
+        disableType: checkedBills.value[0]?.category?.type === '20' ? '10' : '20',
+      }
+    })
+
     let _resolve, _reject
 
     // 当切换 Tab 时，自动关闭弹窗
@@ -91,22 +99,23 @@ defineComponent({
       }
     }
 
-    const hasTransferUpdating = computed(() => {
+    const checkedBills = computed(() => {
       const checkedIds = Object.keys(batchChecked.value).filter((id) => batchChecked.value[id])
-      if (checkedIds.length === 0) return false
+      if (checkedIds.length < 1) return []
 
-      return rawBills.value.some((bill) => checkedIds.includes(bill._id) && bill.relatedBill)
+      return rawBills.value.filter((bill) => checkedIds.includes(bill._id))
+    })
+
+    const hasTransferUpdating = computed(() => {
+      if (checkedBills.value.length === 0) return false
+      return checkedBills.value.some((bill) => bill.relatedBill)
     })
 
     const hasConflictCategory = computed(() => {
-      const checkedIds = Object.keys(batchChecked.value).filter((id) => batchChecked.value[id])
-      if (checkedIds.length < 2) return false
+      if (checkedBills.value.length < 2) return false
 
-      const checkedBills = rawBills.value.filter((bill) => checkedIds.includes(bill._id))
-      if (checkedBills.length < 2) return false
-
-      const firstType = checkedBills[0].category.type
-      return checkedBills.some((bill) => bill.category.type !== firstType)
+      const firstType = checkedBills.value[0].category.type
+      return checkedBills.value.some((bill) => bill.category.type !== firstType)
     })
 
     watch(hasTransferUpdating, (newVal) => {
@@ -129,6 +138,7 @@ defineComponent({
       updateData,
       hasTransferUpdating,
       hasConflictCategory,
+      categoryOptions,
       show,
       handleClose,
       handleConfirm,

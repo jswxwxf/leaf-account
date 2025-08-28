@@ -7,7 +7,7 @@
   custom-style="position: static;"
 >
   <view
-    class="h-full w-full bg-neutral-50 flex flex-col max-h-[60vh] border-b border-b-slate-400"
+    class="h-full w-full bg-neutral-50 flex flex-col max-h-[60vh] border-b border-dashed border-b-slate-400"
     style="--cell-background-color: #fafafa"
   >
     <bill-form id="update-form">
@@ -37,15 +37,16 @@
             checked-color="#07c160"
             @change="handleFieldChange"
             data-field="category"
-            disabled="{{ hasTransferUpdating }}"
+            disabled="{{ hasTransferUpdating || hasConflictCategory }}"
           />
           <category-field
             label="更新分类"
             value="{{ updateData.category }}"
-            placeholder="{{ hasTransferUpdating  ? '有转账无法修改' : '请选择分类' }}"
+            placeholder="{{ hasTransferUpdating  ? '有转账无法修改' : ( hasConflictCategory ? '分类不一致无法修改' : '请选择分类' ) }}"
             data-field="category"
             disabled="{{ !updateField.category  }}"
             @change="handleFormChange"
+            options="{{ categoryOptions }}"
           />
         </view>
         <view class="flex items-center">

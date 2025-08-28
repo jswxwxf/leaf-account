@@ -554,7 +554,21 @@ async function updateBills(event, models) {
       throw new Error('部分账单不存在或无权限操作')
     }
 
-    // 2. 准备更新数据
+    // 2. 后端增加前端限制的校验
+    const hasTransferBill = oldBills.some(bill => bill.relatedBill)
+    if (hasTransferBill && (data.category || data.note)) {
+      throw new Error('转账类型的账单不能修改分类和备注')
+    }
+
+    if (data.amount !== undefined) {
+      const oldCategories = await getCategoriesByIds(oldBills.map(b => b.category), models)
+      const oldCategoryTypes = new Set(oldCategories.map(c => c.type))
+      if (oldCategoryTypes.size > 1) {
+        throw new Error('收支类型不一致的账单不能批量修改金额')
+      }
+    }
+
+    // 3. 准备更新数据
     const updateData = { ...data, updatedAt: Date.now() }
     if (updateData.category && typeof updateData.category === 'object') {
       updateData.category = updateData.category._id
@@ -567,47 +581,49 @@ async function updateBills(event, models) {
     if (updateData.amount !== undefined) {
       let amount = Math.abs(parseFloat(updateData.amount))
       if (data.category && typeof data.category === 'object') {
-        // 优先使用传入的 category type
-        if (data.category.type === 10) { // 支出
-          updateData.amount = -amount
-        } else if (data.category.type === 20) { // 收入
-          updateData.amount = amount
-        }
+        // 如果传入新 category，以新 category 的类型为准
+        if (data.category.type === 10) updateData.amount = -amount // 支出
+        else if (data.category.type === 20) updateData.amount = amount // 收入
       } else if (oldBills.length > 0) {
-        // 如果不传 category，则参考旧金额的符号
+        // 如果不传 category，则保持原账单的收支类型（以第一笔为代表）
         const oldAmount = oldBills[0].amount
-        if (oldAmount < 0) {
-          updateData.amount = -amount
-        } else {
-          updateData.amount = amount
-        }
+        if (oldAmount < 0) updateData.amount = -amount
+        else updateData.amount = amount
       }
     }
 
-    // 3. 计算账户余额和收支增量
+    // 4. 计算账户余额和收支增量
     let balanceIncrement = 0
     let incomeIncrement = 0
     let expenseIncrement = 0
     const accountIncrements = {} // 用于存放不同账户的余额增量
 
     if (updateData.amount !== undefined) {
-      const newAmount = parseFloat(updateData.amount)
+      // 最终、正确的实现：必须逐笔循环处理。
+      const oldCategories = await getCategoriesByIds(oldBills.map(b => b.category), models)
+      const oldCategoryMap = new Map(oldCategories.map(c => [c._id, c]))
 
-      // 逐笔计算新旧差额，以正确处理 category 变更（收入变为支出等）
       for (const bill of oldBills) {
         const oldAmount = bill.amount
+        const category = oldCategoryMap.get(bill.category)
 
-        // 撤销旧账单对账户的影响
+        // 核心修正：根据每笔账单的旧分类，正确校正新金额的符号
+        let newAmount = Math.abs(parseFloat(updateData.amount))
+        if (category.type === 10) { // 10 为支出或转账
+          newAmount = -newAmount
+        }
+
+        // 撤销旧账单对主账户的影响
         balanceIncrement -= oldAmount
         if (oldAmount > 0) incomeIncrement -= oldAmount
         else expenseIncrement -= oldAmount
 
-        // 应用新账单对账户的影响
+        // 应用新账单对主账户的影响
         balanceIncrement += newAmount
         if (newAmount > 0) incomeIncrement += newAmount
         else expenseIncrement += newAmount
 
-        // 4. 处理关联转账账单
+        // 5. 如果是转账，还需要处理关联账户
         if (bill.relatedBill) {
           const relatedBillId = bill.relatedBill
           const relatedBillRes = await transaction.collection('bill').doc(relatedBillId).get()
@@ -615,19 +631,22 @@ async function updateBills(event, models) {
           if (relatedBill) {
             const relatedAccountId = relatedBill.account
             const relatedOldAmount = relatedBill.amount
-            const relatedDiff = -newAmount - relatedOldAmount
+            const relatedNewAmount = -newAmount
+            const relatedDiff = relatedNewAmount - relatedOldAmount
 
-            if (!accountIncrements[relatedAccountId]) {
-              accountIncrements[relatedAccountId] = { balance: 0, income: 0, expense: 0 }
-            }
-            accountIncrements[relatedAccountId].balance += relatedDiff
-
-            // 更新关联账单的金额
-            await transaction.collection('bill').doc(relatedBillId).update({
-              data: {
-                amount: -newAmount,
-                updatedAt: Date.now()
+            if (relatedAccountId !== accountId) {
+              if (!accountIncrements[relatedAccountId]) {
+                accountIncrements[relatedAccountId] = { balance: 0, income: 0, expense: 0 }
               }
+              accountIncrements[relatedAccountId].balance += relatedDiff
+              if (relatedOldAmount > 0) accountIncrements[relatedAccountId].income -= relatedOldAmount
+              else accountIncrements[relatedAccountId].expense -= relatedOldAmount
+              if (relatedNewAmount > 0) accountIncrements[relatedAccountId].income += relatedNewAmount
+              else accountIncrements[relatedAccountId].expense += relatedNewAmount
+            }
+
+            await transaction.collection('bill').doc(relatedBillId).update({
+              data: { amount: relatedNewAmount, updatedAt: Date.now() }
             })
           }
         }

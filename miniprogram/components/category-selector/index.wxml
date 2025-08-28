@@ -11,6 +11,7 @@
         custom-class="flex items-center justify-center p-2 text-sm w-full {{item.type === '20' ? 'expense-button' : 'income-button'}}"
         @tap="handleSelect"
         data-item="{{ item }}"
+        disabled="{{ options.disableTransfer && (item.name === '转账' || item.name === '收转账') }}"
       >
         {{ item.name }}
       </van-button>
@@ -20,7 +21,7 @@
     </view>
 
     <!-- 新分类输入 -->
-    <bill-form id="category-form" @init="handleFormInit">
+    <bill-form wx:if="{{ !options.disableNew }}" id="category-form" @init="handleFormInit" >
       <van-field
         value="{{ theNewCategory.name }}"
         placeholder="新分类，点击右边图标切换类型"

@@ -11,11 +11,11 @@ export function showTagsSelector(tags) {
 
 export const categorySelector = ref(null)
 
-export function showCategorySelector() {
+export function showCategorySelector(options) {
   if (!categorySelector.value) {
     return Promise.reject(new Error('Category selector not initialized'))
   }
-  return categorySelector.value.show()
+  return categorySelector.value.show(options)
 }
 
 export const calendarSelector = ref(null)

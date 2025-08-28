@@ -20,6 +20,10 @@ defineComponent({
       type: Boolean,
       value: false,
     },
+    options: {
+      type: Object,
+      value: {}, // { disableNew, disableTransfer, disableType }
+    },
     ...formItemProps('category'),
   },
   setup(props, { triggerEvent }) {
@@ -29,7 +33,7 @@ defineComponent({
     async function handleClick() {
       if (props.disabled) return
       clearError()
-      const result = await showCategorySelector()
+      const result = await showCategorySelector(props.options)
       triggerEvent('change', result)
     }
 

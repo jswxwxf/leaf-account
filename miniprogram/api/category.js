@@ -11,8 +11,8 @@ import { get, post } from './request-cloud.js'
  * 获取所有分类
  * @returns {Promise<Category[]>}
  */
-export function getCategories() {
-  return get('bill-cloud', { $url: '/get/categories' })
+export function getCategories(query = {}) {
+  return get('bill-cloud', { $url: '/get/categories', query })
 }
 
 /**

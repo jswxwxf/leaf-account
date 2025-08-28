@@ -55,6 +55,7 @@ defineComponent({
     const categories = ref([])
     const errors = ref()
     const categoryForm = ref()
+    const options = ref()
 
     const {
       theNewCategory,
@@ -71,7 +72,11 @@ defineComponent({
     })
 
     const fetchCategories = async () => {
-      const res = await getCategories()
+      let query
+      if (options.value.disableType) {
+        query = { type: options.value.disableType === '20' ? '10' : '20' }
+      }
+      const res = await getCategories(query)
       categories.value = res.data || []
     }
 
@@ -81,7 +86,8 @@ defineComponent({
       handleClose()
     })
 
-    const show = () => {
+    const show = (opts = {}) => {
+      options.value = opts
       visible.value = true
       resetNewCategory()
       fetchCategories()
@@ -104,6 +110,7 @@ defineComponent({
     const handleSelect = async (event) => {
       let { item } = event.currentTarget.dataset
       if (item.name === '转账') {
+        if (options.value.disableTransfer) return
         const account = await showAccountSelector()
         // account 可能为空是因为如果只有一个账户，选择器可能不会弹出
         if (account) {
@@ -111,6 +118,7 @@ defineComponent({
         }
       }
       if (item.name === '收转账') {
+        if (options.value.disableTransfer) return
         const account = await showAccountSelector()
         // account 可能为空是因为如果只有一个账户，选择器可能不会弹出
         if (account) {
@@ -144,6 +152,7 @@ defineComponent({
       categories,
       theNewCategory,
       errors,
+      options,
       show,
       handleClose,
       handleSelect,
