@@ -81,37 +81,37 @@ async function saveBills(event, models) {
  * @param {object} models - 数据模型实例
  * @returns {Promise<object[]>} - 完整的账单对象数组
  */
-async function getBillsByIds(event, models) {
+async function getBillsByIds(event, models, dbOrTransaction) {
+  return _getBillsByIds(event, models, dbOrTransaction)
+}
+
+/**
+ * 根据 ID 列表获取账单详情。
+ * @param {string[]} ids - 账单 ID 数组
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<object[]>} - 完整的账单对象数组
+ */
+
+async function _getBillsByIds(event, models, dbOrTransaction) {
   const { ids } = event.query
   const { OPENID } = cloud.getWXContext()
+  const dbInstance = dbOrTransaction || db
 
   if (!ids || ids.length === 0) {
     return []
   }
 
-  const {
-    data: { records: bills },
-  } = await models.bill.list({
-    select: {
-      _id: true,
-      amount: true,
-      datetime: true,
-      note: true,
-      category: true, // 字段名是 category，其值为 ID
-      tags: true,
-      createdAt: true,
-    },
-    filter: {
-      where: {
-        $and: [
-          { _id: { $in: ids } },
-          {
-            _openid: { $eq: OPENID },
-          },
-        ],
-      },
-    },
-  })
+  const billCollection = dbInstance.collection('bill')
+  const { data: bills } = await billCollection
+    .where({
+      _id: _.in(ids),
+      _openid: OPENID,
+    })
+    .get()
+
+  if (!bills || bills.length === 0) {
+    return []
+  }
 
   const billsWithCategory = await populateCategoriesForBills(bills, models)
   return populateTagsForBills(billsWithCategory, models)
@@ -542,39 +542,19 @@ async function updateBills(event, models) {
 
   try {
     // 1. 获取所有待更新的旧账单
-    const oldBillsRes = await transaction.collection('bill').where({
-      _id: _.in(ids),
-      _openid: OPENID,
-      account: accountId,
-    }).get()
-
-    const oldBills = oldBillsRes.data
+    const oldBills = await getBillsByIds({ query: { ids } }, models)
     if (oldBills.length !== ids.length) {
       await transaction.rollback()
       throw new Error('部分账单不存在或无权限操作')
     }
 
-    // 2. 后端增加前端限制的校验
-    const hasTransferBill = oldBills.some(bill => bill.relatedBill)
-    if (hasTransferBill && (data.category || data.note)) {
-      throw new Error('转账类型的账单不能修改分类和备注')
-    }
-
-    if (data.amount !== undefined) {
-      const oldCategories = await getCategoriesByIds(oldBills.map(b => b.category), models)
-      const oldCategoryTypes = new Set(oldCategories.map(c => c.type))
-      if (oldCategoryTypes.size > 1) {
-        throw new Error('收支类型不一致的账单不能批量修改金额')
-      }
-    }
-
-    // 3. 准备更新数据
+    // 2. 准备更新数据
     const updateData = { ...data, updatedAt: Date.now() }
     if (updateData.category && typeof updateData.category === 'object') {
       updateData.category = updateData.category._id
     }
     if (updateData.tags && Array.isArray(updateData.tags)) {
-      updateData.tags = updateData.tags.map(tag => (typeof tag === 'object' ? tag._id : tag))
+      updateData.tags = updateData.tags.map((tag) => (typeof tag === 'object' ? tag._id : tag))
     }
 
     // 根据 category 或旧金额，调整 amount 正负号
@@ -592,7 +572,7 @@ async function updateBills(event, models) {
       }
     }
 
-    // 4. 计算账户余额和收支增量
+    // 3. 计算账户余额和收支增量
     let balanceIncrement = 0
     let incomeIncrement = 0
     let expenseIncrement = 0
@@ -600,18 +580,9 @@ async function updateBills(event, models) {
 
     if (updateData.amount !== undefined) {
       // 最终、正确的实现：必须逐笔循环处理。
-      const oldCategories = await getCategoriesByIds(oldBills.map(b => b.category), models)
-      const oldCategoryMap = new Map(oldCategories.map(c => [c._id, c]))
-
       for (const bill of oldBills) {
         const oldAmount = bill.amount
-        const category = oldCategoryMap.get(bill.category)
-
-        // 核心修正：根据每笔账单的旧分类，正确校正新金额的符号
-        let newAmount = Math.abs(parseFloat(updateData.amount))
-        if (category.type === 10) { // 10 为支出或转账
-          newAmount = -newAmount
-        }
+        let newAmount = updateData.amount
 
         // 撤销旧账单对主账户的影响
         balanceIncrement -= oldAmount
@@ -623,7 +594,7 @@ async function updateBills(event, models) {
         if (newAmount > 0) incomeIncrement += newAmount
         else expenseIncrement += newAmount
 
-        // 5. 如果是转账，还需要处理关联账户
+        // 4. 如果是转账，还需要处理关联账户
         if (bill.relatedBill) {
           const relatedBillId = bill.relatedBill
           const relatedBillRes = await transaction.collection('bill').doc(relatedBillId).get()
@@ -639,15 +610,20 @@ async function updateBills(event, models) {
                 accountIncrements[relatedAccountId] = { balance: 0, income: 0, expense: 0 }
               }
               accountIncrements[relatedAccountId].balance += relatedDiff
-              if (relatedOldAmount > 0) accountIncrements[relatedAccountId].income -= relatedOldAmount
+              if (relatedOldAmount > 0)
+                accountIncrements[relatedAccountId].income -= relatedOldAmount
               else accountIncrements[relatedAccountId].expense -= relatedOldAmount
-              if (relatedNewAmount > 0) accountIncrements[relatedAccountId].income += relatedNewAmount
+              if (relatedNewAmount > 0)
+                accountIncrements[relatedAccountId].income += relatedNewAmount
               else accountIncrements[relatedAccountId].expense += relatedNewAmount
             }
 
-            await transaction.collection('bill').doc(relatedBillId).update({
-              data: { amount: relatedNewAmount, updatedAt: Date.now() }
-            })
+            await transaction
+              .collection('bill')
+              .doc(relatedBillId)
+              .update({
+                data: { amount: relatedNewAmount, updatedAt: Date.now() },
+              })
           }
         }
       }
@@ -665,24 +641,30 @@ async function updateBills(event, models) {
     for (const accId in accountIncrements) {
       const increments = accountIncrements[accId]
       if (increments.balance !== 0 || increments.income !== 0 || increments.expense !== 0) {
-        await updateAccount({
-          query: { accountId: accId },
-          body: {
-            balanceIncrement: parseMoney(increments.balance),
-            incomeIncrement: parseMoney(increments.income),
-            expenseIncrement: parseMoney(increments.expense),
-          }
-        }, models, transaction)
+        await updateAccount(
+          {
+            query: { accountId: accId },
+            body: {
+              balanceIncrement: parseMoney(increments.balance),
+              incomeIncrement: parseMoney(increments.income),
+              expenseIncrement: parseMoney(increments.expense),
+            },
+          },
+          models,
+          transaction,
+        )
       }
     }
 
     // 7. 批量更新账单
-    const result = await transaction.collection('bill').where({
-      _id: _.in(ids),
-      _openid: OPENID,
-      account: accountId,
-    }).update({ data: updateData })
-
+    const result = await transaction
+      .collection('bill')
+      .where({
+        _id: _.in(ids),
+        _openid: OPENID,
+        account: accountId,
+      })
+      .update({ data: updateData })
 
     await transaction.commit()
 
@@ -691,7 +673,6 @@ async function updateBills(event, models) {
       return updatedBills
     }
     return []
-
   } catch (e) {
     await transaction.rollback()
     console.error('批量更新账单失败:', e)
@@ -711,4 +692,5 @@ module.exports = {
   resetBills,
   saveTransfer,
   updateBills,
+  _getBillsByIds,
 }

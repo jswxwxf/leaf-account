@@ -187,12 +187,18 @@ async function saveBill(billToSave, accountId, models, dbOrTransaction) {
     }
 
     const balanceIncrement = parseMoney(dataToSave.amount - oldBill.amount)
-    const incomeIncrement = parseMoney(
-      (dataToSave.amount > 0 ? dataToSave.amount : 0) - (oldBill.amount > 0 ? oldBill.amount : 0),
-    )
-    const expenseIncrement = parseMoney(
-      (oldBill.amount < 0 ? Math.abs(oldBill.amount) : 0) - (dataToSave.amount < 0 ? Math.abs(dataToSave.amount) : 0),
-    )
+
+    // 计算旧账单对收入和支出的贡献（支出为正值）
+    const oldIncome = oldBill.amount > 0 ? oldBill.amount : 0
+    const oldExpense = oldBill.amount < 0 ? Math.abs(oldBill.amount) : 0
+
+    // 计算新账单对收入和支出的贡献（支出为正值）
+    const newIncome = dataToSave.amount > 0 ? dataToSave.amount : 0
+    const newExpense = dataToSave.amount < 0 ? Math.abs(dataToSave.amount) : 0
+
+    // 计算总收入和总支出的增量
+    const incomeIncrement = parseMoney(newIncome - oldIncome)
+    const expenseIncrement = parseMoney(newExpense - oldExpense)
 
     await updateAccount(
       { query: { accountId }, body: { balanceIncrement, incomeIncrement, expenseIncrement } },
@@ -236,11 +242,15 @@ async function saveBill(billToSave, accountId, models, dbOrTransaction) {
       .update({ data: { usedAt: Date.now() } })
   }
 
-  const now = Date.now()
-  if (!originalBill.createdAt) {
-    originalBill.createdAt = now
+  // 保存成功后，从数据库重新获取完整的账单信息，以确保数据一致性
+  const { _getBillsByIds } = require('./bill.js')
+  const newBills = await _getBillsByIds({ query: { ids: [savedBillId] } }, models, dbOrTransaction)
+
+  if (!newBills || newBills.length === 0) {
+    throw new Error('保存账单后无法找到该账单')
   }
-  return { ...originalBill, _id: savedBillId }
+
+  return newBills[0]
 }
 
 /**
@@ -268,7 +278,10 @@ async function saveTransfer(event, models, dbOrTransaction) {
         const counterpartBill = counterpartRes.data[0]
         const currentBill = await saveBill(bill, currentAccountId, models, tx)
         // Re-establish the link
-        await tx.collection('bill').doc(currentBill._id).update({ data: { relatedBill: counterpartBill._id } })
+        await tx
+          .collection('bill')
+          .doc(currentBill._id)
+          .update({ data: { relatedBill: counterpartBill._id } })
         // Also update the counterpart's relatedBill to point to the new bill's ID
         const counterpartUpdateData = {
           relatedBill: currentBill._id,
@@ -289,46 +302,33 @@ async function saveTransfer(event, models, dbOrTransaction) {
       // 注意：这里的 saveBill 内部会处理余额的更新
       const savedBill = await saveBill(bill, currentAccountId, models, tx)
 
-      // 找到关联账单
-      const relatedBillRes = await tx.collection('bill').doc(bill.relatedBill).get()
-      if (!relatedBillRes.data) {
+      // 使用 getBillsByIds 获取完整的关联账单信息
+      const { _getBillsByIds } = require('./bill.js')
+      const relatedBills = await _getBillsByIds({ query: { ids: [bill.relatedBill] } }, models, tx)
+
+      if (!relatedBills || relatedBills.length === 0) {
         // 如果关联账单找不到，可能已被删除，这里只更新当前账单
         return savedBill
       }
-      const relatedBillData = relatedBillRes.data
+      const relatedBillData = relatedBills[0]
 
       // 构建要更新的关联账单信息
       const relatedBillUpdate = {
         amount: -savedBill.amount, // 金额相反
         datetime: savedBill.datetime, // 日期同步
-        tags: (savedBill.tags || []).map(tag => tag._id), // 同步标签，确保只存入 ID
+        tags: (savedBill.tags || []).map((tag) => tag._id), // 同步标签，确保只存入 ID
+        category: relatedBillData.category,
         updatedAt: Date.now(),
         updatedBy: OPENID,
       }
 
-      // 更新关联账单
-      await tx.collection('bill').doc(bill.relatedBill).update({ data: relatedBillUpdate })
-
-      // 正确计算关联账户的余额、收入、支出增量
-      const oldAmount = relatedBillData.amount
-      const newAmount = relatedBillUpdate.amount
-
-      const balanceIncrement = parseMoney(newAmount - oldAmount)
-      const incomeIncrement = parseMoney((newAmount > 0 ? newAmount : 0) - (oldAmount > 0 ? oldAmount : 0))
-      // 支出是负数，所以增量是旧的绝对值减去新的绝对值
-      const expenseIncrement = parseMoney(
-        (oldAmount < 0 ? Math.abs(oldAmount) : 0) - (newAmount < 0 ? Math.abs(newAmount) : 0),
-      )
-
-      await updateAccount(
+      // 使用 saveBill 复用逻辑，更新关联账单并自动处理其账户余额
+      await saveBill(
         {
-          query: { accountId: relatedBillData.account },
-          body: {
-            balanceIncrement,
-            incomeIncrement,
-            expenseIncrement,
-          },
+          _id: bill.relatedBill,
+          ...relatedBillUpdate,
         },
+        relatedBillData.account,
         models,
         tx,
       )
@@ -351,12 +351,19 @@ async function saveTransfer(event, models, dbOrTransaction) {
     const sourceAccountId = isTransferOut ? currentAccountId : targetAccountId
     const destinationAccountId = isTransferOut ? targetAccountId : currentAccountId
 
-    const [sourceAccount, destinationAccount, transferOutCategoryRes, transferInCategoryRes] = await Promise.all([
-      getAccount({ query: { accountId: sourceAccountId } }, models, tx),
-      getAccount({ query: { accountId: destinationAccountId } }, models, tx),
-      db.collection('category').where({ name: '转账', _openid: _.exists(false) }).get(),
-      db.collection('category').where({ name: '收转账', _openid: _.exists(false) }).get(),
-    ])
+    const [sourceAccount, destinationAccount, transferOutCategoryRes, transferInCategoryRes] =
+      await Promise.all([
+        getAccount({ query: { accountId: sourceAccountId } }, models, tx),
+        getAccount({ query: { accountId: destinationAccountId } }, models, tx),
+        db
+          .collection('category')
+          .where({ name: '转账', _openid: _.exists(false) })
+          .get(),
+        db
+          .collection('category')
+          .where({ name: '收转账', _openid: _.exists(false) })
+          .get(),
+      ])
 
     if (!sourceAccount) throw new Error('转账失败：找不到源账户')
     if (!destinationAccount) throw new Error('转账失败：找不到目标账户')
@@ -374,8 +381,12 @@ async function saveTransfer(event, models, dbOrTransaction) {
     const transferOutCat = transferOutCategoryRes.data[0]
     const transferInCat = transferInCategoryRes.data[0]
 
-    const noteForBillOut = isTransferOut ? note || `向 ${destinationAccount.title} 转账` : `向 ${destinationAccount.title} 转账`
-    const noteForBillIn = isTransferOut ? `从 ${sourceAccount.title} 转入` : note || `从 ${sourceAccount.title} 转入`
+    const noteForBillOut = isTransferOut
+      ? note || `向 ${destinationAccount.title} 转账`
+      : `向 ${destinationAccount.title} 转账`
+    const noteForBillIn = isTransferOut
+      ? `从 ${sourceAccount.title} 转入`
+      : note || `从 ${sourceAccount.title} 转入`
 
     const billOut = {
       ...bill,
@@ -398,8 +409,14 @@ async function saveTransfer(event, models, dbOrTransaction) {
     const savedBillOut = await saveBill(billOut, sourceAccountId, models, tx)
     const savedBillIn = await saveBill(billIn, destinationAccountId, models, tx)
 
-    await tx.collection('bill').doc(savedBillOut._id).update({ data: { relatedBill: savedBillIn._id } })
-    await tx.collection('bill').doc(savedBillIn._id).update({ data: { relatedBill: savedBillOut._id } })
+    await tx
+      .collection('bill')
+      .doc(savedBillOut._id)
+      .update({ data: { relatedBill: savedBillIn._id } })
+    await tx
+      .collection('bill')
+      .doc(savedBillIn._id)
+      .update({ data: { relatedBill: savedBillOut._id } })
 
     const primaryBill = isTransferOut ? savedBillOut : savedBillIn
     const secondaryBill = isTransferOut ? savedBillIn : savedBillOut
