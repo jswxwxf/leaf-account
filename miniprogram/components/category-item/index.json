@@ -1,8 +1,7 @@
 {
   "component": true,
   "usingComponents": {
-    "bill-form": "../bill-form/index",
-    "category-item": "../category-item/index"
+    "van-button": "@vant/weapp/button/index"
   },
   "styleIsolation": "apply-shared"
 }

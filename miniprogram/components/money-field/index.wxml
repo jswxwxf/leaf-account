@@ -2,6 +2,7 @@
   label="{{ label }}"
   value="{{ displayValue }}"
   placeholder="{{ placeholder }}"
+  border="{{ border }}"
   error="{{ showError ? false : fields[field] === false }}"
   error-message="{{ showError ? errors[field][0].message : '' }}"
   disabled="{{ disabled }}"

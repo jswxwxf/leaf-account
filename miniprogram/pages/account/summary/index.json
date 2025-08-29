@@ -1,6 +1,8 @@
 {
   "$schema": "https://vite.icebreaker.top/component.json",
   "component": true,
-  "styleIsolation": "apply-shared",
-  "usingComponents": {}
+  "usingComponents": {
+    "query-cell": "../../query-cell/index"
+  },
+  "styleIsolation": "apply-shared"
 }

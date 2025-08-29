@@ -1,0 +1,9 @@
+{
+  "component": true,
+  "usingComponents": {
+    "calendar-field": "/components/calendar-field/index",
+    "money-field": "/components/money-field/index",
+    "category-item": "/components/category-item/index"
+  },
+  "styleIsolation": "apply-shared"
+}

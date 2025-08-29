@@ -16,6 +16,10 @@ defineComponent({
       type: String,
       value: '请输入金额，支持简单运算',
     },
+    border: {
+      type: Boolean,
+      value: true,
+    },
     disabled: {
       type: Boolean,
       value: false,

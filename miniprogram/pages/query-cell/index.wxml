@@ -1,0 +1,83 @@
+<!-- miniprogram/pages/account/query-cell/index.wxml -->
+<view class="query-cell px-4">
+  <bill-form>
+    <view class="flex flex-col gap-2">
+      <!-- 日期范围 -->
+      <view class="flex items-center mt-1 mb-2">
+        <view class="w-12 text-sm text-gray-600">日期</view>
+        <view class="flex-1 flex items-center">
+          <calendar-field
+            value="{{ startDate }}"
+            label=""
+            placeholder="起始日期"
+            border="{{ false }}"
+            custom-class="p-0"
+          />
+          <view class="text-center text-sm text-gray-400 w-12">到</view>
+          <calendar-field
+            value="{{ endDate }}"
+            label=""
+            placeholder="结束日期"
+            border="{{ false }}"
+            custom-class="p-0"
+          />
+        </view>
+      </view>
+      <!-- 分类 -->
+      <view class="flex items-start">
+        <view class="w-12 text-sm text-gray-600 pt-1">分类</view>
+        <view class="flex-1 grid grid-cols-5 gap-2">
+          <category-item wx:for="{{ categories }}" wx:key="_id" item="{{ item }}" />
+        </view>
+      </view>
+      <!-- 金额范围 -->
+      <view class="flex items-center mt-2">
+        <view class="w-12 text-sm text-gray-600">金额</view>
+        <view class="flex-1 flex items-center">
+          <money-field
+            value="{{ minAmount }}"
+            label=""
+            placeholder="最低金额"
+            border="{{ false }}"
+            custom-class="p-0"
+          />
+          <view class="text-center text-sm text-gray-400 w-12">到</view>
+          <money-field
+            value="{{ maxAmount }}"
+            label=""
+            placeholder="最高金额"
+            border="{{ false }}"
+            custom-class="p-0"
+          />
+        </view>
+      </view>
+      <!-- 备注 -->
+      <view class="flex items-center">
+        <view class="w-12 text-sm text-gray-600">备注</view>
+        <view class="flex-1">
+          <van-field value="{{ note }}" placeholder="请输入备注关键字" border="{{ false }}" custom-class="p-0" />
+        </view>
+      </view>
+      <!-- 标签 -->
+      <view class="flex items-start mt-2">
+        <view class="w-12 text-sm text-gray-600 pt-2">标签</view>
+        <view class="flex-1 grid grid-cols-5 gap-2">
+          <van-button size="small" plain custom-class="flex items-center justify-center p-2 text-sm w-full tag-button">
+            <bill-tag>公司</bill-tag>
+          </van-button>
+          <van-button size="small" plain custom-class="flex items-center justify-center p-2 text-sm w-full tag-button">
+            <bill-tag>家庭</bill-tag>
+          </van-button>
+          <van-button size="small" plain custom-class="flex items-center justify-center p-2 text-sm w-full tag-button">
+            <bill-tag>出差</bill-tag>
+          </van-button>
+        </view>
+      </view>
+    </view>
+  </bill-form>
+
+  <!-- 搜索按钮 -->
+  <view class="mb-3 flex justify-end">
+    <van-button type="primary" size="small" custom-class="w-24">搜索</van-button>
+  </view>
+</view>
