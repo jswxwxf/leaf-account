@@ -4,7 +4,7 @@
   <view class="p-4">
     <view class="text-lg font-bold text-center">账单对账</view>
     <view class="py-4 w-[80vw]">
-      <bill-form id="reconcileForm">
+      <bill-form id="reconcile-form">
         <van-cell-group>
           <van-field value="{{ '¥ ' + utils.formatMoney(formData.systemBalance) }}" label="当前系统余额" readonly />
           <money-field

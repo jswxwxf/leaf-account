@@ -1,4 +1,4 @@
-<van-popup show="{{ visible }}" position="bottom" bind:close="handleClose">
+<van-popup show="{{ visible }}" position="bottom" safe-area-inset-bottom="{{ false }}" @close="handleClose">
   <view class="h-64 p-4">
     <van-field
       value="{{ content }}"

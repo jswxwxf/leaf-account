@@ -1,4 +1,4 @@
-import { defineComponent, nextTick, ref } from '@vue-mini/core'
+import { defineComponent, ref, watch } from '@vue-mini/core'
 
 defineComponent({
   properties: {
@@ -11,18 +11,39 @@ defineComponent({
       default: '',
     },
   },
-  setup() {
-    const isFolded = ref(false)
-    const isHidden = ref(false)
+  setup(props) {
+    const isPhotoFolded = ref(true)
+    const isTextFolded = ref(true)
 
-    const toggleFold = () => {
-      isFolded.value = !isFolded.value
+    watch(
+      () => props.imagePath,
+      (newVal) => {
+        if (newVal) {
+          isPhotoFolded.value = false
+          isTextFolded.value = true
+        } else {
+          isPhotoFolded.value = true
+          isTextFolded.value = false
+        }
+      },
+      { immediate: true },
+    )
+
+    const toggleImageFold = () => {
+      isTextFolded.value = true
+      isPhotoFolded.value = !isPhotoFolded.value
+    }
+
+    const toggleTextFold = () => {
+      isPhotoFolded.value = true
+      isTextFolded.value = !isTextFolded.value
     }
 
     return {
-      isFolded,
-      isHidden,
-      toggleFold,
+      isPhotoFolded,
+      isTextFolded,
+      toggleImageFold,
+      toggleTextFold,
     }
   },
 })

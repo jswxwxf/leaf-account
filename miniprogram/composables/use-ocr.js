@@ -35,10 +35,16 @@ export function useOcr(onOcrResult) {
       // 旧的实现返回一个简单的字符串数组
       // 我们需要将新结果适配为该格式
       // 假设 resultData.ocr_info 是一个包含 'text' 属性的对象数组
-      const texts =
-        resultData?.ocr_comm_res?.items
-          ?.map((item) => item.text)
-          .filter((line) => line && line.trim().length > 0) ?? []
+      const rawTexts = resultData?.ocr_comm_res?.items?.map((item) => item.text) ?? []
+      // 移除多余空串
+      const texts = rawTexts.reduce((acc, current, index) => {
+        if (index > 0 && current.trim() === '' && acc[acc.length - 1].trim() === '') {
+          // 如果当前是空字符串，并且前一个也是空字符串，则跳过
+          return acc
+        }
+        acc.push(current)
+        return acc
+      }, [])
 
       if (texts.length === 0) {
         Toast('未识别到任何文字')

@@ -246,7 +246,8 @@ defineComponent({
       }
 
       const texts = await handleOcr(imagePath.value)
-      const bills = await analyzeBillsFromText(texts.join(' '))
+      textContent.value = texts.join('\n')
+      const bills = await analyzeBillsFromText(textContent.value)
       if (bills && bills.length > 0) {
         if (bills.length > MAX_BATCH_BILLS) {
           Toast.fail(`单次识别账单数量不能超过 ${MAX_BATCH_BILLS} 条`)

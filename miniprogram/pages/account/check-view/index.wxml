@@ -1,13 +1,39 @@
-<view
-  class="absolute h-full right-0 flex bg-white {{ isFolded ? 'w-0' : 'w-full' }} transition-width duration-300 ease-in-out"
->
-  <view wx:if="{{ imagePath }}" class="flex-1 h-full overflow-y-auto">
-    <image src="{{ imagePath }}" class="w-full" mode="widthFix" />
+<view class="relative h-full pointer-events-none">
+  <view
+    wx:if="{{ textContent }}"
+    class="absolute h-full right-0 flex bg-white {{ isTextFolded ? 'w-0' : 'w-full' }} transition-width duration-300 ease-in-out pointer-events-auto"
+  >
+    <view class="flex-1 h-full overflow-y-auto">
+      <view class="p-4"><text user-select class="whitespace-pre-wrap break-all">{{ textContent }}</text></view>
+    </view>
   </view>
-  <view wx:if="{{ textContent }}" class="flex-1 h-full overflow-y-auto">
-    <view class="p-4"><text user-select class="whitespace-pre-wrap break-all">{{ textContent }}</text></view>
+
+  <view
+    wx:if="{{ imagePath }}"
+    class="absolute h-full right-0 flex bg-white {{ isPhotoFolded ? 'w-0' : 'w-full' }} transition-width duration-300 ease-in-out pointer-events-auto"
+  >
+    <view class="flex-1 h-full overflow-y-auto">
+      <image src="{{ imagePath }}" class="w-full" mode="widthFix" />
+    </view>
   </view>
-  <van-button @click="toggleFold" type="primary" class="absolute right-0 opacity-50">
-    <van-icon name="{{ isFolded ? 'arrow-left' : 'arrow' }}" color="white" />
+
+  <van-button
+    wx:if="{{ imagePath }}"
+    plain
+    @click="toggleImageFold"
+    class="absolute right-2 top-2 pointer-events-auto"
+    custom-class="check-toggle-button"
+  >
+    <van-icon name="{{ isPhotoFolded ? 'photo-o' : 'photo' }}" size="30px" />
+  </van-button>
+
+  <van-button
+    wx:if="{{ textContent }}"
+    plain
+    @click="toggleTextFold"
+    class="absolute right-2 pointer-events-auto {{ imagePath ? 'top-14' : 'top-2' }}"
+    custom-class="check-toggle-button"
+  >
+    <van-icon name="{{ isTextFolded ? 'comment-o' : 'comment' }}" size="30px" />
   </van-button>
 </view>

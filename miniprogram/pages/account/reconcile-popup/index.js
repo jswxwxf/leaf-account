@@ -10,7 +10,7 @@ defineComponent({
     let _reject
 
     onReady(() => {
-      form.value = selectComponent('#reconcileForm')
+      form.value = selectComponent('#reconcile-form')
     })
 
     onTabChange(() => {
