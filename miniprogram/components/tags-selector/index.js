@@ -112,7 +112,7 @@ defineComponent({
     }
 
     const handleSelect = (event) => {
-      const { item } = event.currentTarget.dataset
+      const item = event.detail
       const index = selectedTags.value.findIndex((selected) => selected.name === item.name)
 
       if (index > -1) {

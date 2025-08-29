@@ -62,15 +62,7 @@
       <view class="flex items-start mt-2">
         <view class="w-12 text-sm text-gray-600 pt-2">标签</view>
         <view class="flex-1 grid grid-cols-5 gap-2">
-          <van-button size="small" plain custom-class="flex items-center justify-center p-2 text-sm w-full tag-button">
-            <bill-tag>公司</bill-tag>
-          </van-button>
-          <van-button size="small" plain custom-class="flex items-center justify-center p-2 text-sm w-full tag-button">
-            <bill-tag>家庭</bill-tag>
-          </van-button>
-          <van-button size="small" plain custom-class="flex items-center justify-center p-2 text-sm w-full tag-button">
-            <bill-tag>出差</bill-tag>
-          </van-button>
+          <tag-item wx:for="{{ tags }}" wx:key="_id" item="{{ item }}" size="small" />
         </view>
       </view>
     </view>

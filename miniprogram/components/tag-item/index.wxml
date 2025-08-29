@@ -1,0 +1,10 @@
+<view class="tag-wrapper" @tap="handleSelect">
+  <van-button
+    size="{{ size }}"
+    plain
+    custom-class="flex items-center justify-center p-2 text-sm w-full tag-button"
+  >
+    <bill-tag type="{{ item.type }}" size="mini">{{ item.name }}</bill-tag>
+  </van-button>
+  <view class="selected-corner" hidden="{{ !selected }}" />
+</view>

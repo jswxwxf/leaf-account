@@ -18,9 +18,9 @@ defineComponent({
     ])
 
     const tags = ref([
-      { _id: '1', name: '公司' },
-      { _id: '2', name: '家庭' },
-      { _id: '3', name: '出差' },
+      { _id: '1', name: '公司', type: '10' },
+      { _id: '2', name: '家庭', type: '20' },
+      { _id: '3', name: '出差', type: '30' },
     ])
 
     return {

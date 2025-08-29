@@ -1,3 +1,3 @@
-<van-tag size="{{size}}"  custom-class="tag--type-{{type}} custom-class">
+<van-tag size="{{ size }}"  custom-class="tag--type-{{type}} custom-class">
   <slot />
 </van-tag>

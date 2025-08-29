@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "usingComponents": {
+    "bill-tag": "/components/bill-tag/index"
+  },
+  "styleIsolation": "apply-shared"
+}

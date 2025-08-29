@@ -2,7 +2,8 @@
   "component": true,
   "usingComponents": {
     "bill-form": "../bill-form/index",
-    "bill-tag": "../bill-tag/index"
+    "bill-tag": "../bill-tag/index",
+    "tag-item": "../tag-item/index"
   },
   "styleIsolation": "apply-shared"
 }
