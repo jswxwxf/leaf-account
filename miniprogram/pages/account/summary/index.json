@@ -2,7 +2,7 @@
   "$schema": "https://vite.icebreaker.top/component.json",
   "component": true,
   "usingComponents": {
-    "query-cell": "../../query-cell/index"
+    "query-cell": "../query-cell/index"
   },
   "styleIsolation": "apply-shared"
 }
