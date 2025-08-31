@@ -171,7 +171,7 @@ async function reconcileAccount(event, models) {
     models,
   )
   const systemBalance = currentAccount.balance
-  const difference = actualBalance - systemBalance
+  const difference = parseFloat((actualBalance - systemBalance).toFixed(2))
 
   if (Math.abs(difference) < 0.01) {
     return currentAccount
