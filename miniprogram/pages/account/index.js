@@ -201,7 +201,7 @@ defineComponent({
       Toast.success('删除成功')
     }
 
-    const handleBatchBills = async (initialBills) => {
+    const handleBatchBills = async (initialBills, options) => {
       if (!batchPopup.value) return
 
       billPopped.value = true
@@ -209,7 +209,7 @@ defineComponent({
       let bills = null
 
       try {
-        bills = await batchPopup.value.show(initialBills)
+        bills = await batchPopup.value.show(initialBills, options)
       } finally {
         billPopped.value = false
         imagePath.value = ''
@@ -253,7 +253,7 @@ defineComponent({
           Toast.fail(`单次识别账单数量不能超过 ${MAX_BATCH_BILLS} 条`)
           return
         }
-        handleBatchBills(bills)
+        handleBatchBills(bills, { noteMoveable: true })
       } else {
         Toast('未识别到有效账单')
       }
@@ -267,7 +267,7 @@ defineComponent({
           Toast.fail(`单次识别账单数量不能超过 ${MAX_BATCH_BILLS} 条`)
           return
         }
-        handleBatchBills(bills)
+        handleBatchBills(bills, { noteMoveable: true })
       } else {
         Toast('未识别到有效账单')
       }

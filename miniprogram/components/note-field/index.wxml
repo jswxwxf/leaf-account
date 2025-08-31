@@ -10,7 +10,11 @@
   @focus="clearError"
   use-button-slot
 >
-  <view slot="button" hidden="{{ disabled }}" class="flex items-center h-full" @tap="handleIconClick">
-    <van-icon size="40rpx" name="expand-o" />
+  <view slot="button" hidden="{{ disabled }}" class="flex items-center h-full gap-1">
+    <block wx:if="{{ moveable }}">
+      <van-icon size="35rpx" name="arrow-up" @tap="handleUpClick" custom-class="note-position-up" />
+      <van-icon size="35rpx" name="arrow-down" @tap="handleDownClick" custom-class="note-position-down" />
+    </block>
+    <van-icon size="40rpx" name="expand-o" @tap="handleIconClick" />
   </view>
 </van-field>

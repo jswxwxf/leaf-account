@@ -67,7 +67,9 @@
                 field="note"
                 rule="required|max:20"
                 show-error="{{ false }}"
+                moveable="{{ options.noteMoveable && list.length > 1 }}"
                 @change="handleFormChange"
+                @position="handlePositionChange"
                 data-field="note"
                 data-row-index="{{ rowIndex }}"
               />

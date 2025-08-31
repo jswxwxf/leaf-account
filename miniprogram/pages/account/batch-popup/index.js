@@ -12,7 +12,9 @@ defineComponent({
 
     const visible = ref(false)
     const list = ref([])
+    const outList = ref([])
     const billForms = ref([])
+    const options = ref()
 
     let _resolve, _reject
 
@@ -20,7 +22,8 @@ defineComponent({
       handleClose()
     })
 
-    const show = (bills) => {
+    const show = (bills, opts={}) => {
+      options.value = opts
       if (bills && bills.length > 0) {
         list.value = bills.map((bill) => ({
           datetime: parseDate(bill.datetime),
@@ -84,6 +87,32 @@ defineComponent({
       }
     }
 
+    const handlePositionChange = (e) => {
+      const { rowIndex } = e.currentTarget.dataset
+      const dir = e.detail
+
+      if (dir === 'up') {
+        // 从 rowIndex 的下一个元素开始，将其 note 赋值给前一个元素
+        for (let i = rowIndex + 1; i < list.value.length; i++) {
+          list.value[i - 1].note = list.value[i].note
+        }
+        // 将 outList 的第一个值移入最后一个元素的 note
+        if (list.value.length > 0) {
+          list.value[list.value.length - 1].note = outList.value.shift() || ''
+        }
+      } else if (dir === 'down') {
+        // 将最后一个元素的 note 存入 outList
+        if (list.value.length > 0) {
+          outList.value.unshift(list.value[list.value.length - 1].note)
+        }
+        // 从倒数第二个元素开始，将其 note 向下移动一位，直到 rowIndex
+        for (let i = list.value.length - 2; i >= rowIndex; i--) {
+          list.value[i + 1].note = list.value[i].note
+        }
+        // 根据需求，当前行的 note 保持不变，所以 rowIndex 的 note 不需要清空
+      }
+    }
+
     const handleAddRow = (e) => {
       if (list.value.length >= MAX_BATCH_BILLS) {
         Toast(`最多只能添加 ${MAX_BATCH_BILLS} 条账单`)
@@ -115,10 +144,12 @@ defineComponent({
     return {
       visible,
       list,
+      options,
       show,
       handleClose,
       handleConfirm,
       handleFormChange,
+      handlePositionChange,
       handleAddRow,
       handleDeleteRow,
       handleCopyRow,
