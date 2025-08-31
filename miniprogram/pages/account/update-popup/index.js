@@ -1,5 +1,6 @@
 import { computed, defineComponent, inject, onReady, ref, watch } from '@vue-mini/core'
 import { onTabChange } from '@/utils/index.js'
+import Dialog from '@vant/weapp/dialog/dialog'
 import { storeKey } from '../store'
 
 defineComponent({
@@ -91,6 +92,29 @@ defineComponent({
         _resolve({
           ids: Object.keys(batchChecked.value).filter((id) => batchChecked.value[id]),
           data: updateData.value,
+          action: 'edit',
+        })
+      visible.value = false
+    }
+
+    const handleDelete = async () => {
+      const hasCheckedItems = Object.values(batchChecked.value).some((v) => v)
+      if (!hasCheckedItems) {
+        wx.showToast({
+          title: '请至少选择一笔账单',
+          icon: 'none',
+        })
+        return
+      }
+
+      await Dialog.confirm({
+        title: '确认删除',
+        message: '您确定要删除选中的账单吗？',
+      })
+      _resolve &&
+        _resolve({
+          ids: Object.keys(batchChecked.value).filter((id) => batchChecked.value[id]),
+          action: 'delete',
         })
       visible.value = false
     }
@@ -154,6 +178,7 @@ defineComponent({
       show,
       handleClose,
       handleConfirm,
+      handleDelete,
       handleFieldChange,
       handleFormChange,
       batchCheckAll,

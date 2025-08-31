@@ -229,8 +229,17 @@ export default function store() {
     }
   }
 
-  function removeBills(bills) {
-    const idsToRemove = new Set(bills.map((b) => b._id))
+  function removeBills(items) {
+    if (!Array.isArray(items) || items.length === 0) return
+
+    let idsToRemove
+    // 判断传入的是对象数组还是ID数组
+    if (typeof items[0] === 'object' && items[0] !== null) {
+      idsToRemove = new Set(items.map((b) => b._id))
+    } else {
+      idsToRemove = new Set(items)
+    }
+
     rawBills.value = rawBills.value.filter((b) => !idsToRemove.has(b._id))
   }
 

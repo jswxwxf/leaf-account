@@ -89,6 +89,26 @@ export function updateBills(query = {}, data) {
 }
 
 /**
+ * 批量删除账单
+ * @param {object} query - 查询条件，用于筛选要删除的账单，例如 { ids: [...] }
+ * @returns {Promise<any>}
+ */
+export function deleteBills(query = {}) {
+  const finalQuery = { ...query }
+
+  if (finalQuery.month) {
+    const { startTime, endTime } = getMonthRange(finalQuery.month)
+    finalQuery.startTime = startTime
+    finalQuery.endTime = endTime
+    delete finalQuery.month
+  }
+  return post('bill-cloud', {
+    $url: '/batch/bills/delete',
+    query: finalQuery,
+  })
+}
+
+/**
  * 批量保存账单
  * @param {Bill[]} bills - 账单列表
  * @returns {Promise<any>}

@@ -117,8 +117,9 @@
       <view>
         <van-checkbox value="{{ batchAllChecked }}" shape="square" icon-size="16px" @change="batchCheckAll" />
       </view>
-      <view>
+      <view class="flex gap-1">
         <van-button type="primary" size="small" @tap="handleConfirm" custom-class="w-20">确定</van-button>
+        <van-button type="danger" size="small" @tap="handleDelete" custom-class="w-20">删除</van-button>
       </view>
       <view class="flex-1" />
       <view class="flex justify-end items-center space-x-6">
@@ -127,3 +128,4 @@
     </view>
   </view>
 </van-popup>
+<van-dialog id="van-dialog" />

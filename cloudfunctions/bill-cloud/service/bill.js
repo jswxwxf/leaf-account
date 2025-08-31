@@ -63,16 +63,28 @@ async function saveBills(event, models) {
   const { bills } = event.body
   const { accountId } = event.query || {}
 
-  const transaction = await db.startTransaction()
-  try {
-    // 直接调用 helper 函数，并传入事务
-    const savedBills = await _saveBills(bills, accountId, models, transaction)
-    await transaction.commit()
-    return savedBills
-  } catch (e) {
-    await transaction.rollback()
-    throw e
+  if (!Array.isArray(bills) || bills.length === 0) {
+    throw new Error('请求中缺少 bills 数组')
   }
+
+  const BATCH_SIZE = 3
+  const allSavedBills = []
+
+  for (let i = 0; i < bills.length; i += BATCH_SIZE) {
+    const batch = bills.slice(i, i + BATCH_SIZE)
+    const transaction = await db.startTransaction()
+    try {
+      // 调用 helper 函数处理单个批次
+      const savedBillsInBatch = await _saveBills(batch, accountId, models, transaction)
+      await transaction.commit()
+      allSavedBills.push(...savedBillsInBatch)
+    } catch (e) {
+      await transaction.rollback()
+      // 如果任何一个批次失败，则抛出错误并终止整个过程
+      throw new Error(`批量保存失败于批次 ${i / BATCH_SIZE + 1}: ${e.message}`)
+    }
+  }
+  return allSavedBills
 }
 
 /**
