@@ -84,7 +84,7 @@ async function getAccount(event, models) {
     })
     if (accountRes.data) {
       const account = accountRes.data
-      // setTimeout(() => recalculateAccountBalance(accountId, OPENID), 0)
+      setTimeout(() => recalculateAccountBalance(accountId, OPENID), 0)
       delete account._openid
       return account
     }
@@ -104,7 +104,7 @@ async function getAccount(event, models) {
 
   if (userAccountRes.data && userAccountRes.data.records.length > 0) {
     const account = userAccountRes.data.records[0]
-    // setTimeout(() => recalculateAccountBalance(account._id, OPENID), 0)
+    setTimeout(() => recalculateAccountBalance(account._id, OPENID), 0)
     delete account._openid
     return account
   }
