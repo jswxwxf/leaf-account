@@ -1,4 +1,4 @@
-# 小叶记账 (leaf-account)
+# 小枫记账 (leaf-account)
 
 [![Powered by CloudBase](https://img.shields.io/badge/Powered%20by-CloudBase-blue)](https://cloudbase.net/)
 
@@ -6,7 +6,7 @@
 
 ## 简介
 
-**小叶记账** 是一款旨在提供简洁、高效记账体验的微信小程序。用户可以通过它轻松记录日常的收入与支出，并通过图表功能对个人财务状况一目了然。
+**小枫记账** 是一款旨在提供简洁、高效记账体验的微信小程序。用户可以通过它轻松记录日常的收入与支出，并通过图表功能对个人财务状况一目了然。
 
 ## 核心功能 (MVP)
 

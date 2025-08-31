@@ -140,7 +140,7 @@ export default function store() {
       totalExpense.value = accountInfo.totalExpense
       await until(() => isCurrentPage('pages/account/index'), { maxRetry: Infinity })
       wx.setNavigationBarTitle({
-        title: `小叶记帐 - ${accountInfo.title}`,
+        title: `小枫记帐 - ${accountInfo.title}`,
       })
       wx.setTabBarItem({
         index: 0,
