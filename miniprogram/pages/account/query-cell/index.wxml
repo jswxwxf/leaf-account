@@ -1,52 +1,65 @@
+<wxs src="../../../utils/utils.wxs" module="utils" />
+
 <!-- miniprogram/pages/account/query-cell/index.wxml -->
-<view class="query-cell px-4">
+<view class="query-cell px-4 pt-2">
   <bill-form>
-    <view class="flex flex-col gap-2">
+    <view class="flex flex-col gap-3">
+      <!-- <pre class="text-xs text-gray-400 text-wrap overflow-auto">
+        {{ utils.stringify(queryData) }}
+      </pre> -->
       <!-- 日期范围 -->
-      <view class="flex items-center mt-1 mb-2">
+      <view class="flex items-center">
         <view class="w-12 text-sm text-gray-600">日期</view>
         <view class="flex-1 flex items-center">
           <calendar-field
-            value="{{ startDate }}"
+            value="{{ queryData.startTime }}"
             label=""
             placeholder="起始日期"
             border="{{ false }}"
+            data-field="startTime"
+            @change="handleFormChange"
             custom-class="p-0"
           />
           <view class="text-center text-sm text-gray-400 w-12">到</view>
           <calendar-field
-            value="{{ endDate }}"
+            value="{{ queryData.endTime }}"
             label=""
             placeholder="结束日期"
             border="{{ false }}"
+            data-field="endTime"
+            @change="handleFormChange"
             custom-class="p-0"
           />
         </view>
       </view>
       <!-- 分类 -->
-      <view class="flex items-start">
-        <view class="w-12 text-sm text-gray-600 pt-1">分类</view>
-        <view class="flex-1 grid grid-cols-5 gap-2">
-          <category-item wx:for="{{ categories }}" wx:key="_id" item="{{ item }}" />
-        </view>
-      </view>
+      <query-category
+        label="分类"
+        value="{{ queryData.categories }}"
+        data-field="categories"
+        @change="handleFormChange"
+      />
       <!-- 金额范围 -->
-      <view class="flex items-center mt-2">
+      <view class="flex items-center">
         <view class="w-12 text-sm text-gray-600">金额</view>
         <view class="flex-1 flex items-center">
           <money-field
-            value="{{ minAmount }}"
+            value="{{ queryData.minAmount }}"
             label=""
             placeholder="最低金额"
             border="{{ false }}"
+            data-field="minAmount"
+            @change="handleFormChange"
             custom-class="p-0"
           />
           <view class="text-center text-sm text-gray-400 w-12">到</view>
           <money-field
-            value="{{ maxAmount }}"
+            value="{{ queryData.maxAmount }}"
             label=""
             placeholder="最高金额"
             border="{{ false }}"
+            data-field="maxAmount"
+            @change="handleFormChange"
             custom-class="p-0"
           />
         </view>
@@ -55,21 +68,23 @@
       <view class="flex items-center">
         <view class="w-12 text-sm text-gray-600">备注</view>
         <view class="flex-1">
-          <van-field value="{{ note }}" placeholder="请输入备注关键字" border="{{ false }}" custom-class="p-0" />
+          <van-field
+            value="{{ queryData.note }}"
+            placeholder="请输入备注关键字"
+            border="{{ false }}"
+            data-field="note"
+            @change="handleFormChange"
+            custom-class="p-0"
+          />
         </view>
       </view>
       <!-- 标签 -->
-      <view class="flex items-start mt-2">
-        <view class="w-12 text-sm text-gray-600 pt-2">标签</view>
-        <view class="flex-1 grid grid-cols-5 gap-2">
-          <tag-item wx:for="{{ tags }}" wx:key="_id" item="{{ item }}" size="small" />
-        </view>
-      </view>
+      <query-tag label="标签" value="{{ queryData.tags }}" data-field="tags" @change="handleFormChange" />
     </view>
   </bill-form>
 
   <!-- 搜索按钮 -->
-  <view class="mb-3 flex justify-end">
-    <van-button type="primary" size="small" custom-class="w-24">搜索</van-button>
+  <view class="my-3">
+    <van-button type="primary" block>搜索</van-button>
   </view>
 </view>

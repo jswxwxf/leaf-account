@@ -35,7 +35,7 @@ module.exports = {
     </view>
 
     <!-- 新标签输入 -->
-    <bill-form id="tag-form" @init="handleFormInit">
+    <bill-form wx:if="{{ !options.disableNew }}" id="tag-form" @init="handleFormInit">
       <van-field
         value="{{ theNewTag.name }}"
         placeholder="新标签，点击右侧切换颜色"

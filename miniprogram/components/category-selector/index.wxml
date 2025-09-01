@@ -1,6 +1,34 @@
+<wxs module="tools">
+  var isSelected = function(item, selectedItems) {
+    if (!item || !selectedItems) return false
+    return selectedItems.some(function(selected) {
+      return selected.name === item.name
+    })
+  }
+
+module.exports = {
+  isSelected: isSelected,
+}
+</wxs>
+
 <van-popup show="{{ visible }}" position="bottom" closeable safe-area-inset-bottom="{{false}}" bind:close="handleClose">
   <view class="p-4">
-    <view class="text-lg font-bold text-center mb-4">选择分类</view>
+    <view class="flex justify-between items-center mb-4">
+      <van-button wx:if="{{ options.allowMultiple }}" type="primary" size="small" @tap="handleConfirm">确定</van-button>
+      <view class="text-lg font-bold text-center flex-1">选择分类</view>
+    </view>
+
+    <!-- 分类类别列表 -->
+    <view wx:if="{{ options.allowMultiple }}" class="grid grid-cols-3 gap-3 mb-4 category-type-list">
+      <category-item
+        wx:for="{{ types }}"
+        wx:key="{{ item.type }}"
+        item="{{ item }}"
+        @category-tap="handleSelect"
+        data-item="{{ item }}"
+        selected="{{ tools.isSelected(item, selectedItems) }}"
+      />
+    </view>
 
     <!-- 分类列表 -->
     <view wx:if="{{categories.length > 0}}" class="grid grid-cols-3 gap-3 mb-4 category-list">
@@ -8,17 +36,16 @@
         wx:for="{{ categories }}"
         wx:key="_id"
         item="{{ item }}"
-        @tap="handleSelect"
+        @category-tap="handleSelect"
         data-item="{{ item }}"
         disabled="{{ options.disableTransfer && (item.name === '转账' || item.name === '收转账') }}"
+        selected="{{ tools.isSelected(item, selectedItems) }}"
       />
     </view>
-    <view wx:else class="text-center text-gray-500 pb-6">
-      暂无分类，请在下方添加
-    </view>
+    <view wx:else class="text-center text-gray-500 pb-6">暂无分类，请在下方添加</view>
 
     <!-- 新分类输入 -->
-    <bill-form wx:if="{{ !options.disableNew }}" id="category-form" @init="handleFormInit" >
+    <bill-form wx:if="{{ !options.disableNew }}" id="category-form" @init="handleFormInit">
       <van-field
         value="{{ theNewCategory.name }}"
         placeholder="新分类，点击右边图标切换类型"
@@ -30,13 +57,21 @@
       >
         <view slot="right-icon">
           <view wx:if="{{theNewCategory.type === '20'}}" class="flex items-center gap-1" @tap="toggleCategoryType">
-            <van-icon name="cash-back-record-o" color="#ee0a24" size="20px" />支
+            <van-icon name="cash-back-record-o" color="#ee0a24" size="20px" />
+            支
           </view>
           <view wx:if="{{theNewCategory.type === '10'}}" class="flex items-center gap-1" @tap="toggleCategoryType">
-            <van-icon name="gold-coin-o" color="#07c160" size="20px" />收
+            <van-icon name="gold-coin-o" color="#07c160" size="20px" />
+            收
           </view>
         </view>
-        <van-button slot="button" size="small" type="primary" bind:click="handleAddNew" disabled="{{ !theNewCategory.name }}">
+        <van-button
+          slot="button"
+          size="small"
+          type="primary"
+          bind:click="handleAddNew"
+          disabled="{{ !theNewCategory.name }}"
+        >
           确定
         </van-button>
       </van-field>

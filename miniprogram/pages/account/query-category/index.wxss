@@ -1,0 +1,5 @@
+/* miniprogram/components/category-field/index.wxss */
+.query-category-item {
+  @apply !h-7;
+  @apply !leading-7
+}

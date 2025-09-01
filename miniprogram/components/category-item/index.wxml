@@ -1,9 +1,11 @@
-<!-- miniprogram/components/selectable-button/index.wxml -->
-<van-button
-  plain
-  custom-class="flex items-center justify-center p-2 text-sm w-full {{ buttonType === 'expense' ? 'expense-button' : 'income-button' }}"
-  @tap="onTap"
-  disabled="{{ disabled }}"
->
-  {{ item.name }}
-</van-button>
+<view class="category-wrapper">
+  <van-button
+    plain
+    custom-class="custom-class flex items-center justify-center p-2 text-sm w-full category-button {{ buttonType === 'expense' ? 'expense-button' : 'income-button' }}"
+    @tap="onTap"
+    disabled="{{ disabled }}"
+  >
+    {{ item.name }}
+  </van-button>
+  <view class="selected-corner" hidden="{{ !selected }}" />
+</view>

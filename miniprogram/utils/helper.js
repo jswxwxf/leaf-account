@@ -2,20 +2,20 @@ import { ref } from '@vue-mini/core'
 
 export const tagsSelector = ref(null)
 
-export function showTagsSelector(tags) {
+export function showTagsSelector(tags, options) {
   if (!tagsSelector.value) {
     return Promise.reject(new Error('Tags selector not initialized'))
   }
-  return tagsSelector.value.show(tags)
+  return tagsSelector.value.show(tags, options)
 }
 
 export const categorySelector = ref(null)
 
-export function showCategorySelector(options) {
+export function showCategorySelector(value, options) {
   if (!categorySelector.value) {
     return Promise.reject(new Error('Category selector not initialized'))
   }
-  return categorySelector.value.show(options)
+  return categorySelector.value.show(value, options)
 }
 
 export const calendarSelector = ref(null)

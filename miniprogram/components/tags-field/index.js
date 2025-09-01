@@ -20,6 +20,10 @@ defineComponent({
       type: Boolean,
       value: false
     },
+    options: {
+      type: Object,
+      value: {}, // { disableNew }
+    },
     ...formItemProps('tags'),
   },
   setup(props, { triggerEvent }) {
@@ -29,7 +33,7 @@ defineComponent({
     async function handleClick() {
       if (props.disabled) return
       clearError()
-      const result = await showTagsSelector(props.value)
+      const result = await showTagsSelector(props.value, props.options)
       triggerEvent('change', result)
     }
 

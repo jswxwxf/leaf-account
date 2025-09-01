@@ -6,7 +6,9 @@
     "category-item": "/components/category-item/index",
     "tag-item": "/components/tag-item/index",
     "bill-form": "/components/bill-form/index",
-    "bill-tag": "/components/bill-tag/index"
+    "bill-tag": "/components/bill-tag/index",
+    "query-category": "../query-category/index",
+    "query-tag": "../query-tag/index"
   },
   "styleIsolation": "apply-shared"
 }

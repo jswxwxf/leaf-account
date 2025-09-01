@@ -66,6 +66,7 @@ defineComponent({
     const selectedTags = ref([])
     const errors = ref()
     const tagForm = ref()
+    const options = ref({})
 
     let _resolve, _reject
 
@@ -90,7 +91,8 @@ defineComponent({
       handleClose()
     })
 
-    const show = (value = []) => {
+    const show = (value = [], opts = {}) => {
+      options.value = opts
       visible.value = true
       selectedTags.value = [...value]
       resetNewTag()
@@ -147,6 +149,7 @@ defineComponent({
       theNewTag,
       selectedTags,
       errors,
+      options,
       show,
       handleClose,
       handleSelect,

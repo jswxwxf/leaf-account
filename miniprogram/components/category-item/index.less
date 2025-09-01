@@ -9,3 +9,31 @@
   --button-default-color: #15803d; /* a deeper green color for text */
   padding: 0 !important;
 }
+
+.category-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.category-button {
+  padding: 0 !important;
+  width: 100%;
+  min-width: 4.5rem;
+  height: 100%;
+}
+
+/* 右上角角标-三角形 */
+.selected-corner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  /* 控制三角形的大小 */
+  border-width: 0 15px 15px 0;
+  /* 只给右上角边框设置颜色，其他透明 */
+  border-color: transparent #3b82f6 transparent transparent; /* blue-500 */
+  pointer-events: none;
+}

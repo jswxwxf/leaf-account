@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "usingComponents": {
+    "category-item": "/components/category-item/index"
+  },
+  "styleIsolation": "apply-shared"
+}

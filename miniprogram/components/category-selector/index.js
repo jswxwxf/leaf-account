@@ -53,9 +53,14 @@ defineComponent({
   setup(props, { triggerEvent, selectComponent }) {
     const visible = ref(false)
     const categories = ref([])
+    const types = ref([
+      { name: '所有支出', type: '20' },
+      { name: '所有收入', type: '10' },
+    ])
     const errors = ref()
     const categoryForm = ref()
     const options = ref({})
+    const selectedItems = ref([])
 
     const {
       theNewCategory,
@@ -86,9 +91,10 @@ defineComponent({
       handleClose()
     })
 
-    const show = (opts = {}) => {
+    const show = (value = [], opts = {}) => {
       options.value = opts
       visible.value = true
+      selectedItems.value = [...value]
       resetNewCategory()
       fetchCategories()
       categoryForm.value.clearErrors()
@@ -108,25 +114,52 @@ defineComponent({
     }
 
     const handleSelect = async (event) => {
-      let { item } = event.currentTarget.dataset
-      if (item.name === '转账') {
-        if (options.value.disableTransfer) return
-        const account = await showAccountSelector()
-        // account 可能为空是因为如果只有一个账户，选择器可能不会弹出
-        if (account) {
-          item = { ...item, account, note: `向 ${account.title} 转账` }
+      const { item } = event.currentTarget.dataset
+
+      if (options.value.allowMultiple) {
+        const index = selectedItems.value.findIndex((i) => i.name === item.name)
+        if (index > -1) {
+          selectedItems.value.splice(index, 1)
+        } else {
+          // 互斥逻辑
+          if (item.name === '所有支出') {
+            selectedItems.value = selectedItems.value.filter((i) => i.type !== '20')
+          } else if (item.name === '所有收入') {
+            selectedItems.value = selectedItems.value.filter((i) => i.type !== '10')
+          } else if (item.type === '20') {
+            const allExpenseIndex = selectedItems.value.findIndex((i) => i.name === '所有支出')
+            if (allExpenseIndex > -1) selectedItems.value.splice(allExpenseIndex, 1)
+          } else if (item.type === '10') {
+            const allIncomeIndex = selectedItems.value.findIndex((i) => i.name === '所有收入')
+            if (allIncomeIndex > -1) selectedItems.value.splice(allIncomeIndex, 1)
+          }
+          selectedItems.value.push(item)
+          selectedItems.value.sort((a, b) => b.type - a.type)
         }
+        return
       }
-      if (item.name === '收转账') {
-        if (options.value.disableTransfer) return
-        const account = await showAccountSelector()
-        // account 可能为空是因为如果只有一个账户，选择器可能不会弹出
-        if (account) {
-          item = { ...item, account, note: `从 ${account.title} 转入` }
+
+      let selectedItem = { ...item }
+      if (!options.value.disableTransferAccount) {
+        if (item.name === '转账') {
+          if (options.value.disableTransfer) return
+          const account = await showAccountSelector()
+          // account 可能为空是因为如果只有一个账户，选择器可能不会弹出
+          if (account) {
+            selectedItem = { ...item, account, note: `向 ${account.title} 转账` }
+          }
+        }
+        if (item.name === '收转账') {
+          if (options.value.disableTransfer) return
+          const account = await showAccountSelector()
+          // account 可能为空是因为如果只有一个账户，选择器可能不会弹出
+          if (account) {
+            selectedItem = { ...item, account, note: `从 ${account.title} 转入` }
+          }
         }
       }
       hide()
-      _resolve(item)
+      _resolve(selectedItem)
     }
 
     const handleAddNew = async () => {
@@ -147,12 +180,19 @@ defineComponent({
       errors.value = e.detail.errors
     }
 
+    const handleConfirm = () => {
+      hide()
+      _resolve([...selectedItems.value])
+    }
+
     return {
       visible,
       categories,
+      types,
       theNewCategory,
       errors,
       options,
+      selectedItems,
       show,
       handleClose,
       handleSelect,
@@ -160,6 +200,7 @@ defineComponent({
       toggleCategoryType,
       handleAddNew,
       handleFormInit,
+      handleConfirm,
     }
   },
 })

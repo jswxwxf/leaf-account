@@ -22,7 +22,7 @@ defineComponent({
     },
     options: {
       type: Object,
-      value: {}, // { disableNew, disableTransfer, disableType }
+      value: {}, // { disableNew, disableTransfer, disableTransferAccount, disableType, allowMultiple }
     },
     ...formItemProps('category'),
   },
@@ -33,7 +33,7 @@ defineComponent({
     async function handleClick() {
       if (props.disabled) return
       clearError()
-      const result = await showCategorySelector(props.options)
+      const result = await showCategorySelector(undefined, props.options)
       triggerEvent('change', result)
     }
 

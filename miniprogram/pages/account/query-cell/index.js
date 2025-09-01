@@ -1,36 +1,23 @@
 import { defineComponent, ref } from '@vue-mini/core'
+import dayjs from 'dayjs'
 
 defineComponent({
   properties: {},
   setup() {
-    const startDate = ref(null)
-    const endDate = ref(null)
-    const minAmount = ref('')
-    const maxAmount = ref('')
-    const note = ref('')
+    const queryData = ref({})
 
-    // 以后可以从API获取
-    const categories = ref([
-      { _id: '1', name: '餐饮', type: '20' },
-      { _id: '2', name: '交通', type: '20' },
-      { _id: '3', name: '工资', type: '10' },
-      { _id: '4', name: '购物', type: '20' },
-    ])
-
-    const tags = ref([
-      { _id: '1', name: '公司', type: '10' },
-      { _id: '2', name: '家庭', type: '20' },
-      { _id: '3', name: '出差', type: '30' },
-    ])
+    const handleFormChange = (e) => {
+      const { field } = e.currentTarget.dataset
+      let value = e.detail
+      if (field === 'endTime') {
+        value = dayjs(e.detail).endOf('day').valueOf()
+      }
+      queryData.value[field] = value
+    }
 
     return {
-      startDate,
-      endDate,
-      minAmount,
-      maxAmount,
-      note,
-      categories,
-      tags,
+      queryData,
+      handleFormChange,
     }
   },
 })

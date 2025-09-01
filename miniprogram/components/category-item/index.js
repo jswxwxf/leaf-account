@@ -1,12 +1,17 @@
 import { defineComponent, computed } from '@vue-mini/core'
 
 defineComponent({
+  externalClasses: ['custom-class'],
   properties: {
     item: {
       type: Object,
       value: {},
     },
     disabled: {
+      type: Boolean,
+      value: false,
+    },
+    selected: {
       type: Boolean,
       value: false,
     },
@@ -18,7 +23,7 @@ defineComponent({
     })
 
     const onTap = (e) => {
-      triggerEvent('tap', e)
+      triggerEvent('category-tap', e)
     }
 
     return {
