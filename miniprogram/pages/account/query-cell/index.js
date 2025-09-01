@@ -1,10 +1,12 @@
-import { defineComponent, ref } from '@vue-mini/core'
+import { defineComponent, inject, ref } from '@vue-mini/core'
 import dayjs from 'dayjs'
+import { storeKey } from '../store'
 
 defineComponent({
   properties: {},
   setup() {
-    const queryData = ref({})
+    const { queryData: _queryData, queryDropDownClosed } = inject(storeKey)
+    const queryData = ref({ ..._queryData.value })
 
     const handleFormChange = (e) => {
       const { field } = e.currentTarget.dataset
@@ -15,9 +17,20 @@ defineComponent({
       queryData.value[field] = value
     }
 
+    const handleQuery = () => {
+      _queryData.value = { ...queryData.value }
+      queryDropDownClosed.value = Date.now()
+    }
+
+    const clearQueryData = () => {
+      queryData.value = { ..._queryData.value }
+    }
+
     return {
       queryData,
       handleFormChange,
+      clearQueryData,
+      handleQuery,
     }
   },
 })

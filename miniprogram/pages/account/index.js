@@ -2,7 +2,13 @@ import { defineComponent, ref, provide, onReady, watch, onTabItemTap } from '@vu
 import Toast from '@vant/weapp/toast/toast.js'
 import Dialog from '@vant/weapp/dialog/dialog.js'
 import { reconcileAccount } from '@/api/account.js'
-import { upsertBill, deleteBill, saveBills, updateBills as batchUpdateBills, deleteBills as batchDeleteBills } from '@/api/bill.js'
+import {
+  upsertBill,
+  deleteBill,
+  saveBills,
+  updateBills as batchUpdateBills,
+  deleteBills as batchDeleteBills,
+} from '@/api/bill.js'
 import { newBill } from '@/service/bill-service.js'
 import store, { MAX_BATCH_BILLS, storeKey } from './store'
 import { useOcr } from '@/composables/use-ocr.js'

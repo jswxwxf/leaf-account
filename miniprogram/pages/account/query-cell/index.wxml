@@ -1,12 +1,7 @@
-<wxs src="../../../utils/utils.wxs" module="utils" />
-
 <!-- miniprogram/pages/account/query-cell/index.wxml -->
 <view class="query-cell px-4 pt-2">
   <bill-form>
     <view class="flex flex-col gap-3">
-      <!-- <pre class="text-xs text-gray-400 text-wrap overflow-auto">
-        {{ utils.stringify(queryData) }}
-      </pre> -->
       <!-- 日期范围 -->
       <view class="flex items-center">
         <view class="w-12 text-sm text-gray-600">日期</view>
@@ -84,7 +79,7 @@
   </bill-form>
 
   <!-- 搜索按钮 -->
-  <view class="my-3">
-    <van-button type="primary" block>搜索</van-button>
+  <view class="my-3 mt-5">
+    <van-button type="primary" block custom-class="query-cell-button" class="h-7" @tap="handleQuery">搜索</van-button>
   </view>
 </view>

@@ -1,5 +1,6 @@
-import { defineComponent, inject, ref } from '@vue-mini/core'
+import { defineComponent, inject, ref, watch } from '@vue-mini/core'
 import { storeKey } from '../store'
+import { onTabChange } from '@/utils/index.js'
 
 defineComponent({
   properties: {
@@ -8,7 +9,7 @@ defineComponent({
       value: false,
     },
   },
-  setup(props, { triggerEvent }) {
+  setup(props, { triggerEvent, selectComponent }) {
     const {
       currentAccount,
       typeValue,
@@ -16,6 +17,7 @@ defineComponent({
       totalExpense,
       totalIncome,
       totalBalance,
+      queryDropDownClosed,
       searchText,
       updateSearchText,
     } = inject(storeKey)
@@ -54,6 +56,18 @@ defineComponent({
       triggerEvent('balance-tap')
     }
 
+    function clearQueryData() {
+      selectComponent('#query-cell').clearQueryData()
+    }
+
+    watch(queryDropDownClosed, () => {
+      selectComponent('#query-dropdown').toggle(false)
+    })
+
+    onTabChange(() => {
+      selectComponent('#query-dropdown').toggle(false)
+    })
+
     return {
       currentAccount,
       typeOptions,
@@ -68,6 +82,7 @@ defineComponent({
       onBalanceTap,
       searchText,
       updateSearchText,
+      clearQueryData,
     }
   },
 })
