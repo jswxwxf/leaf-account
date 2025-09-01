@@ -9,6 +9,16 @@ import { isCurrentPage, until } from '@/utils/index.js'
 export const MAX_BATCH_BILLS = 20
 
 function useBills(rawBills, monthValue, typeValue) {
+  const totalIncome = ref(0)
+  const totalExpense = ref(0)
+  const totalBalance = ref(0)
+
+  function updateAccountSummary(res) {
+    totalIncome.value = res.summary?.totalIncome ?? res.account?.totalIncome
+    totalExpense.value = res.summary?.totalExpense ?? res.account?.totalExpense
+    totalBalance.value = res.account?.balance
+  }
+
   function updateBills(bills, currentAccountId) {
     let needsReSort = false
 
@@ -62,8 +72,12 @@ function useBills(rawBills, monthValue, typeValue) {
   }
 
   return {
+    totalIncome,
+    totalExpense,
+    totalBalance,
     updateBills,
     removeBills,
+    updateAccountSummary,
   }
 }
 
@@ -72,10 +86,6 @@ function useUIState(rawBills) {
 
   const billPopped = ref(false)
   const batchEditPopped = ref(false)
-
-  const totalIncome = ref(0)
-  const totalExpense = ref(0)
-  const totalBalance = ref(0)
 
   const queryDropDownClosed = ref()
 
@@ -88,27 +98,17 @@ function useUIState(rawBills) {
     return [...new Set(allNotes)]
   })
 
-  function updateAccountSummary(res) {
-    totalIncome.value = res.summary?.totalIncome ?? res.account?.totalIncome
-    totalExpense.value = res.summary?.totalExpense ?? res.account?.totalExpense
-    totalBalance.value = res.account?.balance
-  }
-
   return {
     searchText,
     billPopped,
     batchEditPopped,
     notes,
-    totalIncome,
-    totalExpense,
-    totalBalance,
     queryDropDownClosed,
     updateSearchText,
-    updateAccountSummary,
   }
 }
 
-function useAccount(rawBills, uiState) {
+function useAccount(rawBills, billsManager) {
   const currentAccount = ref({})
   const error = ref(null)
 
@@ -119,9 +119,7 @@ function useAccount(rawBills, uiState) {
     try {
       const { data: accountInfo } = await getAccount(name)
       currentAccount.value = accountInfo
-      uiState.totalBalance.value = accountInfo.balance
-      uiState.totalIncome.value = accountInfo.totalIncome
-      uiState.totalExpense.value = accountInfo.totalExpense
+      billsManager.updateAccountSummary({ account: accountInfo })
       await until(() => isCurrentPage('pages/account/index'), { maxRetry: Infinity })
       wx.setNavigationBarTitle({
         title: `小枫记帐 - ${accountInfo.title}`,
@@ -194,9 +192,9 @@ export default function store() {
   const monthValue = ref('')
 
   const uiState = useUIState(rawBills)
-  const { currentAccount, error, loadAccount } = useAccount(rawBills, uiState)
-  const batchSelectState = useBatchSelect(rawBills)
   const billsManager = useBills(rawBills, monthValue, typeValue)
+  const { currentAccount, error, loadAccount } = useAccount(rawBills, billsManager)
+  const batchSelectState = useBatchSelect(rawBills)
 
   function resetQuery() {
     queryData.value = {}
@@ -220,7 +218,7 @@ export default function store() {
         return
       }
 
-      uiState.updateAccountSummary(res)
+      billsManager.updateAccountSummary(res)
 
       if (isLoadMore) {
         rawBills.value.push(...res.data)
