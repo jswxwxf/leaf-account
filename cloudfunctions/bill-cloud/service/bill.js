@@ -173,13 +173,15 @@ async function buildBillQuery(event, models) {
     where.$and.push({ amount: _.lte(parseFloat(maxAmount)) })
   }
 
-  // // 处理备注
-  // if (note) {
-  //   // 根据用户建议，使用 models.bill.list 封装的特殊全文搜索语法
-  //   where.$and.push({
-  //     note: _.regexp('^张', 'i'),
-  //   })
-  // }
+  // 处理备注
+  if (note) {
+    where.$and.push({
+      note: db.RegExp({
+        regexp: note.trim(),
+        options: 'i',
+      }),
+    })
+  }
 
   // 处理标签
   if (tags && tags.length > 0) {
@@ -249,14 +251,15 @@ async function getBillsSummary(event, models) {
  * @param {object} where - 查询条件
  */
 async function getMinDate(models, where = {}) {
-  const res = await models.bill.list({
-    filter: { where },
-    orderBy: [{ datetime: 'asc' }],
-    page: 1,
-    pageSize: 1,
-  })
-  if (res.data && res.data.records.length > 0) {
-    return res.data.records[0].datetime
+  const res = await db
+    .collection('bill')
+    .where(where)
+    .orderBy('datetime', 'asc')
+    .limit(1)
+    .get()
+
+  if (res.data && res.data.length > 0) {
+    return res.data[0].datetime
   }
   return null
 }
@@ -319,10 +322,12 @@ async function getBills(event, models) {
       ],
     }
 
-    const {
-      data: { records: periodBills },
-    } = await models.bill.list({
-      select: {
+    const { data: periodBills } = await db
+      .collection('bill')
+      .where(periodWhereClause)
+      .orderBy('datetime', 'desc')
+      .limit(1000)
+      .field({
         _id: true,
         amount: true,
         datetime: true,
@@ -331,11 +336,8 @@ async function getBills(event, models) {
         tags: true,
         createdAt: true,
         relatedBill: true,
-      },
-      filter: { where: periodWhereClause },
-      orderBy: [{ datetime: 'desc' }],
-      pageSize: 1000,
-    })
+      })
+      .get()
 
     if (periodBills && periodBills.length > 0) {
       accumulatedBills = accumulatedBills.concat(periodBills)
@@ -370,10 +372,12 @@ async function getAllBills(event, models) {
     return []
   }
 
-  const {
-    data: { records },
-  } = await models.bill.list({
-    select: {
+  const { data } = await db
+    .collection('bill')
+    .where(where)
+    .orderBy('datetime', 'desc')
+    .limit(1000)
+    .field({
       _id: true,
       amount: true,
       datetime: true,
@@ -382,13 +386,10 @@ async function getAllBills(event, models) {
       tags: true,
       createdAt: true,
       relatedBill: true,
-    },
-    filter: { where },
-    orderBy: [{ datetime: 'desc' }],
-    pageSize: 1000,
-  })
+    })
+    .get()
 
-  const billsWithCategory = await populateCategoriesForBills(records, models)
+  const billsWithCategory = await populateCategoriesForBills(data, models)
   return populateTagsForBills(billsWithCategory, models)
 }
 

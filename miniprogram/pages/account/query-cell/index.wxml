@@ -43,6 +43,7 @@
             placeholder="请输入备注关键字"
             border="{{ false }}"
             data-field="note"
+            clearable
             @change="handleFormChange"
             custom-class="p-0"
           />
