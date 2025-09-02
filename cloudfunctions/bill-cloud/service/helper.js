@@ -340,7 +340,8 @@ async function saveTransfer(event, models, dbOrTransaction) {
     const targetAccountInfo = category?.account
     if (!targetAccountInfo || !targetAccountInfo._id) {
       console.warn('转账目标账户信息不完整,保存为断联转账');
-      // 如果目标账户ID为空，只保存当前账户的转账记录
+      // 如果目标账户ID为空，只保存当前账户的转账记录, relatedBill也要删除
+      delete bill.relatedBill;
       const billOut = {
         ...bill,
         amount: -Math.abs(parseMoney(amount)),
