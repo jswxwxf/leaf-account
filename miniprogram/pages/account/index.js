@@ -17,7 +17,7 @@ import { useAi } from '@/composables/use-ai.js'
 function useBillPopup(state, billPopupRef) {
   const {
     currentAccount,
-    typeValue,
+    queryData,
     monthValue,
     searchText,
     updateBills,
@@ -41,8 +41,8 @@ function useBillPopup(state, billPopupRef) {
 
     if (billToUpsert) {
       const res = await upsertBill(billToUpsert, {
+        ...queryData.value,
         month: monthValue.value,
-        type: typeValue.value,
         accountId: currentAccount.value._id,
       })
       updateBills([res.data])
@@ -88,7 +88,7 @@ defineComponent({
     const state = store()
     const {
       currentAccount,
-      typeValue,
+      queryData,
       monthValue,
       totalIncome,
       totalExpense,
@@ -132,7 +132,7 @@ defineComponent({
     }
 
     // 监听月份或类型变化，自动滚动到顶部
-    watch([monthValue, typeValue], scrollToTop)
+    watch([monthValue, queryData], scrollToTop)
 
     const refreshing = ref(false)
     const handleRefresh = async () => {
@@ -199,8 +199,8 @@ defineComponent({
         confirmButtonText: '删除',
       })
       const res = await deleteBill(bill._id, {
+        ...queryData.value,
         month: monthValue.value,
-        type: typeValue.value,
         accountId: currentAccount.value._id,
       })
       updateAccountSummary(res)
@@ -226,8 +226,8 @@ defineComponent({
 
       if (bills && bills.length > 0) {
         const res = await saveBills(bills, {
+          ...queryData.value,
           month: monthValue.value,
-          type: typeValue.value,
           accountId: currentAccount.value._id,
         })
         updateAccountSummary(res)
@@ -297,8 +297,8 @@ defineComponent({
           const res = await batchDeleteBills({
             ids,
             accountId: currentAccount.value._id,
+            ...queryData.value,
             month: monthValue.value,
-            type: typeValue.value,
           })
           updateAccountSummary(res)
           removeBills(ids)
@@ -308,8 +308,8 @@ defineComponent({
             {
               ids,
               accountId: currentAccount.value._id,
+              ...queryData.value,
               month: monthValue.value,
-              type: typeValue.value,
             },
             data,
           )

@@ -1,14 +1,15 @@
 import { ref, computed, onShow, watch } from '@vue-mini/core'
 import { sumBy, orderBy } from 'lodash'
+import dayjs from 'dayjs'
 import { getBills } from '@/api/bill.js'
 import { getAccount } from '@/api/account.js'
-import { groupBillsByDate } from '@/service/bill-service.js'
+import { groupBillsByDate, isBillMatch } from '@/service/bill-service.js'
 import { getCurrentMonth, formatDate } from '@/utils/date.js'
 import { isCurrentPage, until } from '@/utils/index.js'
 
 export const MAX_BATCH_BILLS = 20
 
-function useBills(rawBills, monthValue, typeValue) {
+function useBills(rawBills, monthValue, queryData) {
   const totalIncome = ref(0)
   const totalExpense = ref(0)
   const totalBalance = ref(0)
@@ -32,11 +33,9 @@ function useBills(rawBills, monthValue, typeValue) {
       }
 
       const billMonth = formatDate(newBill.datetime, 'YYYY-MM')
-      const billType = newBill.category.type.toString()
-
       const isMonthMatch = !monthValue.value || monthValue.value === billMonth
-      const isTypeMatch = !typeValue.value || typeValue.value === billType
-      const isMatch = isMonthMatch && isTypeMatch
+      // 使用新的匹配逻辑
+      const isMatch = isMonthMatch && isBillMatch(newBill, queryData.value)
 
       const index = rawBills.value.findIndex((b) => b._id === newBill._id)
 
@@ -188,17 +187,15 @@ export default function store() {
 
   // 筛选器值
   const queryData = ref({})
-  const typeValue = ref('')
   const monthValue = ref('')
 
   const uiState = useUIState(rawBills)
-  const billsManager = useBills(rawBills, monthValue, typeValue)
+  const billsManager = useBills(rawBills, monthValue, queryData)
   const { currentAccount, error, loadAccount } = useAccount(rawBills, billsManager)
   const batchSelectState = useBatchSelect(rawBills)
 
   function resetQuery() {
     queryData.value = {}
-    typeValue.value = ''
     monthValue.value = getCurrentMonth()
   }
 
@@ -237,8 +234,8 @@ export default function store() {
   async function loadMore() {
     if (!hasMore.value || loading.value) return
     const query = {
+      ...queryData.value,
       month: monthValue.value,
-      type: typeValue.value,
       startDate: nextStartDate.value,
     }
     await fetchBills(query, true)
@@ -254,16 +251,19 @@ export default function store() {
   // 刷新数据
   function loadData() {
     const query = {
+      ...queryData.value,
       month: monthValue.value,
-      type: typeValue.value,
     }
     return resetAndFetchBills(query)
   }
 
   // 监听筛选条件变化，自动重新获取数据
-  watch([monthValue, typeValue], () => {
-    loadData()
-  })
+  watch(
+    [monthValue, queryData],
+    () => {
+      loadData()
+    },
+  )
 
   watch(getApp().globalData.account, async (value) => {
     currentAccount.value = value
@@ -289,7 +289,6 @@ export default function store() {
     rawBills,
     dailyBills,
     queryData,
-    typeValue,
     monthValue,
     loading,
     hasMore,

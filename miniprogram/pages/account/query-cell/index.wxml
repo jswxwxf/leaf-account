@@ -1,32 +1,7 @@
 <!-- miniprogram/pages/account/query-cell/index.wxml -->
-<view class="query-cell px-4 pt-2">
+<view class="query-cell p-4">
   <bill-form>
     <view class="flex flex-col gap-3">
-      <!-- 日期范围 -->
-      <view class="flex items-center">
-        <view class="w-12 text-sm text-gray-600">日期</view>
-        <view class="flex-1 flex items-center">
-          <calendar-field
-            value="{{ queryData.startTime }}"
-            label=""
-            placeholder="起始日期"
-            border="{{ false }}"
-            data-field="startTime"
-            @change="handleFormChange"
-            custom-class="p-0"
-          />
-          <view class="text-center text-sm text-gray-400 w-12">到</view>
-          <calendar-field
-            value="{{ queryData.endTime }}"
-            label=""
-            placeholder="结束日期"
-            border="{{ false }}"
-            data-field="endTime"
-            @change="handleFormChange"
-            custom-class="p-0"
-          />
-        </view>
-      </view>
       <!-- 分类 -->
       <query-category
         label="分类"
@@ -60,7 +35,7 @@
         </view>
       </view>
       <!-- 备注 -->
-      <view class="flex items-center">
+      <view class="flex items-center mt-[-16rpx]">
         <view class="w-12 text-sm text-gray-600">备注</view>
         <view class="flex-1">
           <van-field
@@ -79,7 +54,7 @@
   </bill-form>
 
   <!-- 搜索按钮 -->
-  <view class="my-3 mt-5">
+  <view class="my-3 mt-6">
     <van-button type="primary" block custom-class="query-cell-button" class="h-7" @tap="handleQuery">搜索</van-button>
   </view>
 </view>

@@ -12,7 +12,6 @@ defineComponent({
   setup(props, { triggerEvent, selectComponent }) {
     const {
       currentAccount,
-      typeValue,
       monthValue,
       totalExpense,
       totalIncome,
@@ -48,10 +47,6 @@ defineComponent({
       monthValue.value = e.detail
     }
 
-    const handleTypeChange = (e) => {
-      typeValue.value = e.detail
-    }
-
     const onBalanceTap = () => {
       triggerEvent('balance-tap')
     }
@@ -72,13 +67,11 @@ defineComponent({
       currentAccount,
       typeOptions,
       monthOptions,
-      typeValue,
       monthValue,
       totalExpense,
       totalIncome,
       totalBalance,
       handleDateChange,
-      handleTypeChange,
       onBalanceTap,
       searchText,
       updateSearchText,

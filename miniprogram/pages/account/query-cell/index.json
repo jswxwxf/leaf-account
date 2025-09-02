@@ -1,7 +1,6 @@
 {
   "component": true,
   "usingComponents": {
-    "calendar-field": "/components/calendar-field/index",
     "money-field": "/components/money-field/index",
     "category-item": "/components/category-item/index",
     "tag-item": "/components/tag-item/index",

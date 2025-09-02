@@ -1,6 +1,7 @@
 import { formatDate, getDayOfWeek } from '@/utils/date.js'
 import { groupBy, isEmpty, map, orderBy, some, sumBy } from 'lodash'
 import { formatMoney } from '@/utils/index.js'
+import dayjs from 'dayjs'
 
 /**
  * 生成一个新的账单对象的初始值
@@ -105,4 +106,60 @@ export function generateSummaryText(bills, totalIncome, totalExpense, balance) {
     `总支: ${formatMoney(totalExpense)}`,
     `总余: ${formatMoney(balance)}`,
   ].join('\n')
+}
+
+/**
+ * 检查单个账单是否匹配所有查询条件
+ * @param {import('@/api/bill.js').Bill} bill - 要检查的账单
+ * @param {object} query - 查询条件
+ * @returns {boolean}
+ */
+export function isBillMatch(bill, query) {
+  const { categories, minAmount, maxAmount, note, tags } = query
+
+  // 1. 分类检查
+  if (categories && categories.length > 0) {
+    const normalCategories = categories.filter((c) => !c.isAll)
+    const allCategories = categories.filter((c) => c.isAll)
+
+    let isMatch = false
+
+    // 检查是否匹配任何一个普通分类
+    if (normalCategories.length > 0) {
+      const normalCategoryIds = normalCategories.map((c) => c._id)
+      if (normalCategoryIds.includes(bill.category._id)) {
+        isMatch = true
+      }
+    }
+
+    // 如果尚未匹配，检查是否匹配任何一个“所有”分类的类型
+    if (!isMatch && allCategories.length > 0) {
+      if (allCategories.some((ac) => ac.type === bill.category.type)) {
+        isMatch = true
+      }
+    }
+
+    // 如果有分类筛选但最终没有匹配上，则返回 false
+    if (!isMatch) {
+      return false
+    }
+  }
+
+  // 2. 金额范围检查
+  if (minAmount !== undefined && bill.amount < minAmount) return false
+  if (maxAmount !== undefined && bill.amount > maxAmount) return false
+
+  // 3. 备注文本检查
+  if (note && bill.note && !bill.note.includes(note)) return false
+
+  // 4. 标签检查 (只要有一个匹配即可)
+  if (tags && tags.length > 0) {
+    if (!bill.tags || bill.tags.length === 0) return false
+    const queryTagIds = tags.map((t) => t._id)
+    if (!bill.tags.some((tag) => queryTagIds.includes(tag._id))) {
+      return false
+    }
+  }
+
+  return true
 }

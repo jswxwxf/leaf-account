@@ -54,8 +54,8 @@ defineComponent({
     const visible = ref(false)
     const categories = ref([])
     const types = ref([
-      { name: '所有支出', type: '20' },
-      { name: '所有收入', type: '10' },
+      { name: '所有支出', type: '20', isAll: true },
+      { name: '所有收入', type: '10', isAll: true },
     ])
     const errors = ref()
     const categoryForm = ref()
