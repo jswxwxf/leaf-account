@@ -339,7 +339,7 @@ async function saveTransfer(event, models, dbOrTransaction) {
     const { category, amount, datetime, note } = bill
     const targetAccountInfo = category?.account
     if (!targetAccountInfo || !targetAccountInfo._id) {
-      throw new Error('转账失败：目标账户信息不完整')
+      console.warn('转账目标账户信息不完整,保存为断联转账')
     }
     const targetAccountId = targetAccountInfo._id
     if (targetAccountId === currentAccountId) {
