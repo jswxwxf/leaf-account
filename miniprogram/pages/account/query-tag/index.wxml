@@ -4,7 +4,7 @@
     class="flex flex-1 overflow-hidden items-center justify-between text-gray-300 active:bg-gray-100 h-8 leading-8"
     @tap="handleClick"
   >
-    <view wx:if="{{ !value.length }}" class="text-gray-300">{{ placeholder }}</view>
+    <view wx:if="{{ !value.length }}" class="text-[0.95rem] text-gray-300">{{ placeholder }}</view>
     <view class="flex-1 flex gap-1 overflow-auto">
       <tag-item wx:for="{{ value }}" wx:key="name" item="{{ item }}" custom-class="query-tag-item" />
     </view>
