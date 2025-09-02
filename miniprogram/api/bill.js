@@ -12,13 +12,16 @@ import { getMonthRange } from '@/utils/date.js'
  */
 
 /**
- * 获取所有账单
- * @param {object} query - 查询参数
- * @returns {Promise<Bill[]>}
+ * 处理前端查询参数，转换为后端云函数可识别的格式
+ * - 将 month 转换为 startTime 和 endTime
+ * - 将 categories 数组（可能包含 isAll 对象）转换为 categories ID 数组和 type
+ * - 将 tags 数组转换为 tags ID 数组
+ * @param {object} query - 前端传递的查询对象
+ * @returns {object} - 处理后的查询对象
  */
-export function getBills(query = {}) {
+function processQuery(query) {
   const finalQuery = { ...query }
-
+  // 处理月份范围
   if (finalQuery.month) {
     const { startTime, endTime } = getMonthRange(finalQuery.month)
     finalQuery.startTime = startTime
@@ -26,9 +29,40 @@ export function getBills(query = {}) {
     delete finalQuery.month
   }
 
+  // 处理分类
+  if (finalQuery.categories && Array.isArray(finalQuery.categories)) {
+    const allCategory = finalQuery.categories.find((c) => c.isAll)
+    const normalCategories = finalQuery.categories.filter((c) => !c.isAll)
+
+    if (allCategory) {
+      finalQuery.type = allCategory.type
+    }
+
+    if (normalCategories.length > 0) {
+      finalQuery.categories = normalCategories.map((c) => c._id)
+    } else {
+      // 如果只选择了“所有”，则删除 categories 属性，仅按 type 筛选
+      delete finalQuery.categories
+    }
+  }
+
+  // 处理标签
+  if (finalQuery.tags && Array.isArray(finalQuery.tags)) {
+    finalQuery.tags = finalQuery.tags.map((t) => t._id)
+  }
+
+  return finalQuery
+}
+
+/**
+ * 获取所有账单
+ * @param {object} query - 查询参数
+ * @returns {Promise<Bill[]>}
+ */
+export function getBills(query = {}) {
   return get('bill-cloud', {
     $url: '/get/bills',
-    query: finalQuery,
+    query: processQuery(query),
   })
 }
 
@@ -50,18 +84,9 @@ export function getAllBills(query = {}) {
  * @returns {Promise<any>}
  */
 export function upsertBill(bill, query = {}) {
-  const finalQuery = { ...query }
-
-  if (finalQuery.month) {
-    const { startTime, endTime } = getMonthRange(finalQuery.month)
-    finalQuery.startTime = startTime
-    finalQuery.endTime = endTime
-    delete finalQuery.month
-  }
-
   return post('bill-cloud', {
     $url: '/upsert/bill',
-    query: finalQuery,
+    query: processQuery(query),
     body: { bill },
   })
 }
@@ -73,17 +98,9 @@ export function upsertBill(bill, query = {}) {
  * @returns {Promise<any>}
  */
 export function updateBills(query = {}, data) {
-  const finalQuery = { ...query }
-
-  if (finalQuery.month) {
-    const { startTime, endTime } = getMonthRange(finalQuery.month)
-    finalQuery.startTime = startTime
-    finalQuery.endTime = endTime
-    delete finalQuery.month
-  }
   return post('bill-cloud', {
     $url: '/batch/bills/update',
-    query: finalQuery,
+    query: processQuery(query),
     body: data,
   })
 }
@@ -94,17 +111,9 @@ export function updateBills(query = {}, data) {
  * @returns {Promise<any>}
  */
 export function deleteBills(query = {}) {
-  const finalQuery = { ...query }
-
-  if (finalQuery.month) {
-    const { startTime, endTime } = getMonthRange(finalQuery.month)
-    finalQuery.startTime = startTime
-    finalQuery.endTime = endTime
-    delete finalQuery.month
-  }
   return post('bill-cloud', {
     $url: '/batch/bills/delete',
-    query: finalQuery,
+    query: processQuery(query),
   })
 }
 
@@ -114,17 +123,9 @@ export function deleteBills(query = {}) {
  * @returns {Promise<any>}
  */
 export function saveBills(bills, query = {}) {
-  const finalQuery = { ...query }
-
-  if (finalQuery.month) {
-    const { startTime, endTime } = getMonthRange(finalQuery.month)
-    finalQuery.startTime = startTime
-    finalQuery.endTime = endTime
-    delete finalQuery.month
-  }
   return post('bill-cloud', {
     $url: '/batch/bills',
-    query: finalQuery,
+    query: processQuery(query),
     body: { bills },
   })
 }
@@ -152,17 +153,9 @@ export function saveTransfer(body, query = {}) {
  * @returns {Promise<any>}
  */
 export function deleteBill(id, query = {}) {
-  const finalQuery = { ...query }
-
-  if (finalQuery.month) {
-    const { startTime, endTime } = getMonthRange(finalQuery.month)
-    finalQuery.startTime = startTime
-    finalQuery.endTime = endTime
-    delete finalQuery.month
-  }
   return post('bill-cloud', {
     $url: '/delete/bill',
-    query: finalQuery,
+    query: processQuery(query),
     id,
   })
 }

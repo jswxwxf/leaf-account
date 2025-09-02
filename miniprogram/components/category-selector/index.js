@@ -121,20 +121,15 @@ defineComponent({
         if (index > -1) {
           selectedItems.value.splice(index, 1)
         } else {
-          // 互斥逻辑
-          if (item.name === '所有支出') {
-            selectedItems.value = selectedItems.value.filter((i) => i.type !== '20')
-          } else if (item.name === '所有收入') {
-            selectedItems.value = selectedItems.value.filter((i) => i.type !== '10')
-          } else if (item.type === '20') {
-            const allExpenseIndex = selectedItems.value.findIndex((i) => i.name === '所有支出')
-            if (allExpenseIndex > -1) selectedItems.value.splice(allExpenseIndex, 1)
-          } else if (item.type === '10') {
-            const allIncomeIndex = selectedItems.value.findIndex((i) => i.name === '所有收入')
-            if (allIncomeIndex > -1) selectedItems.value.splice(allIncomeIndex, 1)
+          // 简化互斥逻辑
+          if (item.isAll) {
+            // 如果选择的是“所有”项，则清空其他所有选项，只保留当前项
+            selectedItems.value = [item]
+          } else {
+            // 如果选择的是普通项，则移除所有“所有”项，然后添加当前项
+            selectedItems.value = selectedItems.value.filter((i) => !i.isAll)
+            selectedItems.value.push(item)
           }
-          selectedItems.value.push(item)
-          selectedItems.value.sort((a, b) => b.type - a.type)
         }
         return
       }
