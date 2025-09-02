@@ -77,7 +77,10 @@ export async function request(options = {}) {
     })
 
     if (showError) {
-      const title = error.message || '网络请求失败'
+      let title = error.message || '网络请求失败'
+      if (error.statusCode === 433) {
+        title = '请求超时'
+      }
       wx.showToast({ title, icon: 'none' })
     }
 
