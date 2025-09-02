@@ -26,11 +26,16 @@ defineComponent({
       queryData.value = { ..._queryData.value }
     }
 
+    const handleReset = () => {
+      queryData.value = {}
+    }
+
     return {
       queryData,
       handleFormChange,
       clearQueryData,
       handleQuery,
+      handleReset,
     }
   },
 })

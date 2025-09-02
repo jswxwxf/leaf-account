@@ -59,7 +59,7 @@ defineComponent({
       // 给个最大长度，防止公式过于复杂
       if (isNaN(num) || rawValue.length >= 20) {
         displayValue.value = ''
-        triggerEvent('change', 0) // 当输入无效时，派发 0
+        triggerEvent('change', undefined) // 当输入无效时，派发 undefined
       } else {
         displayValue.value = formatMoney(num)
         triggerEvent('change', num) // 派发纯净的数值

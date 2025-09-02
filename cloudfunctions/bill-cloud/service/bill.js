@@ -129,46 +129,109 @@ async function _getBillsByIds(event, models, dbOrTransaction) {
   return populateTagsForBills(billsWithCategory, models)
 }
 
+async function buildBillQuery(event, models) {
+  const {
+    accountId,
+    startTime,
+    endTime,
+    type,
+    categories,
+    minAmount,
+    maxAmount,
+    note,
+    tags,
+    createdAt,
+  } = event.query || {}
+  const { OPENID } = cloud.getWXContext()
+
+  const where = {
+    $and: [{ _openid: { $eq: OPENID } }, { account: { $eq: accountId } }],
+  }
+
+  if (startTime && endTime) {
+    where.$and.push({ datetime: { $gte: startTime } }, { datetime: { $lte: endTime } })
+  }
+
+  // 同时处理 type 和 categories
+  if (type) {
+    const categoryIds = await getCategoryIds({ query: { type } }, models)
+    if (categoryIds.length > 0) {
+      where.$and.push({ category: { $in: categoryIds } })
+    } else {
+      // 如果按类型筛选但没有匹配的分类，则返回一个特殊标志
+      return { ...where, noMatch: true }
+    }
+  } else if (categories && categories.length > 0) {
+    where.$and.push({ category: { $in: categories } })
+  }
+
+  // 处理金额范围
+  if (minAmount !== undefined) {
+    where.$and.push({ amount: _.gte(parseFloat(minAmount)) })
+  }
+  if (maxAmount !== undefined) {
+    where.$and.push({ amount: _.lte(parseFloat(maxAmount)) })
+  }
+
+  // // 处理备注
+  // if (note) {
+  //   // 根据用户建议，使用 models.bill.list 封装的特殊全文搜索语法
+  //   where.$and.push({
+  //     note: _.regexp('^张', 'i'),
+  //   })
+  // }
+
+  // 处理标签
+  if (tags && tags.length > 0) {
+    where.$and.push({ tags: { $in: tags } })
+  }
+
+  // 处理创建时间
+  if (createdAt) {
+    const startDate = dayjs(createdAt).startOf('day').valueOf()
+    const endDate = dayjs(createdAt).endOf('day').valueOf()
+    where.$and.push({ createdAt: { $gte: startDate } }, { createdAt: { $lte: endDate } })
+  }
+
+  return where
+}
+
 /**
  * 根据月份获取账单总计
  * @param {object} event - 云函数的原始 event 对象
  */
 async function getBillsSummary(event, models) {
-  const { startTime, endTime, type, accountId } = event.query || {}
-  const { OPENID } = cloud.getWXContext()
+  const { minAmount, maxAmount } = event.query || {}
+  const whereClause = await buildBillQuery(event, models)
 
-  const whereClause = {
-    $and: [{ _openid: { $eq: OPENID } }, { account: { $eq: accountId } }],
+  if (whereClause.noMatch) {
+    return { totalIncome: 0, totalExpense: 0 }
   }
 
-  if (startTime && endTime) {
-    whereClause.$and.push({ datetime: { $gte: startTime } }, { datetime: { $lte: endTime } })
-  }
-
-  if (type) {
-    const categoryIds = await getCategoryIds({ query: { type } }, models)
-
-    if (categoryIds.length > 0) {
-      whereClause.$and.push({ category: { $in: categoryIds } }) // 字段名是 category，查询的是 ID
-    } else {
-      return { totalIncome: 0, totalExpense: 0 }
-    }
-  }
-
-  if (whereClause.$and.length === 0) {
-    delete whereClause.$and
-  }
+  // 移除对 amount 的过滤，因为它会影响聚合计算
+  const filteredAnd = whereClause.$and.filter((cond) => !cond.amount)
+  const matchClause = { ...whereClause, $and: filteredAnd }
 
   const $ = _.aggregate
+
+  // 构建金额范围的条件
+  const amountConditions = []
+  if (minAmount !== undefined) {
+    amountConditions.push($.gte(['$amount', parseFloat(minAmount)]))
+  }
+  if (maxAmount !== undefined) {
+    amountConditions.push($.lte(['$amount', parseFloat(maxAmount)]))
+  }
+  const isAmountInRange = amountConditions.length > 0 ? $.and(amountConditions) : true
 
   const aggregateResult = await db
     .collection('bill')
     .aggregate()
-    .match(whereClause)
+    .match(matchClause)
     .group({
       _id: null,
-      totalIncome: $.sum($.cond([$.gt(['$amount', 0]), '$amount', 0])),
-      totalExpense: $.sum($.cond([$.lte(['$amount', 0]), '$amount', 0])),
+      totalIncome: $.sum($.cond([$.and([$.gt(['$amount', 0]), isAmountInRange]), '$amount', 0])),
+      totalExpense: $.sum($.cond([$.and([$.lte(['$amount', 0]), isAmountInRange]), '$amount', 0])),
     })
     .end()
 
@@ -204,23 +267,11 @@ async function getMinDate(models, where = {}) {
  * @param {object} models - 数据模型实例
  */
 async function getBills(event, models) {
-  const { startTime, endTime, type, startDate: startDateTs, accountId } = event.query || {}
-  const { OPENID } = cloud.getWXContext()
+  const { startTime, endTime, startDate: startDateTs } = event.query || {}
+  const where = await buildBillQuery(event, models)
 
-  const where = {
-    $and: [{ _openid: { $eq: OPENID } }, { account: { $eq: accountId } }],
-  }
-
-  if (startTime && endTime) {
-    where.$and.push({ datetime: { $gte: startTime } }, { datetime: { $lte: endTime } })
-  }
-  if (type) {
-    const categoryIds = await getCategoryIds({ query: { type } }, models)
-    if (categoryIds.length > 0) {
-      where.$and.push({ category: { $in: categoryIds } }) // 字段名是 category，查询的是 ID
-    } else {
-      return { data: [], nextStartDate: null }
-    }
+  if (where.noMatch) {
+    return { data: [], nextStartDate: null }
   }
 
   const minDateTs = await getMinDate(models, where)
@@ -313,34 +364,10 @@ async function getBills(event, models) {
  * @param {object} models - 数据模型实例
  */
 async function getAllBills(event, models) {
-  const { type, createdAt, accountId } = event.query || {}
-  const { OPENID } = cloud.getWXContext()
+  const where = await buildBillQuery(event, models)
 
-  const where = {
-    $and: [
-      {
-        _openid: { $eq: OPENID },
-      },
-      {
-        account: { $eq: accountId },
-      },
-    ],
-  }
-
-  if (type) {
-    const categoryIds = await getCategoryIds({ query: { type } }, models)
-    if (categoryIds.length > 0) {
-      where.$and.push({ category: { $in: categoryIds } }) // 字段名是 category, 查询的是 ID
-    } else {
-      return []
-    }
-  }
-
-  if (createdAt) {
-    const startDate = dayjs(createdAt).startOf('day').valueOf()
-    const endDate = dayjs(createdAt).endOf('day').valueOf()
-
-    where.$and.push({ createdAt: { $gte: startDate } }, { createdAt: { $lte: endDate } })
+  if (where.noMatch) {
+    return []
   }
 
   const {
