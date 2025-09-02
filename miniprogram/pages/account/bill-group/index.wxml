@@ -40,9 +40,12 @@
                 <view class="text-xs text-gray-500 overflow-hidden van-ellipsis">{{ bill.note }}</view>
               </view>
             </van-checkbox>
+            <view wx:if="{{(bill.category.name === '转账' || bill.category.name === '收转账') && !bill.relatedBill}}" class="mr-1">
+              ⛓‍💥
+            </view>
             <view wx:if="{{ bill.tags.length }}" class="flex items-end">
               <block wx:for="{{ bill.tags }}" wx:key="_id" wx:for-item="tag">
-                <bill-tag type="{{tag.type}}" custom-class="ml-1">{{ tag.name }}</bill-tag>
+                <bill-tag type="{{tag.type}}" custom-class="ml-1">{{tag.name}}</bill-tag>
               </block>
             </view>
             <view class="w-24 text-right font-bold {{ bill.amount > 0 ? 'text-green-500' : 'text-gray-800' }}">

@@ -339,9 +339,19 @@ async function saveTransfer(event, models, dbOrTransaction) {
     const { category, amount, datetime, note } = bill
     const targetAccountInfo = category?.account
     if (!targetAccountInfo || !targetAccountInfo._id) {
-      console.warn('转账目标账户信息不完整,保存为断联转账')
+      console.warn('转账目标账户信息不完整,保存为断联转账');
+      // 如果目标账户ID为空，只保存当前账户的转账记录
+      const billOut = {
+        ...bill,
+        amount: -Math.abs(parseMoney(amount)),
+        category: category,
+        account: currentAccountId,
+        note: note || `转账目标账户信息不完整`,
+      };
+      const savedBillOut = await saveBill(billOut, currentAccountId, models, tx);
+      return { ...savedBillOut, relatedBill: null };
     }
-    const targetAccountId = targetAccountInfo._id
+    const targetAccountId = targetAccountInfo._id;
     if (targetAccountId === currentAccountId) {
       throw new Error('转账失败：转出账户和转入账户不能相同')
     }
