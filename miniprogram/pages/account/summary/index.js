@@ -61,6 +61,7 @@ defineComponent({
 
     onTabChange(() => {
       selectComponent('#query-dropdown').toggle(false)
+      selectComponent('#month-dropdown').toggle(false)
     })
 
     return {

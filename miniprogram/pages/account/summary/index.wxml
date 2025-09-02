@@ -16,6 +16,7 @@
         <query-cell id="query-cell" />
       </van-dropdown-item>
       <van-dropdown-item
+        id="month-dropdown"
         value="{{ monthValue }}"
         options="{{ monthOptions }}"
         popup-style="max-height: 60vh"
