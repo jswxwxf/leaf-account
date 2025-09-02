@@ -2,12 +2,20 @@
   "mcpServers": {
     "task-master-ai": {
       "command": "npx",
-      "args": ["-y", "--package=task-master-ai", "task-master-ai"],
-      "env": {}
+      "args": [
+        "-y",
+        "--package=task-master-ai",
+        "task-master-ai"
+      ],
+      "env": {},
+      "disabled": true,
+      "alwaysAllow": []
     },
     "cloudbase": {
       "command": "npx",
-      "args": ["@cloudbase/cloudbase-mcp@latest"]
+      "args": [
+        "@cloudbase/cloudbase-mcp@latest"
+      ]
     }
   }
 }
