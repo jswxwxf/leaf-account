@@ -55,103 +55,59 @@ exports.main = (event, context) => {
    * @desc 新增或更新账单
    */
   app.router('/upsert/bill', async (ctx) => {
-    try {
-      const data = await saveBill(event, models)
-      ctx.body = { code: 200, success: true, message: '保存成功', data }
-    } catch (e) {
-      console.error('/upsert/bill error:', e)
-      if (e.isBiz) {
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
-    }
+    const data = await saveBill(event, models)
+    ctx.body = { code: 200, success: true, message: '保存成功', data }
   })
 
   /**
    * @desc 新增转账
    */
   app.router('/post/transfer', async (ctx) => {
-    try {
-      const data = await saveTransfer(event, models)
-      ctx.body = { code: 200, success: true, message: '转账成功', data }
-    } catch (e) {
-      console.error('/post/transfer error:', e)
-      if (e.isBiz) {
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
-    }
+    const data = await saveTransfer(event, models)
+    ctx.body = { code: 200, success: true, message: '转账成功', data }
   })
 
   /**
    * @desc 获取账单列表
    */
   app.router('/get/bills', async (ctx) => {
-    try {
-      const result = await getBills(event, models)
-      ctx.body = { code: 200, success: true, message: '获取成功', ...result }
-    } catch (e) {
-      console.error('/get/bills error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-    }
+    const result = await getBills(event, models)
+    ctx.body = { code: 200, success: true, message: '获取成功', ...result }
   })
 
   /**
    * @desc 获取所有账单（不分页）
    */
   app.router('/get/bills/all', async (ctx) => {
-    try {
-      const data = await getAllBills(event, models)
-      ctx.body = { code: 200, success: true, message: '获取成功', data }
-    } catch (e) {
-      console.error('/get/bills/all error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-    }
+    const data = await getAllBills(event, models)
+    ctx.body = { code: 200, success: true, message: '获取成功', data }
   })
 
   /**
    * @desc 批量保存账单
    */
   app.router('/batch/bills', async (ctx) => {
-    try {
-      const data = await saveBills(event, models)
-      ctx.body = { code: 200, success: true, message: '批量保存成功', data }
-    } catch (e) {
-      console.error('/batch/bills error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-    }
+    const data = await saveBills(event, models)
+    ctx.body = { code: 200, success: true, message: '批量保存成功', data }
   })
 
   /**
    * @desc 批量更新账单
    */
   app.router('/batch/bills/update', async (ctx) => {
-    try {
-      const data = await updateBills(event, models)
-      ctx.body = { code: 200, success: true, message: '批量更新成功', data }
-    }
-    catch (e) {
-      console.error('/batch/bill/update error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-    }
+    const data = await updateBills(event, models)
+    ctx.body = { code: 200, success: true, message: '批量更新成功', data }
   })
 
   /**
    * @desc 删除账单
    */
   app.router('/delete/bill', async (ctx) => {
-    try {
-      const isSuccess = await deleteBill(event, models)
-      if (isSuccess) {
-        ctx.body = { code: 200, success: true, message: '删除成功' }
-      } else {
-        ctx.body = { code: 404, success: false, message: '未找到要删除的记录' }
-      }
-    } catch (e) {
-      console.error('/delete/bill error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
+    const isSuccess = await deleteBill(event, models)
+    if (isSuccess) {
+      ctx.body = { code: 200, success: true, message: '删除成功' }
+    } else {
+      ctx.body = { code: 404, success: false, message: '未找到要删除的记录' }
     }
   })
 
@@ -159,26 +115,16 @@ exports.main = (event, context) => {
    * @desc 批量删除账单
    */
   app.router('/batch/bills/delete', async (ctx) => {
-    try {
-      const data = await deleteBills(event, models)
-      ctx.body = { code: 200, success: true, message: '批量删除成功', data }
-    } catch (e) {
-      console.error('/batch/bills/delete error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-    }
+    const data = await deleteBills(event, models)
+    ctx.body = { code: 200, success: true, message: '批量删除成功', data }
   })
 
   /**
    * @desc 清空账目
    */
   app.router('/delete/reset-bills', async (ctx) => {
-    try {
-      const data = await resetBills(event, models)
-      ctx.body = { code: 200, success: true, message: `成功清空 ${data.deleted} 条账单`, data }
-    } catch (e) {
-      console.error('/post/reset-bills error:', e)
-      ctx.body = { code: 500, success: false, message: '操作失败，请稍后重试' }
-    }
+    const data = await resetBills(event, models)
+    ctx.body = { code: 200, success: true, message: `成功清空 ${data.deleted} 条账单`, data }
   })
 
   /**
@@ -186,17 +132,8 @@ exports.main = (event, context) => {
    * @returns {object[]} data - 账本对象数组
    */
   app.router('/get/accounts', async (ctx) => {
-    try {
-      const data = await getAccounts(event, models)
-      ctx.body = { code: 200, success: true, message: '获取成功', data }
-    } catch (e) {
-      console.error('/get/accounts error:', e)
-      if (e.isBiz) {
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
-    }
+    const data = await getAccounts(event, models)
+    ctx.body = { code: 200, success: true, message: '获取成功', data }
   })
 
   /**
@@ -204,17 +141,8 @@ exports.main = (event, context) => {
    * @returns {number[]} data - 年份数组
    */
   app.router('/get/account/years', async (ctx) => {
-    try {
-      const data = await getAccountYears(event, models)
-      ctx.body = { code: 200, success: true, message: '获取成功', data }
-    } catch (e) {
-      console.error('/get/account/years error:', e)
-      if (e.isBiz) {
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
-    }
+    const data = await getAccountYears(event, models)
+    ctx.body = { code: 200, success: true, message: '获取成功', data }
   })
 
   /**
@@ -222,51 +150,24 @@ exports.main = (event, context) => {
    * @returns {object[]} data - 格式化后的账单数据
    */
   app.router('/post/account/export', async (ctx) => {
-    try {
-      const data = await exportAccount(event, models)
-      ctx.body = { code: 200, success: true, message: '导出任务已创建', data }
-    } catch (e) {
-      console.error('/post/account/export error:', e)
-      if (e.isBiz) {
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
-    }
+    const data = await exportAccount(event, models)
+    ctx.body = { code: 200, success: true, message: '导出任务已创建', data }
   })
 
   /**
    * @desc 导入账本数据
    */
   app.router('/post/account/import', async (ctx) => {
-    try {
-      const data = await importAccount(event, models)
-      ctx.body = { code: 200, success: true, message: '导入任务已创建', data }
-    } catch (e) {
-      console.error('/post/account/import error:', e)
-      if (e.isBiz) {
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
-    }
+    const data = await importAccount(event, models)
+    ctx.body = { code: 200, success: true, message: '导入任务已创建', data }
   })
 
   /**
    * @desc 获取任务状态
    */
   app.router('/get/task', async (ctx) => {
-    try {
-      const data = await getTask(event, models)
-      ctx.body = { code: 200, success: true, message: '获取成功', data }
-    } catch (e) {
-      console.error('/get/task error:', e)
-      if (e.isBiz) {
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
-    }
+    const data = await getTask(event, models)
+    ctx.body = { code: 200, success: true, message: '获取成功', data }
   })
 
   /**
@@ -274,68 +175,32 @@ exports.main = (event, context) => {
    * @returns {object} data - 账本信息
    */
   app.router('/get/account', async (ctx) => {
-    try {
-      const data = await getAccount(event, models)
-      ctx.body = { code: 200, success: true, message: '获取成功', data }
-    } catch (e) {
-      console.error('/get/account error:', e)
-      if (e.isBiz) {
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
-    }
+    const data = await getAccount(event, models)
+    ctx.body = { code: 200, success: true, message: '获取成功', data }
   })
 
   /**
    * @desc 对账
    */
   app.router('/put/account/reconcile', async (ctx) => {
-    try {
-      const data = await reconcileAccount(event, models)
-      ctx.body = { code: 200, success: true, message: '对账成功', data }
-    } catch (e) {
-      console.error('/put/account/reconcile error:', e)
-      if (e.isBiz) {
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
-    }
+    const data = await reconcileAccount(event, models)
+    ctx.body = { code: 200, success: true, message: '对账成功', data }
   })
 
   /**
    * @desc 更新账本信息（如标题）
    */
   app.router('/put/account', async (ctx) => {
-    try {
-      const data = await updateAccount(event, models)
-      ctx.body = { code: 200, success: true, message: '更新成功', data }
-    } catch (e) {
-      console.error('/put/account error:', e)
-      if (e.isBiz) {
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
-    }
+    const data = await updateAccount(event, models)
+    ctx.body = { code: 200, success: true, message: '更新成功', data }
   })
 
   /**
    * @desc 停用账本
    */
   app.router('/delete/account', async (ctx) => {
-    try {
-      const data = await deactivateAccount(event, models)
-      ctx.body = { code: 200, success: true, message: data.message, data }
-    } catch (e) {
-      console.error('/delete/account error:', e)
-      if (e.isBiz) {
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
-    }
+    const data = await deactivateAccount(event, models)
+    ctx.body = { code: 200, success: true, message: data.message, data }
   })
 
   /**
@@ -345,13 +210,8 @@ exports.main = (event, context) => {
    * @returns {object[]} data - 分类对象数组
    */
   app.router('/get/categories', async (ctx) => {
-    try {
-      const data = await getCategories(event, models)
-      ctx.body = { code: 200, success: true, message: '获取成功', data }
-    } catch (e) {
-      console.error('/get/categories error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-    }
+    const data = await getCategories(event, models)
+    ctx.body = { code: 200, success: true, message: '获取成功', data }
   })
 
   /**
@@ -359,13 +219,8 @@ exports.main = (event, context) => {
    * @returns {object[]} data - 标签对象数组
    */
   app.router('/get/tags', async (ctx) => {
-    try {
-      const data = await getTags(event, models)
-      ctx.body = { code: 200, success: true, message: '获取成功', data }
-    } catch (e) {
-      console.error('/get/tags error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-    }
+    const data = await getTags(event, models)
+    ctx.body = { code: 200, success: true, message: '获取成功', data }
   })
 
   /**
@@ -375,18 +230,9 @@ exports.main = (event, context) => {
    * @returns {object} data - 新增的分类对象
    */
   app.router('/post/category', async (ctx) => {
-    try {
-      // addCategory 的函数签名已统一为 (event, models)
-      const data = await addCategory(event, models)
-      ctx.body = { code: 200, success: true, message: '添加成功', data }
-    } catch (e) {
-      console.error('/post/category error:', e)
-      if (e.isBiz) {
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
-    }
+    // addCategory 的函数签名已统一为 (event, models)
+    const data = await addCategory(event, models)
+    ctx.body = { code: 200, success: true, message: '添加成功', data }
   })
 
   /**
@@ -396,49 +242,28 @@ exports.main = (event, context) => {
    * @returns {object[]} data - 成功保存的标签数组
    */
   app.router('/post/tags', async (ctx) => {
-    try {
-      // addTags 的函数签名已统一为 (event, models)
-      const data = await addTags(event, models)
-      ctx.body = { code: 200, success: true, message: '批量添加成功', data }
-    } catch (e) {
-      console.error('/post/tags error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-    }
+    // addTags 的函数签名已统一为 (event, models)
+    const data = await addTags(event, models)
+    ctx.body = { code: 200, success: true, message: '批量添加成功', data }
   })
 
   /**
    * @desc 新增标签
    */
   app.router('/post/tag', async (ctx) => {
-    try {
-      const data = await addTag(event, models)
-      ctx.body = { code: 200, success: true, message: '添加成功', data }
-    } catch (e) {
-      console.error('/post/tag error:', e)
-      ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-    }
+    const data = await addTag(event, models)
+    ctx.body = { code: 200, success: true, message: '添加成功', data }
   })
 
   /**
    * @desc 删除分类
    */
   app.router('/delete/category', async (ctx) => {
-    try {
-      const data = await deleteCategory(event, models)
-      if (data.deleted > 0) {
-        ctx.body = { code: 200, success: true, message: '删除成功' }
-      } else {
-        ctx.body = { code: 404, success: false, message: '未找到要删除的记录' }
-      }
-    } catch (e) {
-      console.error('/delete/category error:', e)
-      if (e.isBiz) {
-        // 如果是业务逻辑错误，将明确的错误信息返回给前端
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        // 如果是其他未知错误，返回通用提示
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
+    const data = await deleteCategory(event, models)
+    if (data.deleted > 0) {
+      ctx.body = { code: 200, success: true, message: '删除成功' }
+    } else {
+      ctx.body = { code: 404, success: false, message: '未找到要删除的记录' }
     }
   })
 
@@ -446,56 +271,29 @@ exports.main = (event, context) => {
    * @desc 更新分类
    */
   app.router('/put/tag', async (ctx) => {
-    try {
-      const data = await updateTag(event, models)
-      if (data.updated > 0) {
-        ctx.body = { code: 200, success: true, message: '更新成功' }
-      } else {
-        ctx.body = { code: 404, success: false, message: '未找到要更新的记录' }
-      }
-    } catch (e) {
-      console.error('/put/tag error:', e)
-      if (e.isBiz) {
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
+    const data = await updateTag(event, models)
+    if (data.updated > 0) {
+      ctx.body = { code: 200, success: true, message: '更新成功' }
+    } else {
+      ctx.body = { code: 404, success: false, message: '未找到要更新的记录' }
     }
   })
 
   app.router('/delete/tag', async (ctx) => {
-    try {
-      const data = await deleteTag(event, models)
-      if (data.deleted > 0) {
-        ctx.body = { code: 200, success: true, message: '删除成功' }
-      } else {
-        ctx.body = { code: 404, success: false, message: '未找到要删除的记录' }
-      }
-    } catch (e) {
-      console.error('/delete/tag error:', e)
-      if (e.isBiz) {
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
+    const data = await deleteTag(event, models)
+    if (data.deleted > 0) {
+      ctx.body = { code: 200, success: true, message: '删除成功' }
+    } else {
+      ctx.body = { code: 404, success: false, message: '未找到要删除的记录' }
     }
   })
 
   app.router('/put/category', async (ctx) => {
-    try {
-      const data = await updateCategory(event, models)
-      if (data.updated > 0) {
-        ctx.body = { code: 200, success: true, message: '更新成功' }
-      } else {
-        ctx.body = { code: 404, success: false, message: '未找到要更新的记录' }
-      }
-    } catch (e) {
-      console.error('/put/category error:', e)
-      if (e.isBiz) {
-        ctx.body = { code: 400, success: false, message: e.message }
-      } else {
-        ctx.body = { code: 500, success: false, message: '请求失败，请稍后重试' }
-      }
+    const data = await updateCategory(event, models)
+    if (data.updated > 0) {
+      ctx.body = { code: 200, success: true, message: '更新成功' }
+    } else {
+      ctx.body = { code: 404, success: false, message: '未找到要更新的记录' }
     }
   })
 

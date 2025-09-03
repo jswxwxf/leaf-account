@@ -133,7 +133,47 @@ const withSummary = (models, event) => async (ctx, next) => {
  * @param {object} event - 云函数 event 对象
  * @param {object} models - CloudBase 数据模型
  */
+/**
+ * 全局错误处理中间件
+ * @param {object} event - 云函数 event 对象
+ */
+const errorHandler = (event) => async (ctx, next) => {
+  try {
+    await next()
+  } catch (e) {
+    console.error(`Error occurred in route ${event.$url}:`, e)
+
+    if (e instanceof BizError || e.isBiz) {
+      ctx.body = { code: 400, success: false, message: e.message }
+      return
+    }
+
+    // 处理云函数调用超时等特定错误
+    if (e.errCode && e.errMsg) {
+      // 匹配 "errCode: -504003 | errMsg: Invoking task timed out..."
+      const match = /errMsg:\s*([^|]+)/.exec(e.errMsg)
+      if (match && match[1]) {
+        const friendlyMessage = match[1].trim()
+        ctx.body = { code: 504, success: false, message: friendlyMessage }
+        return
+      }
+    }
+
+    // 其他未知错误
+    ctx.body = { code: 500, success: false, message: '服务器开小差了，请稍后重试' }
+  }
+}
+
+/**
+ * 注册所有应用中间件
+ * @param {object} app - TcbRouter 实例
+ * @param {object} event - 云函数 event 对象
+ * @param {object} models - CloudBase 数据模型
+ */
 function useMiddlewares(app, event, models) {
+  // 错误处理应该在最外层
+  app.use(errorHandler(event))
+
   app.use(requireLogin(event))
   app.use(requireAccountId(event))
   app.use(withAccount(models, event))
