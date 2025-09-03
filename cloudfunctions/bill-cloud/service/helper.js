@@ -61,65 +61,9 @@ function tryStringifyJSON(value) {
   return value
 }
 
-/**
- * 为账单列表填充完整的标签对象。
- * @param {Array<object>} bills - 账单列表，其中 tags 字段为 ID 数组
- * @param {object} models - 数据模型实例
- * @returns {Promise<Array<object>>} - 填充了完整标签对象的账单列表
- */
-async function populateTagsForBills(bills, models) {
-  if (bills.length > 0) {
-    const allTagIds = [...new Set(bills.flatMap((bill) => bill.tags || []).filter(Boolean))]
-
-    if (allTagIds.length > 0) {
-      const tags = await getTagsByIds({ query: { ids: allTagIds } }, models)
-      const tagsMap = new Map(tags.map((tag) => [tag._id, tag]))
-
-      bills.forEach((bill) => {
-        if (Array.isArray(bill.tags)) {
-          bill.tags = bill.tags.map((tagId) => tagsMap.get(tagId)).filter(Boolean)
-        }
-      })
-    }
-  }
-  return bills
-}
-
-/**
- * 为账单列表填充完整的分类对象。
- * @param {Array<object>} bills - 账单列表，其中 category 字段为 ID
- * @param {object} models - 数据模型实例
- * @returns {Promise<Array<object>>} - 填充了完整分类对象的账单列表
- */
-async function populateCategoriesForBills(bills, models) {
-  if (!bills || bills.length === 0) {
-    return []
-  }
-
-  const categoryIds = [...new Set(bills.map((b) => b.category).filter(Boolean))]
-
-  if (categoryIds.length === 0) {
-    return bills
-  }
-
-  const { getCategoriesByIds } = require('./category.js')
-  const categories = await getCategoriesByIds({ query: { ids: categoryIds } }, models)
-
-  const categoryMap = new Map(categories.map((c) => [c._id, c]))
-
-  return bills.map((bill) => {
-    return {
-      ...bill,
-      category: categoryMap.get(bill.category) || null,
-    }
-  })
-}
-
 module.exports = {
+  BizError,
   parseMoney,
-  populateTagsForBills,
-  populateCategoriesForBills,
   tryParseJSON,
   tryStringifyJSON,
-  BizError,
 }

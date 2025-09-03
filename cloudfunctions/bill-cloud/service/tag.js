@@ -292,6 +292,29 @@ async function _getTagsByNames(event, models, dbOrTransaction) {
   return finalTags
 }
 
+/**
+ * 为账单列表填充完整的标签对象。
+ * @param {Array<object>} bills - 账单列表，其中 tags 字段为 ID 数组
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<Array<object>>} - 填充了完整标签对象的账单列表
+ */
+async function populateTagsForBills(bills, models) {
+  if (bills.length > 0) {
+    const allTagIds = [...new Set(bills.flatMap((bill) => bill.tags || []).filter(Boolean))]
+
+    if (allTagIds.length > 0) {
+      const tags = await getTagsByIds({ query: { ids: allTagIds } }, models)
+      const tagsMap = new Map(tags.map((tag) => [tag._id, tag]))
+
+      bills.forEach((bill) => {
+        if (Array.isArray(bill.tags)) {
+          bill.tags = bill.tags.map((tagId) => tagsMap.get(tagId)).filter(Boolean)
+        }
+      })
+    }
+  }
+  return bills
+}
 
 module.exports = {
   getTags,
@@ -302,4 +325,5 @@ module.exports = {
   getTagsByIds,
   _getTagsByNames,
   getTagsByNames,
+  populateTagsForBills
 }

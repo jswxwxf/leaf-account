@@ -1,12 +1,10 @@
 const cloud = require('wx-server-sdk')
 const dayjs = require('dayjs')
-const { getCategoryIds, getCategoriesByIds } = require('./category.js')
-const { getTagsByIds } = require('./tag.js')
+const { getCategoryIds, getCategoriesByIds, populateCategoriesForBills } = require('./category.js')
+const { getTagsByIds, populateTagsForBills } = require('./tag.js')
 const { _updateAccount } = require('./account.js')
 const {
   parseMoney,
-  populateTagsForBills,
-  populateCategoriesForBills,
 } = require('./helper.js')
 
 const db = cloud.database()

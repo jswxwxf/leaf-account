@@ -4,9 +4,9 @@ const dayjs = require('dayjs')
 const { createTask, updateTask } = require('./task.js')
 const {
   BizError,
-  populateCategoriesForBills,
-  populateTagsForBills,
 } = require('./helper.js')
+const { populateCategoriesForBills } = require('./category.js')
+const { populateTagsForBills } = require('./tag.js')
 
 const db = cloud.database()
 const _ = db.command
