@@ -13,6 +13,64 @@ const {
 const db = cloud.database()
 const _ = db.command
 
+
+/**
+ * 更新账户核心逻辑。
+ * 可用于增加/减少余额、收入、支出，或修改标题。
+ * @param {object} event - 云函数事件对象
+ * @param {object} models - 数据模型实例
+ * @param {object} [dbOrTransaction] - 可选的数据库或事务实例
+ * @returns {Promise<object>} - 更新后的账户对象
+ */
+async function _updateAccount(event, models, dbOrTransaction) {
+  const { accountId } = event.query || {}
+  const { balanceIncrement, incomeIncrement, expenseIncrement } = event.body || {}
+  let { title } = event.body || {}
+  if (typeof title === 'string') {
+    title = title.trim()
+  }
+  const { OPENID } = cloud.getWXContext()
+  const dbInstance = dbOrTransaction || db
+
+  const accountCollection = dbInstance.collection('account')
+
+  const where = {
+    _id: accountId,
+    _openid: OPENID,
+  }
+
+  const { data: accounts } = await accountCollection.where(where).limit(1).get()
+
+  if (!accounts || accounts.length === 0) {
+    throw new Error(`找不到 ID 为 ${accountId} 的账户，或没有权限操作。`)
+  }
+
+  const updateData = {}
+  if (balanceIncrement) updateData.balance = _.inc(balanceIncrement)
+  if (incomeIncrement) updateData.totalIncome = _.inc(incomeIncrement)
+  if (expenseIncrement) updateData.totalExpense = _.inc(expenseIncrement)
+  if (title) updateData.title = title
+
+  if (Object.keys(updateData).length === 0) return accounts[0]
+
+  updateData.updatedAt = Date.now()
+  updateData.updatedBy = OPENID
+
+  const result = await accountCollection.where(where).update({ data: updateData })
+
+  if (result.stats.updated === 0) {
+    throw new Error('更新用户账户失败')
+  }
+  const { data: newAccounts } = await accountCollection.where(where).limit(1).get()
+  if (newAccounts && newAccounts.length > 0) {
+    const account = newAccounts[0]
+    delete account._openid
+    account.isOpened = true
+    return account
+  }
+  throw new Error('更新用户账户失败')
+}
+
 /**
  * 异步重算并更新指定账户的余额、总收入和总支出。
  * 这是一个“即发即忘”的函数，用于后台数据校准。
@@ -311,7 +369,6 @@ async function deactivateAccount(event, models) {
  * @returns {Promise<object>} - 更新后的账本对象
  */
 async function updateAccount(event, models) {
-  const { updateAccount: _updateAccount } = require('./helper.js')
   const transaction = await db.startTransaction()
   try {
     const result = await _updateAccount(event, models, transaction)
@@ -681,6 +738,7 @@ module.exports = {
   getAccounts,
   reconcileAccount,
   deactivateAccount,
+  _updateAccount,
   updateAccount,
   getAccountYears,
   exportAccount,

@@ -2,8 +2,8 @@ const cloud = require('wx-server-sdk')
 const dayjs = require('dayjs')
 const { getCategoryIds, getCategoriesByIds } = require('./category.js')
 const { getTagsByIds } = require('./tag.js')
+const { _updateAccount } = require('./account.js')
 const {
-  updateAccount,
   parseMoney,
   populateTagsForBills,
   populateCategoriesForBills,
@@ -422,7 +422,7 @@ async function deleteBill(event, models) {
     }
 
     const amountToDelete = billToDelete.amount
-    await updateAccount(
+    await _updateAccount(
       {
         query: { accountId },
         body: {
@@ -450,7 +450,7 @@ async function deleteBill(event, models) {
           throw new Error('没有权限删除关联账单')
         }
 
-        await updateAccount(
+        await _updateAccount(
           {
             query: { accountId: relatedAccountId },
             body: {
@@ -622,7 +622,7 @@ async function updateBills(event, models) {
         expenseIncrement = -diff
       }
 
-      await updateAccount(
+      await _updateAccount(
         {
           query: { accountId },
           body: {
