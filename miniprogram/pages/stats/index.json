@@ -1,0 +1,7 @@
+{
+  "$schema": "https://vite.icebreaker.top/component.json",
+  "component": true,
+  "usingComponents": {
+    "qiun-data-charts": "@qiun/wx-ucharts/index"
+  }
+}

@@ -33,6 +33,7 @@
     "weapp-vite": "latest"
   },
   "dependencies": {
+    "@qiun/wx-ucharts": "^2.5.0-20230101",
     "@vant/weapp": "^1.11.7",
     "@vue-mini/core": "^1.2.3",
     "clsx": "^2.1.1",

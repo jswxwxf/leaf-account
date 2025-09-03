@@ -1,0 +1,3 @@
+<div class="container">
+  <qiun-data-charts type="column" chart-data="{{chartData}}" />
+</div>
