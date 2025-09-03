@@ -6,8 +6,16 @@
     })
   }
 
+  var isTouched = function(item, touchedItems) {
+    if (!item || !touchedItems) return false
+    return touchedItems.some(function(touched) {
+      return touched.name === item.name
+    })
+  }
+
 module.exports = {
   isSelected: isSelected,
+  isTouched: isTouched,
 }
 </wxs>
 
@@ -27,6 +35,7 @@ module.exports = {
         @category-tap="handleSelect"
         data-item="{{ item }}"
         selected="{{ tools.isSelected(item, selectedItems) }}"
+        touched="{{ tools.isTouched(item, touchedItems) }}"
       />
     </view>
 
@@ -40,6 +49,7 @@ module.exports = {
         data-item="{{ item }}"
         disabled="{{ options.disableTransfer && (item.name === '转账' || item.name === '收转账') }}"
         selected="{{ tools.isSelected(item, selectedItems) }}"
+        touched="{{ tools.isTouched(item, touchedItems) }}"
       />
     </view>
     <view wx:else class="text-center text-gray-500 pb-6">暂无分类，请在下方添加</view>

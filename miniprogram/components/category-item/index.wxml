@@ -1,7 +1,7 @@
 <view class="category-wrapper">
   <van-button
     plain
-    custom-class="custom-class flex items-center justify-center p-2 text-sm w-full category-button {{ buttonType === 'expense' ? 'expense-button' : 'income-button' }}"
+    custom-class="custom-class flex items-center justify-center p-2 text-sm w-full category-button {{ buttonType === 'expense' ? 'expense-button' : 'income-button' }} {{ touched ? (buttonType === 'expense' ? 'touched-expense' : 'touched-income') : '' }}"
     @tap="onTap"
     disabled="{{ disabled }}"
   >

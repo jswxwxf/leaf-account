@@ -61,6 +61,7 @@ defineComponent({
     const categoryForm = ref()
     const options = ref({})
     const selectedItems = ref([])
+    const touchedItems = ref([])
 
     const {
       theNewCategory,
@@ -135,6 +136,7 @@ defineComponent({
       }
 
       let selectedItem = { ...item }
+      touchedItems.value.push(item)
       if (!options.value.disableTransferAccount) {
         if (item.name === '转账') {
           if (options.value.disableTransfer) return
@@ -188,6 +190,7 @@ defineComponent({
       errors,
       options,
       selectedItems,
+      touchedItems,
       show,
       handleClose,
       handleSelect,

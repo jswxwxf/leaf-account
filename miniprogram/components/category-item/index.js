@@ -15,6 +15,10 @@ defineComponent({
       type: Boolean,
       value: false,
     },
+    touched: {
+      type: Boolean,
+      value: false,
+    },
   },
   setup(props, { triggerEvent }) {
     const buttonType = computed(() => {
