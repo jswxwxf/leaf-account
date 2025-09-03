@@ -207,6 +207,93 @@ async function getCategoriesByIds(event, models) {
   return data.records || []
 }
 
+/**
+ * 根据名称和类型批量获取分类。
+ * 如果分类不存在，则会自动为当前用户创建。
+ * @param {object} event - 云函数事件对象
+ * @param {object} models - 数据模型实例
+ * @param {object} [dbOrTransaction] - 可选的数据库或事务实例
+ * @returns {Promise<Array<object>>} - 分类对象列表
+ */
+async function _getCategoryByNames(event, models, dbOrTransaction) {
+  const { categories: categoriesInfo } = event.query || {}
+  const { OPENID } = cloud.getWXContext()
+  const dbInstance = dbOrTransaction || db
+
+  if (!categoriesInfo || categoriesInfo.length === 0) {
+    return []
+  }
+
+  const finalCategories = []
+  const categoryMap = new Map()
+
+  const orConditions = categoriesInfo.map((info) => ({ name: info.name, type: info.type }))
+  const { data: privateCategories } = await dbInstance
+    .collection('category')
+    .where({
+      _openid: OPENID,
+      $or: orConditions,
+    })
+    .get()
+
+  for (const cat of privateCategories) {
+    const key = `${cat.name}-${cat.type}`
+    if (!categoryMap.has(key)) {
+      finalCategories.push(cat)
+      categoryMap.set(key, cat)
+    }
+  }
+
+  const remainingInfos = categoriesInfo.filter(
+    (info) => !categoryMap.has(`${info.name}-${info.type}`),
+  )
+  if (remainingInfos.length > 0) {
+    const publicOrConditions = remainingInfos.map((info) => ({ name: info.name, type: info.type }))
+    const { data: publicCategories } = await dbInstance
+      .collection('category')
+      .where({
+        _openid: _.exists(false),
+        $or: publicOrConditions,
+      })
+      .get()
+
+    for (const cat of publicCategories) {
+      const key = `${cat.name}-${cat.type}`
+      if (!categoryMap.has(key)) {
+        finalCategories.push(cat)
+        categoryMap.set(key, cat)
+      }
+    }
+  }
+
+  const categoriesToCreate = categoriesInfo.filter(
+    (info) => !categoryMap.has(`${info.name}-${info.type}`),
+  )
+  if (categoriesToCreate.length > 0) {
+    const newCategoriesData = categoriesToCreate.map((info) => ({
+      name: info.name,
+      type: info.type,
+      _openid: OPENID,
+      createdAt: Date.now(),
+      usedAt: Date.now(),
+    }))
+
+    const createResult = await dbInstance.collection('category').add({
+      data: newCategoriesData,
+    })
+
+    const { data: newCreatedCategories } = await dbInstance
+      .collection('category')
+      .where({
+        _id: _.in(createResult._ids),
+      })
+      .get()
+
+    finalCategories.push(...newCreatedCategories)
+  }
+
+  return finalCategories
+}
 
 module.exports = {
   getCategories,
@@ -215,4 +302,5 @@ module.exports = {
   addCategory,
   deleteCategory,
   updateCategory,
+  _getCategoryByNames,
 }

@@ -159,18 +159,7 @@ async function getTagsByIds(event, models) {
 }
 
 async function getTagsByNames(event, models) {
-  const { getTagsByNames: _getTagsByNames } = require('./helper.js')
   return _getTagsByNames(event, models, db)
-}
-
-module.exports = {
-  getTags,
-  addTags,
-  addTag,
-  updateTag,
-  deleteTag,
-  getTagsByIds,
-  getTagsByNames,
 }
 
 /**
@@ -219,4 +208,98 @@ async function deleteTag(event, models) {
   return {
     deleted: count,
   }
+}
+
+
+/**
+ * 根据名称批量获取标签。
+ * 如果标签不存在，则会自动为当前用户创建。
+ * @param {object} event - 云函数事件对象
+ * @param {object} models - 数据模型实例
+ * @param {object} [dbOrTransaction] - 可选的数据库或事务实例
+ * @returns {Promise<Array<object>>} - 标签对象列表
+ */
+async function _getTagsByNames(event, models, dbOrTransaction) {
+  const { names } = event.query || {}
+  const { OPENID } = cloud.getWXContext()
+  const dbInstance = dbOrTransaction || db
+
+  if (!names || names.length === 0) {
+    return []
+  }
+
+  const finalTags = []
+  const tagMap = new Map()
+
+  // 1. 查找私有标签
+  const { data: privateTags } = await dbInstance
+    .collection('tag')
+    .where({
+      _openid: OPENID,
+      name: _.in(names),
+    })
+    .get()
+
+  for (const tag of privateTags) {
+    if (!tagMap.has(tag.name)) {
+      finalTags.push(tag)
+      tagMap.set(tag.name, tag)
+    }
+  }
+
+  // 2. 查找公共标签
+  const remainingNames = names.filter((name) => !tagMap.has(name))
+  if (remainingNames.length > 0) {
+    const { data: publicTags } = await dbInstance
+      .collection('tag')
+      .where({
+        _openid: _.exists(false),
+        name: _.in(remainingNames),
+      })
+      .get()
+
+    for (const tag of publicTags) {
+      if (!tagMap.has(tag.name)) {
+        finalTags.push(tag)
+        tagMap.set(tag.name, tag)
+      }
+    }
+  }
+
+  // 3. 创建新的私有标签
+  const tagsToCreate = names.filter((name) => !tagMap.has(name))
+  if (tagsToCreate.length > 0) {
+    const newTagsData = tagsToCreate.map((name) => ({
+      name,
+      _openid: OPENID,
+      createdAt: Date.now(),
+    }))
+
+    const createResult = await dbInstance.collection('tag').add({
+      data: newTagsData,
+    })
+
+    const { data: newCreatedTags } = await dbInstance
+      .collection('tag')
+      .where({
+        _id: _.in(createResult._ids),
+      })
+      .get()
+
+    finalTags.push(...newCreatedTags)
+  }
+
+  return finalTags
+}
+
+
+module.exports = {
+  getTags,
+  addTags,
+  addTag,
+  updateTag,
+  deleteTag,
+  getTagsByIds,
+  _getTagsByNames,
+  getTagsByNames,
 }
