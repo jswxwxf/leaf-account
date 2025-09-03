@@ -1,7 +1,6 @@
 const cloud = require('wx-server-sdk')
 const ExcelJS = require('exceljs')
 const dayjs = require('dayjs')
-const { saveBill } = require('./bill.js')
 const { createTask, updateTask } = require('./task.js')
 const {
   BizError,
@@ -615,7 +614,7 @@ async function importAccount(event, models) {
   setTimeout(async () => {
     const { accountId, fileID } = event.query
     const { OPENID } = cloud.getWXContext()
-    const { saveBills: _saveBills } = require('./helper.js')
+    const { _saveBills } = require('./bill.js')
 
     try {
       await updateTask({
