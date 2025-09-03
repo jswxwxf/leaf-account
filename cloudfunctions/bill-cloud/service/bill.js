@@ -715,7 +715,7 @@ async function _saveBill(billToSave, accountId, models, dbOrTransaction) {
     const incomeIncrement = parseMoney(newIncome - oldIncome)
     const expenseIncrement = parseMoney(newExpense - oldExpense)
 
-    await updateAccount(
+    await _updateAccount(
       { query: { accountId }, body: { balanceIncrement, incomeIncrement, expenseIncrement } },
       models,
       dbOrTransaction,
@@ -730,7 +730,7 @@ async function _saveBill(billToSave, accountId, models, dbOrTransaction) {
     const incomeIncrement = balanceIncrement > 0 ? balanceIncrement : 0
     const expenseIncrement = balanceIncrement < 0 ? Math.abs(balanceIncrement) : 0
 
-    await updateAccount(
+    await _updateAccount(
       { query: { accountId }, body: { balanceIncrement, incomeIncrement, expenseIncrement } },
       models,
       dbOrTransaction,
@@ -1059,7 +1059,7 @@ async function _deleteBills(event, models, dbOrTransaction) {
     if (isDeactivating && id === accountId) {
       continue
     }
-    await updateAccount(
+    await _updateAccount(
       {
         query: { accountId: id },
         body: {
