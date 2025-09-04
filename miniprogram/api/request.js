@@ -76,9 +76,8 @@ export async function request(options = {}) {
       error,
     })
 
-      const title = error.message || '网络请求失败'
-      wx.showToast({ title, icon: 'none' })
-    }
+    const title = error.message || '网络请求失败'
+    wx.showToast({ title, icon: 'none' })
 
     // 将原始错误向上抛出，以便上层可以进行特定处理
     throw error

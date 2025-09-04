@@ -14,7 +14,7 @@
           >
             <text class="font-bold text-base">{{ utils.formatDateTime(item.datetime, 'YYYY年MM月DD日') }}</text>
           </van-checkbox>
-          <text class="text-sm ml-2">{{ utils.getDayOfWeek(item.datetime) }} {{ item.bills.length }} 笔</text>
+          <text class="text-sm ml-2">{{ item.day }} {{ item.bills.length }} 笔</text>
         </view>
         <view class="text-xs text-gray-500">
           <text class="mr-4">出 {{ item.expense }}</text>

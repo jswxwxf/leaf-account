@@ -16,7 +16,8 @@ defineComponent({
       // { name: '语音记帐', value: 'voice' },
       { name: '📑 批量修改', value: 'batch-edit' },
       { name: '⚖️ 余额对账', value: 'reconcile' },
-      { name: '📊 今日汇总', value: 'today-summary' },
+      { name: '📈 收支图表', value: 'chart' },
+      { name: '🧾 今日汇总', value: 'today-summary' },
     ])
 
     const handleMainClick = (e) => {

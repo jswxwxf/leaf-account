@@ -1,10 +1,11 @@
 import dayjs from '@/vendor/dayjs/esm/index.js'
-import '@/vendor/dayjs/locale/zh-cn.js'
+import zhCn from '@/vendor/dayjs/esm/locale/zh-cn.js'
 import isToday from '@/vendor/dayjs/plugin/isToday.js'
 import isYesterday from '@/vendor/dayjs/plugin/isYesterday.js'
 import customParseFormat from '@/vendor/dayjs/plugin/customParseFormat.js'
 
-dayjs.locale('zh-cn')
+dayjs.locale(zhCn, null, true) // 使用对象显式加载语言包
+dayjs.locale('zh-cn') // 全局使用简体中文
 dayjs.extend(isToday)
 dayjs.extend(isYesterday)
 dayjs.extend(customParseFormat)

@@ -1,4 +1,4 @@
-import { defineComponent, ref } from '@vue-mini/core'
+import { defineComponent, onTabItemTap, ref } from '@vue-mini/core'
 
 defineComponent({
   setup() {
@@ -15,6 +15,11 @@ defineComponent({
         },
       ],
     })
+
+    onTabItemTap(() => {
+      getApp().globalData.currentTab.value = 'stats'
+    })
+
     return {
       chartData,
     }

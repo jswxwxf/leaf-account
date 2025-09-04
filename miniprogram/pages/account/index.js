@@ -108,6 +108,8 @@ defineComponent({
     const updatePopup = ref(null)
     const summaryPopup = ref(null)
     const textPopup = ref(null)
+    const chartPopup = ref(null)
+
     const imagePath = ref('')
     const textContent = ref('')
 
@@ -122,6 +124,7 @@ defineComponent({
       updatePopup.value = selectComponent('#update-popup')
       summaryPopup.value = selectComponent('#summary-popup')
       textPopup.value = selectComponent('#text-popup')
+      chartPopup.value = selectComponent('#chart-popup')
     })
 
     const scrollTop = ref(0)
@@ -331,6 +334,15 @@ defineComponent({
       })
     }
 
+    const handleChart = async () => {
+      billPopped.value = true
+      try {
+        await chartPopup.value.show()
+      } finally {
+        billPopped.value = false
+      }
+    }
+
     const handleActionSelect = (e) => {
       const action = e.detail
       if (action.detail.value === 'batch') {
@@ -355,6 +367,10 @@ defineComponent({
       }
       if (action.detail.value === 'batch-edit') {
         handleBatchEdit()
+        return
+      }
+      if (action.detail.value === 'chart') {
+        handleChart()
         return
       }
     }

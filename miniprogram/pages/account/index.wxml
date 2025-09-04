@@ -12,6 +12,7 @@
     <bill-popup id="bill-popup" />
     <batch-popup id="batch-popup" />
     <update-popup id="update-popup" />
+    <chart-popup id="chart-popup" />
 
     <!-- Bill List -->
     <view class="flex-1 relative">

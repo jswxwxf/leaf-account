@@ -1,0 +1,23 @@
+<van-popup
+  show="{{ visible }}"
+  position="top"
+  @close="handleClose"
+  overlay="{{false}}"
+  close-icon-position="bottom-right"
+  custom-style="position: static;"
+>
+  <view class="h-full w-full bg-neutral-50 px-4 pt-2 max-h-screen border-b border-dashed border-b-slate-400">
+    <!-- Chart Content Goes Here -->
+    <view class="w-full h-52 block box-border">
+      <qiun-data-charts reshow="{{ visible && chartReady }}" opts-watch="{{ !chartReady }}" type="line" animation="{{ false }}" chart-data="{{chartData}}" opts="{{ chartOptions }}" />
+    </view>
+
+    <!-- Footer -->
+    <view class="flex items-center pb-4">
+      <view class="flex-1" />
+      <view class="flex justify-end items-center space-x-6">
+        <view class="i-ep-close text-2xl" @tap="handleClose" />
+      </view>
+    </view>
+  </view>
+</van-popup>

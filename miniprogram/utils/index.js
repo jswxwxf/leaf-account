@@ -66,9 +66,9 @@ export function formatMoney(value, digits = 2) {
 /**
  * 等待直到条件满足或超时
  * @param {() => boolean} conditionFunction - 条件检查函数，返回 true 时停止
- * @param {object} [options] - 配置选项
- * @param {number} [options.maxRetry=3] - 最大重试次数
- * @param {number} [options.retryTimer=400] - 每次重试的间隔时间 (ms)
+ * @param {object} [chartOptions] - 配置选项
+ * @param {number} [chartOptions.maxRetry=3] - 最大重试次数
+ * @param {number} [chartOptions.retryTimer=400] - 每次重试的间隔时间 (ms)
  * @returns {Promise<void>} - 当条件满足时 resolve
  */
 export function until(conditionFunction, options = {}) {
