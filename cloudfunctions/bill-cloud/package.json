@@ -13,6 +13,7 @@
     "dayjs": "^1.11.13",
     "exceljs": "^4.4.0",
     "lodash": "^4.17.21",
+    "pinyin-pro": "^3.27.0",
     "tcb-router": "^1.1.2",
     "wx-server-sdk": "~2.6.3"
   }

@@ -3,6 +3,7 @@ const db = cloud.database()
 const _ = db.command
 const { BizError } = require('./helper.js')
 const { isEmpty } = require('lodash')
+const { pinyin } = require('pinyin-pro')
 
 /**
  * 获取所有分类
@@ -60,6 +61,15 @@ async function addCategory(event, models) {
 
   if (total > 0) {
     throw new BizError(`类型为“${category.type === '10' ? '收入' : '支出'}”的分类 “${category.name}” 已存在`)
+  }
+
+  const pinyinResult = pinyin(category.name, {
+    pattern: 'first',
+    toneType: 'none',
+  })
+
+  if (pinyinResult) {
+    category.pinyin = pinyinResult.replace(/ /g, '').toUpperCase()
   }
 
   const result = await models.category.create({
@@ -161,6 +171,16 @@ async function updateCategory(event, models) {
 
     if (total > 0) {
       throw new BizError(`类型为“${data.type === '10' ? '收入' : '支出'}”的分类 “${data.name}” 已存在`)
+    }
+  }
+
+  if (data.name) {
+    const pinyinResult = pinyin(data.name, {
+      pattern: 'first',
+      toneType: 'none',
+    })
+    if (pinyinResult) {
+      data.pinyin = pinyinResult.replace(/ /g, '').toUpperCase()
     }
   }
 
