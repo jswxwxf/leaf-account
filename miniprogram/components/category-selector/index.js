@@ -1,4 +1,4 @@
-import { defineComponent, ref, onMounted, onReady } from '@vue-mini/core'
+import { defineComponent, ref, onMounted, onReady, computed } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast.js'
 import { getCategories, addCategory } from '@/api/category.js'
 import { newCategory } from '@/service/category-service.js'
@@ -62,6 +62,7 @@ defineComponent({
     const options = ref({})
     const selectedItems = ref([])
     const touchedItems = ref([])
+    const keyword = ref('')
 
     const {
       theNewCategory,
@@ -87,6 +88,18 @@ defineComponent({
     }
 
     fetchCategories()
+
+    const filteredCategories = computed(() => {
+      if (!keyword.value) {
+        return categories.value
+      }
+      const lowerCaseKeyword = keyword.value.toLowerCase()
+      return categories.value.filter((item) => {
+        const pinyinMatch = item.pinyin && item.pinyin.toLowerCase().includes(lowerCaseKeyword)
+        const nameMatch = item.name.toLowerCase().includes(lowerCaseKeyword)
+        return pinyinMatch || nameMatch
+      })
+    })
 
     onTabChange(() => {
       handleClose()
@@ -182,6 +195,10 @@ defineComponent({
       _resolve([...selectedItems.value])
     }
 
+    const handleSearchChange = (e) => {
+      keyword.value = e.detail
+    }
+
     return {
       visible,
       categories,
@@ -191,6 +208,8 @@ defineComponent({
       options,
       selectedItems,
       touchedItems,
+      keyword,
+      filteredCategories,
       show,
       handleClose,
       handleSelect,
@@ -199,6 +218,7 @@ defineComponent({
       handleAddNew,
       handleFormInit,
       handleConfirm,
+      handleSearchChange,
     }
   },
 })

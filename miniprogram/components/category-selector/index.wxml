@@ -22,8 +22,17 @@ module.exports = {
 <van-popup show="{{ visible }}" position="bottom" closeable safe-area-inset-bottom="{{false}}" bind:close="handleClose">
   <view class="p-4">
     <view class="flex justify-between items-center mb-4">
-      <van-button wx:if="{{ options.allowMultiple }}" type="primary" size="small" @tap="handleConfirm">确定</van-button>
-      <view class="text-lg font-bold text-center flex-1">选择分类</view>
+      <van-button wx:if="{{ options.allowMultiple }}" type="primary" size="small" @tap="handleConfirm" custom-class="mr-4">确定</van-button>
+      <view wx:else class="text-lg font-bold text-center flex-1">选择分类</view>
+      <view class="flex-1 min-w-48 mr-8" style="--search-padding: 0;">
+        <van-search
+          value="{{ keyword }}"
+          placeholder="拼音首字母搜索"
+          @change="handleSearchChange"
+          shape="square"
+          clearable
+        />
+      </view>
     </view>
 
     <!-- 分类类别列表 -->
@@ -40,9 +49,9 @@ module.exports = {
     </view>
 
     <!-- 分类列表 -->
-    <view wx:if="{{categories.length > 0}}" class="grid grid-cols-3 gap-3 mb-4 category-list">
+    <view wx:if="{{filteredCategories.length > 0}}" class="grid grid-cols-3 gap-3 mb-4 category-list">
       <category-item
-        wx:for="{{ categories }}"
+        wx:for="{{ filteredCategories }}"
         wx:key="_id"
         item="{{ item }}"
         @category-tap="handleSelect"
