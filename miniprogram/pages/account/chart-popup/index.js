@@ -1,7 +1,7 @@
 import { defineComponent, inject, nextTick, ref, watch } from '@vue-mini/core'
 import { onTabChange } from '@/utils/index.js'
 import { formatDate } from '@/utils/date.js'
-import { flatMap, map, uniq, sortBy } from 'lodash'
+import { flatMap, map, uniq, sortBy, reverse } from 'lodash'
 import { storeKey } from '../store'
 
 defineComponent({
@@ -17,9 +17,10 @@ defineComponent({
 
     const updateChartData = () => {
       chartReady.value = false
-      const categories = map(dailyBills.value, (daily) => formatDate(daily.datetime, 'MM-DD'))
-      const expenses = map(dailyBills.value, 'expense')
-      const incomes = map(dailyBills.value, 'income')
+      const reversedBills = reverse([...dailyBills.value])
+      const categories = map(reversedBills, (daily) => formatDate(daily.datetime, 'MM-DD'))
+      const expenses = map(reversedBills, 'expense')
+      const incomes = map(reversedBills, 'income')
 
       chartData.value = {
         categories,
@@ -27,10 +28,12 @@ defineComponent({
           {
             name: '每日支出',
             data: expenses,
+            color: '#1f2937',
           },
           {
             name: '每日收入',
             data: incomes,
+            color: '#22c55e',
           },
         ],
       }
