@@ -109,6 +109,7 @@ defineComponent({
       options.value = opts
       visible.value = true
       selectedItems.value = [...value]
+      keyword.value = ''
       resetNewCategory()
       fetchCategories()
       categoryForm.value.clearErrors()
