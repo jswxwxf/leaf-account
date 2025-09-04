@@ -112,6 +112,62 @@ async function initAccount() {
   }
 }
 
+async function addPinyin() {
+  const collection = db.collection('category')
+  const { pinyin } = require('pinyin-pro');
+
+  // 1. 获取所有分类
+  const { total } = await collection.count()
+  if (total === 0) {
+    console.log('分类表为空，无需处理。')
+    return { updated: 0 }
+  }
+
+  console.log(`共找到 ${total} 条分类数据，开始处理...`)
+  let updatedCount = 0
+
+  // 2. 分批处理
+  const batchSize = 100
+  for (let i = 0; i < total; i += batchSize) {
+    const { data: categories } = await collection.skip(i).limit(batchSize).get()
+
+    // 3. 并行更新当前批次的文档
+    const updatePromises = categories.map((category) => {
+      // 如果 pinyin 字段已存在，则跳过
+      if (category.pinyin) {
+        return Promise.resolve()
+      }
+
+      const pinyinResult = pinyin(category.name, {
+        pattern: 'first',
+        toneType: 'none',
+      })
+
+      // pinyin('交通') => 'j t'
+      if (pinyinResult) {
+        const pinyinInitials = pinyinResult.replace(/ /g, '').toUpperCase()
+        return collection.doc(category._id).update({
+          pinyin: pinyinInitials,
+          updatedAt: Date.now(),
+          updatedBy: 'pinyin-script',
+        })
+      }
+      return Promise.resolve()
+    })
+
+    const results = await Promise.all(updatePromises)
+    const currentBatchUpdated = results.filter(res => res && res.updated > 0).length
+    updatedCount += currentBatchUpdated
+    console.log(`批次 ${i / batchSize + 1} 处理完成，更新了 ${currentBatchUpdated} 条数据。`)
+  }
+
+  console.log(`全部处理完成，共更新了 ${updatedCount} 条数据。`)
+  return {
+    total,
+    updated: updatedCount,
+  }
+}
+
 /**
  * 云函数入口
  * @param {object} event - 包含任务类型等信息的对象
@@ -127,6 +183,8 @@ exports.main = async (event) => {
       return await initCategory()
     case 'init-account':
       return await initAccount()
+    case 'add-pinyin':
+      return await addPinyin()
     // 在这里可以添加更多的 case 来处理其他初始化任务
     // case 'initTags':
     //   return await initTags()
