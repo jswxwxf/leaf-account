@@ -140,7 +140,11 @@ async function buildBillQuery(event, models) {
   const { OPENID } = cloud.getWXContext()
 
   const where = {
-    $and: [{ _openid: { $eq: OPENID } }, { account: { $eq: accountId } }],
+    $and: [{ _openid: { $eq: OPENID } }],
+  }
+
+  if (accountId) {
+    where.$and.push({ account: { $eq: accountId } })
   }
 
   if (startTime && endTime) {
@@ -1101,4 +1105,98 @@ module.exports = {
   _saveTransfer,
   saveTransfer,
   updateBills,
+  groupBillsBy,
+}
+
+/**
+ * 按指定维度对账单进行分组聚合。
+ * @param {object} event - 云函数的原始 event 对象
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<object>} - 分组聚合后的结果
+ */
+async function groupBillsBy(event, models) {
+  const { by: dimension, exclude } = event.query
+  const where = await buildBillQuery(event, models)
+  const $ = _.aggregate
+
+  if (exclude) {
+    const { data: excludedTags } = await db
+      .collection('tag')
+      .where({
+        name: '不计入',
+      })
+      .field({ _id: true })
+      .get()
+    const excludedTagIds = excludedTags.map((t) => t._id)
+    if (excludedTagIds.length > 0) {
+      if (where.tags) {
+        where.tags = _.and([where.tags, _.nin(excludedTagIds)])
+      } else {
+        where.tags = _.nin(excludedTagIds)
+      }
+    }
+  }
+
+  if (where.noMatch) {
+    return { data: [] }
+  }
+
+  let groupId
+  switch (dimension) {
+    case 'category':
+      groupId = '$category'
+      break
+    case 'month':
+      groupId = $.dateToString({
+        format: '%Y-%m',
+        // 将时间戳(long)转换为Date对象
+        date: $.add([new Date(0), '$datetime']),
+        timezone: 'Asia/Shanghai', // 指定中国时区
+      })
+      break
+    default:
+      throw new Error(`不支持的分组维度: ${dimension}`)
+  }
+
+  const aggregate = db.collection('bill').aggregate()
+
+  // 1. 匹配阶段
+  aggregate.match(where)
+
+  // 2. 分组阶段
+  aggregate.group({
+    _id: groupId,
+    totalAmount: $.sum('$amount'),
+    count: $.sum(1),
+  })
+
+  // 3. 排序阶段
+  if (dimension === 'month') {
+    aggregate.sort({
+      _id: 1, // 按月份正序
+    })
+  } else if (dimension === 'category') {
+    aggregate.sort({
+      totalAmount: -1, // 按总金额倒序
+    })
+  }
+
+  const result = await aggregate.end()
+
+  let populatedResult = result.list
+
+  if (dimension === 'category') {
+    const categoryIds = result.list.map((item) => item._id).filter(Boolean)
+    const categories = await getCategoriesByIds({ query: { ids: categoryIds } }, models)
+    const categoryMap = categories.reduce((map, cat) => {
+      map[cat._id] = cat
+      return map
+    }, {})
+    populatedResult = result.list.map((item) => ({
+      ...item,
+      groupInfo: categoryMap[item._id] || null,
+    }))
+  }
+
+  return { data: populatedResult }
 }

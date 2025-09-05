@@ -25,6 +25,7 @@ const {
   getAllBills,
   saveTransfer,
   updateBills,
+  groupBillsBy,
 } = require('./service/bill.js')
 const {
   getAccount,
@@ -81,6 +82,17 @@ exports.main = (event, context) => {
   app.router('/get/bills/all', async (ctx) => {
     const data = await getAllBills(event, models)
     ctx.body = { code: 200, success: true, message: '获取成功', data }
+  })
+
+  /**
+   * @desc 按指定维度对账单进行分组
+   * @param {object} params
+   * @param {object} query - 查询参数
+   * @param {string} query.by - 分组维度，例如 'category'、'month'
+   */
+  app.router('/group/bills', async (ctx) => {
+    const result = await groupBillsBy(event, models)
+    ctx.body = { code: 200, success: true, message: '获取成功', ...result }
   })
 
   /**

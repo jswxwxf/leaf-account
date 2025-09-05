@@ -30,10 +30,9 @@ defineComponent({
     const generateMonthOptions = () => {
       const options = [{ text: '全部', value: '' }]
       const current = new Date()
-      for (let i = 0; i < 120; i++) {
-        const date = new Date(current.getFullYear(), current.getMonth() - i, 1)
-        const year = date.getFullYear()
-        const month = (date.getMonth() + 1).toString().padStart(2, '0')
+      const year = current.getFullYear()
+      for (let i = 12; i >= 1; i--) {
+        const month = i.toString().padStart(2, '0')
         options.push({
           text: `${year}年${month}月`,
           value: `${year}-${month}`,

@@ -1,8 +1,10 @@
 import { computed, onShow, ref } from '@vue-mini/core'
 import { getAccounts } from '@/api/account.js'
+import { groupBillsBy } from '@/api/bill.js'
 
 export default function store() {
   const accounts = ref([])
+  const groupedBills = ref([])
 
   // 使用 computed 派生出已开启的账户列表
   const openedAccounts = computed(() => accounts.value.filter((acc) => acc.isOpened))
@@ -12,16 +14,25 @@ export default function store() {
     accounts.value = res.data
   }
 
+  const fetchGroupedBills = async () => {
+    const res = await groupBillsBy('category', { exclude: true })
+    groupedBills.value = res.data
+  }
+
   fetchAccounts()
+  fetchGroupedBills()
 
   onShow(() => {
     fetchAccounts()
+    fetchGroupedBills()
   })
 
   return {
     accounts,
     openedAccounts,
+    groupedBills,
     fetchAccounts,
+    fetchGroupedBills,
   }
 }
 

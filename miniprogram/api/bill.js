@@ -169,3 +169,19 @@ export function resetBills() {
     $url: '/delete/reset-bills',
   })
 }
+
+/**
+ * 按指定维度对账单进行分组
+ * @param {object} query - 查询参数，同 getBills
+ * @param {string} dimension - 分组维度 ('category' 或 'month')
+ * @returns {Promise<any>}
+ */
+export function groupBillsBy(dimension, query = {}) {
+  if (!dimension) {
+    throw new Error('groupBillsBy 函数需要 dimension 参数')
+  }
+  return get('bill-cloud', {
+    $url: '/group/bills',
+    query: processQuery({ ...query, by: dimension }),
+  })
+}

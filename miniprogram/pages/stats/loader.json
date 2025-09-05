@@ -2,9 +2,12 @@
   "$schema": "https://vite.icebreaker.top/component.json",
   "component": true,
   "usingComponents": {
-    "master-chart": "./master-chart/index",
-    "group-chart": "./group-chart/index"
+    "index": "./index"
   },
+  "componentPlaceholder": {
+    "index": "view"
+  },
+  "lazyCodeLoading": "requiredComponents",
   "styleIsolation": "apply-shared",
   "backgroundColor": "#334155",
   "backgroundTextStyle": "light"

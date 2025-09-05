@@ -12,6 +12,7 @@ const REQUIRE_LOGIN_ROUTES = [
   '/delete/bill',
   '/batch/bills/delete',
   '/batch/bills/update',
+  '/group/bills',
   '/post/category',
   '/post/tags',
   '/get/account',

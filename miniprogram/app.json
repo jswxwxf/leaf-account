@@ -2,7 +2,7 @@
   "pages": [
     "pages/account/index",
     "pages/cabinet/index",
-    "pages/stats/index",
+    "pages/stats/loader",
     "pages/setting/index",
     "pages/category/index",
     "pages/tag/index"
@@ -29,7 +29,7 @@
         "selectedIconPath": "assets/images/ep-notebook-selected.png"
       },
       {
-        "pagePath": "pages/stats/index",
+        "pagePath": "pages/stats/loader",
         "text": "统计",
         "iconPath": "assets/images/ep-data-line.png",
         "selectedIconPath": "assets/images/ep-data-line-selected.png"
