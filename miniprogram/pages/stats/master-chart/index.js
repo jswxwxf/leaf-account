@@ -54,13 +54,16 @@ defineComponent({
       chartMinMax.value[0] = [Math.floor(Math.min(...expenses)), Math.ceil(Math.max(...expenses))]
       chartMinMax.value[1] = [Math.floor(Math.min(...incomes)), Math.ceil(Math.max(...incomes))]
       chartMinMax.value[2] = [Math.floor(Math.min(...balances)), Math.ceil(Math.max(...balances))]
-      console.log(chartMinMax.value)
 
       const allData = flatten(chartMinMax.value)
       const finalMin = Math.min(...allData)
       const finalMax = Math.max(...allData)
       chartOptions.value.yAxis.data[0].min = finalMin
       chartOptions.value.yAxis.data[0].max = finalMax
+
+      if (openedAccounts.value.length <= 3) {
+        chartOptions.value.dataLabel = true
+      }
 
       chartData.value = {
         categories: categories,
@@ -105,7 +108,7 @@ defineComponent({
       const chart = cfu.instance[e.detail.id]
       const legends = chart.opts.chartData.legendData.points[0]
       const options = {
-        dataLabel: false,
+        dataLabel: chartOptions.value.dataLabel,
         yAxis: {
           data: [{}],
         },

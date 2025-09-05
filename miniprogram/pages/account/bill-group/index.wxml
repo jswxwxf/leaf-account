@@ -3,7 +3,7 @@
 <view class="bg-white shadow-sm mb-2" hidden="{{ filteredBills.length === 0 }}" style="--checkbox-label-margin: 8px">
   <van-cell-group>
     <van-cell>
-      <view slot="title" class="flex justify-between items-center">
+      <view slot="title" class="flex justify-between items-center whitespace-nowrap">
         <view class="flex items-center {{ utils.isWeekend(item.datetime) ? 'text-orange-500' : 'text-gray-500' }}">
           <van-checkbox
             shape="square"
