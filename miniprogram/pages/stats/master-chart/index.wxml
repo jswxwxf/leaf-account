@@ -1,0 +1,11 @@
+<view wx:if="{{ chartReady }}" class="w-full h-52 px-4 pl-0 pt-2 block box-border">
+  <qiun-data-charts
+    type="column"
+    animation="{{ false }}"
+    chart-data="{{ chartData }}"
+    opts="{{ chartOptions }}"
+    ontap
+    @getIndex="onChartTap"
+  />
+  <view class="text-center text-xs text-gray-400 pt-1">轻点图例可切换项目显隐</view>
+</view>

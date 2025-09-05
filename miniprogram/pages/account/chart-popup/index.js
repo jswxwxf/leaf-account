@@ -1,7 +1,7 @@
-import { defineComponent, inject, nextTick, ref, watch } from '@vue-mini/core'
+import { defineComponent, inject, ref, watch } from '@vue-mini/core'
 import { onTabChange } from '@/utils/index.js'
 import { formatDate } from '@/utils/date.js'
-import { flatMap, map, uniq, sortBy, reverse } from 'lodash'
+import { map, reverse } from 'lodash'
 import { storeKey } from '../store'
 
 defineComponent({
@@ -38,12 +38,16 @@ defineComponent({
         ],
       }
 
-      let options = {}
+      let options = {
+        extra: {
+          line: {
+            type: 'curve',
+          },
+        },
+      }
       if (dailyBills.value.length > 7) {
-        options = {
-          dataLabel: false,
-          xAxis: { fontColor: 'rgba(0, 0, 0, 0)' },
-        }
+        options.dataLabel = false
+        options.xAxis = { fontColor: 'rgba(0, 0, 0, 0)' }
       }
       chartOptions.value = options
 

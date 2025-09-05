@@ -1,19 +1,22 @@
-import { defineComponent, onTabItemTap, ref } from '@vue-mini/core'
+import { defineComponent, onTabItemTap, provide, computed } from '@vue-mini/core'
+import store, { storeKey } from './store'
 
 defineComponent({
   setup() {
-    const chartData = ref({
-      categories: ['2016', '2017', '2018', '2019', '2020', '2021'],
-      series: [
-        {
-          name: '目标值',
-          data: [35, 36, 31, 33, 13, 34],
+    const state = store()
+    provide(storeKey, state)
+    const { openedAccounts } = state
+
+    const totals = computed(() => {
+      return openedAccounts.value.reduce(
+        (acc, account) => {
+          acc.expense += Number(account.totalExpense)
+          acc.income += Number(account.totalIncome)
+          acc.balance += Number(account.balance)
+          return acc
         },
-        {
-          name: '完成量',
-          data: [18, 27, 21, 24, 6, 28],
-        },
-      ],
+        { expense: 0, income: 0, balance: 0 },
+      )
     })
 
     onTabItemTap(() => {
@@ -21,7 +24,8 @@ defineComponent({
     })
 
     return {
-      chartData,
+      openedAccounts,
+      totals,
     }
   },
 })

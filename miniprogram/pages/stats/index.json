@@ -2,6 +2,9 @@
   "$schema": "https://vite.icebreaker.top/component.json",
   "component": true,
   "usingComponents": {
-    "qiun-data-charts": "@qiun/wx-ucharts/index"
-  }
+    "master-chart": "./master-chart/index"
+  },
+  "styleIsolation": "apply-shared",
+  "backgroundColor": "#334155",
+  "backgroundTextStyle": "light"
 }
