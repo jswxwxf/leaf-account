@@ -1,7 +1,8 @@
 import { defineComponent, inject, ref, watch } from '@vue-mini/core'
+import cfu from '@qiun/wx-ucharts/config-ucharts.js'
 import { storeKey } from '../store'
 import { map, flatten } from 'lodash'
-import cfu from '@qiun/wx-ucharts/config-ucharts.js'
+import { deepCopy } from '@/utils/index.js'
 
 defineComponent({
   setup() {
@@ -45,6 +46,9 @@ defineComponent({
 
     const updateChartData = () => {
       chartReady.value = false
+      if (!groupedBills.value || groupedBills.value.length === 0) {
+        return
+      }
       const categories = map(groupedBills.value, (item) => item.groupInfo.name)
       const amounts = map(groupedBills.value, (item) =>
         parseFloat(Number(item.totalAmount).toFixed(2)),
@@ -54,7 +58,7 @@ defineComponent({
       chartOptions.value.yAxis.data[0].min = Math.floor(Math.min(...amounts))
       chartOptions.value.yAxis.data[0].max = Math.ceil(Math.max(...amounts))
 
-      chartData.value = {
+      chartData.value = deepCopy({
         categories,
         series: [
           {
@@ -62,16 +66,7 @@ defineComponent({
             data: amounts,
           },
         ],
-      }
-
-      // let options = {}
-      // if (dailyBills.value.length > 7) {
-      //   options = {
-      //     dataLabel: false,
-      //     xAxis: { fontColor: 'rgba(0, 0, 0, 0)' },
-      //   }
-      // }
-      // chartOptions.value = options
+      })
 
       // 延迟确保图表组件渲染完成
       setTimeout(() => {
@@ -85,24 +80,11 @@ defineComponent({
       chart.value = cfu.instance[e.detail.id]
     }
 
-    const onTouchStart = (e) => {
-      chart.value.scrollStart(e)
-    }
-    const onTouchMove = (e) => {
-      chart.value.scroll(e)
-    }
-    const onTouchEnd = (e) => {
-      chart.value.scrollEnd(e)
-    }
-
     return {
       chartReady,
       chartOptions,
       chartData,
       onChartTap,
-      onTouchStart,
-      onTouchMove,
-      onTouchEnd,
     }
   },
 })

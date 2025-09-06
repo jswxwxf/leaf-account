@@ -15,7 +15,7 @@ export default function store() {
   }
 
   const fetchGroupedBills = async () => {
-    const res = await groupBillsBy('category', { exclude: true })
+    const res = await groupBillsBy('category', { exclude: true, transfer: false })
     groupedBills.value = res.data
   }
 

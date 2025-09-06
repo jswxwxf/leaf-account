@@ -10,7 +10,21 @@ defineComponent({
 
     const visible = ref(false)
     const chartReady = ref(false)
-    const chartOptions = ref({})
+    const chartOptions = ref({
+      dataLabel: true,
+      enableScroll: true,
+      xAxis: {
+        // rotateLabel: true,
+        // marginTop: 16,
+        itemCount: 5,
+        scrollShow: true,
+      },
+      extra: {
+        line: {
+          type: 'curve',
+        },
+      },
+    })
     const chartData = ref({})
 
     let _resolve, _reject
@@ -37,19 +51,6 @@ defineComponent({
           },
         ],
       }
-
-      let options = {
-        extra: {
-          line: {
-            type: 'curve',
-          },
-        },
-      }
-      if (dailyBills.value.length > 7) {
-        options.dataLabel = false
-        options.xAxis = { fontColor: 'rgba(0, 0, 0, 0)' }
-      }
-      chartOptions.value = options
 
       // 延迟确保图表组件渲染完成
       setTimeout(() => {

@@ -6,5 +6,4 @@
     opts="{{ chartOptions }}"
     @getIndex="onChartTap"
   />
-  <view class="text-center text-xs text-gray-400 pt-1">轻点图例可切换项目显隐</view>
 </view>

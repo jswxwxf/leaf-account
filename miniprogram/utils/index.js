@@ -161,3 +161,15 @@ export function onTabChange(callback) {
   })
   return stop
 }
+
+
+/**
+ * 深拷贝一个对象。
+ * 注意：此方法对于包含函数、undefined、Symbol 等无法被 JSON 序列化的值无效。
+ * @param {T} obj - 需要深拷贝的对象。
+ * @returns {T} - 拷贝后的新对象。
+ * @template T
+ */
+export function deepCopy(obj) {
+  return JSON.parse(JSON.stringify(obj))
+}

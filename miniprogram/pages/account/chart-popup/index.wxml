@@ -16,12 +16,14 @@
         animation="{{ false }}"
         chart-data="{{chartData}}"
         opts="{{ chartOptions }}"
+        ontap
+        ontouch
       />
     </view>
 
     <!-- Footer -->
     <view class="flex items-center px-4 pb-4">
-      <view class="flex-1" />
+      <view class="flex-1 text-xs text-gray-400 text-center">点击图例可切换</view>
       <view class="flex justify-end items-center space-x-6">
         <view class="i-ep-close text-2xl" @tap="handleClose" />
       </view>

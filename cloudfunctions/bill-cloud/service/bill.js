@@ -3,9 +3,7 @@ const dayjs = require('dayjs')
 const { getCategoryIds, getCategoriesByIds, populateCategoriesForBills } = require('./category.js')
 const { getTagsByIds, populateTagsForBills } = require('./tag.js')
 const { _updateAccount } = require('./account.js')
-const {
-  parseMoney,
-} = require('./helper.js')
+const { parseMoney } = require('./helper.js')
 
 const db = cloud.database()
 const _ = db.command
@@ -250,12 +248,7 @@ async function getBillsSummary(event, models) {
  * @param {object} where - 查询条件
  */
 async function getMinDate(models, where = {}) {
-  const res = await db
-    .collection('bill')
-    .where(where)
-    .orderBy('datetime', 'asc')
-    .limit(1)
-    .get()
+  const res = await db.collection('bill').where(where).orderBy('datetime', 'asc').limit(1).get()
 
   if (res.data && res.data.length > 0) {
     return res.data[0].datetime
@@ -660,7 +653,6 @@ async function updateBills(event, models) {
   }
 }
 
-
 /**
  * 保存单条账单的核心逻辑（创建或更新）。
  * @param {object} billToSave - 要保存的账单对象
@@ -858,20 +850,20 @@ async function _saveTransfer(event, models, dbOrTransaction) {
     const { category, amount, datetime, note } = bill
     const targetAccountInfo = category?.account
     if (!targetAccountInfo || !targetAccountInfo._id) {
-      console.warn('转账目标账户信息不完整,保存为断联转账');
+      console.warn('转账目标账户信息不完整,保存为断联转账')
       // 如果目标账户ID为空，只保存当前账户的转账记录, relatedBill也要删除
-      delete bill.relatedBill;
+      delete bill.relatedBill
       const billOut = {
         ...bill,
         amount: -Math.abs(parseMoney(amount)),
         category: category,
         account: currentAccountId,
         note: note || `转账目标账户信息不完整`,
-      };
-      const savedBillOut = await _saveBill(billOut, currentAccountId, models, tx);
-      return { ...savedBillOut, relatedBill: null };
+      }
+      const savedBillOut = await _saveBill(billOut, currentAccountId, models, tx)
+      return { ...savedBillOut, relatedBill: null }
     }
-    const targetAccountId = targetAccountInfo._id;
+    const targetAccountId = targetAccountInfo._id
     if (targetAccountId === currentAccountId) {
       throw new Error('转账失败：转出账户和转入账户不能相同')
     }
@@ -1088,57 +1080,52 @@ async function _deleteBills(event, models, dbOrTransaction) {
   return { deleted: deleteResult.stats.removed }
 }
 
-module.exports = {
-  _saveBill,
-  saveBill,
-  _saveBills,
-  saveBills,
-  getBillsSummary,
-  getBills,
-  getAllBills,
-  _getBillsByIds,
-  getBillsByIds,
-  deleteBill,
-  _deleteBills,
-  deleteBills,
-  resetBills,
-  _saveTransfer,
-  saveTransfer,
-  updateBills,
-  groupBillsBy,
-}
-
 /**
  * 按指定维度对账单进行分组聚合。
  * @param {object} event - 云函数的原始 event 对象
  * @param {object} models - 数据模型实例
  * @returns {Promise<object>} - 分组聚合后的结果
  */
-async function groupBillsBy(event, models) {
-  const { by: dimension, exclude } = event.query
+async function groupBills(event, models) {
+  const { by: dimension, exclude, transfer = true } = event.query
   const where = await buildBillQuery(event, models)
   const $ = _.aggregate
 
+  if (where.noMatch) {
+    return { data: [] }
+  }
+
+  const aggregate = db.collection('bill').aggregate()
+
+  // 1. 匹配主查询条件
+  aggregate.match(where)
+
+  // 2. 附加过滤条件
   if (exclude) {
     const { data: excludedTags } = await db
       .collection('tag')
-      .where({
-        name: '不计入',
-      })
+      .where({ name: '不计入' })
       .field({ _id: true })
       .get()
     const excludedTagIds = excludedTags.map((t) => t._id)
     if (excludedTagIds.length > 0) {
-      if (where.tags) {
-        where.tags = _.and([where.tags, _.nin(excludedTagIds)])
-      } else {
-        where.tags = _.nin(excludedTagIds)
-      }
+      aggregate.match({ tags: _.nin(excludedTagIds) })
     }
   }
 
-  if (where.noMatch) {
-    return { data: [] }
+  if (transfer === false) {
+    const { data: transferCategories } = await db
+      .collection('category')
+      .where({
+        name: _.in(['转账', '收转账']),
+        _openid: _.exists(false),
+      })
+      .field({ _id: true })
+      .get()
+    if (transferCategories.length > 0) {
+      const transferCategoryIds = transferCategories.map((c) => c._id)
+      aggregate.match({ category: _.nin(transferCategoryIds) })
+    }
   }
 
   let groupId
@@ -1158,19 +1145,14 @@ async function groupBillsBy(event, models) {
       throw new Error(`不支持的分组维度: ${dimension}`)
   }
 
-  const aggregate = db.collection('bill').aggregate()
-
-  // 1. 匹配阶段
-  aggregate.match(where)
-
-  // 2. 分组阶段
+  // 分组阶段
   aggregate.group({
     _id: groupId,
     totalAmount: $.sum('$amount'),
     count: $.sum(1),
   })
 
-  // 3. 排序阶段
+  // 排序阶段
   if (dimension === 'month') {
     aggregate.sort({
       _id: 1, // 按月份正序
@@ -1199,4 +1181,24 @@ async function groupBillsBy(event, models) {
   }
 
   return { data: populatedResult }
+}
+
+module.exports = {
+  _saveBill,
+  saveBill,
+  _saveBills,
+  saveBills,
+  getBillsSummary,
+  getBills,
+  getAllBills,
+  _getBillsByIds,
+  getBillsByIds,
+  deleteBill,
+  _deleteBills,
+  deleteBills,
+  resetBills,
+  _saveTransfer,
+  saveTransfer,
+  updateBills,
+  groupBills,
 }

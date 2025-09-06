@@ -5,9 +5,7 @@
     chart-data="{{ chartData }}"
     opts="{{ chartOptions }}"
     ontap
+    ontouch
     @getIndex="onChartTap"
-    @getTouchStart="onTouchStart"
-    @getTouchMove="onTouchMove"
-    @getTouchEnd="onTouchEnd"
   />
 </view>

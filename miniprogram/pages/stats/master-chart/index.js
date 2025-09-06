@@ -1,7 +1,8 @@
 import { defineComponent, inject, ref, watch } from '@vue-mini/core'
+import cfu from '@qiun/wx-ucharts/config-ucharts.js'
 import { storeKey } from '../store'
 import { map, flatten } from 'lodash'
-import cfu from '@qiun/wx-ucharts/config-ucharts.js'
+import { deepCopy } from '@/utils/index.js'
 
 defineComponent({
   setup() {
@@ -65,7 +66,7 @@ defineComponent({
         chartOptions.value.dataLabel = true
       }
 
-      chartData.value = {
+      chartData.value = deepCopy({
         categories: categories,
         series: [
           {
@@ -84,7 +85,7 @@ defineComponent({
             color: '#3b82f6',
           },
         ],
-      }
+      })
 
       // let options = {}
       // if (dailyBills.value.length > 7) {
