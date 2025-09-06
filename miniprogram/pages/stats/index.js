@@ -1,4 +1,4 @@
-import { defineComponent, onTabItemTap, provide, computed } from '@vue-mini/core'
+import { defineComponent, onTabItemTap, provide, computed, ref } from '@vue-mini/core'
 import store, { storeKey } from './store'
 
 defineComponent({

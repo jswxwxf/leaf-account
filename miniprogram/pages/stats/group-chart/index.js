@@ -38,11 +38,8 @@ defineComponent({
       },
     })
     const chartData = ref({})
-    const chartMinMax = ref([
-      [0, 0],
-      [0, 0],
-      [0, 0],
-    ])
+
+    const checkedValue = ref([])
 
     const updateChartData = () => {
       chartReady.value = false
@@ -55,8 +52,8 @@ defineComponent({
       )
 
       // 动态计算 y-axis 的 min 和 max 值
-      chartOptions.value.yAxis.data[0].min = Math.floor(Math.min(...amounts))
-      chartOptions.value.yAxis.data[0].max = Math.ceil(Math.max(...amounts))
+      chartOptions.value.yAxis.data[0].min = Math.floor(Math.min(...amounts, 0))
+      chartOptions.value.yAxis.data[0].max = Math.ceil(Math.max(...amounts, 0))
 
       chartData.value = deepCopy({
         categories,
@@ -80,11 +77,18 @@ defineComponent({
       chart.value = cfu.instance[e.detail.id]
     }
 
+    const onCheckedChange = (e) => {
+      console.log('check-group changed', e)
+      checkedValue.value = e.detail
+    }
+
     return {
       chartReady,
       chartOptions,
       chartData,
+      checkedValue,
       onChartTap,
+      onCheckedChange,
     }
   },
 })

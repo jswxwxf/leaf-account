@@ -8,7 +8,7 @@
 >
   <view class="h-full w-full bg-neutral-50 pt-2 max-h-screen border-b border-dashed border-b-slate-400">
     <!-- Chart Content Goes Here -->
-    <view class="w-full h-52 px-4 pl-0 block box-border">
+    <view wx:if="{{ visible }}" class="w-full h-52 px-4 pl-0 block box-border">
       <qiun-data-charts
         reshow="{{ visible && chartReady }}"
         opts-watch="{{ !chartReady }}"

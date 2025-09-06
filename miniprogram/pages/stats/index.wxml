@@ -19,6 +19,5 @@
   </view>
 
   <master-chart />
-  <view class="h-12" />
   <group-chart />
 </view>

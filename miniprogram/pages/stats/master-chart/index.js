@@ -40,6 +40,10 @@ defineComponent({
 
     const updateChartData = () => {
       chartReady.value = false
+      if (!openedAccounts.value || openedAccounts.value.length === 0) {
+        return
+      }
+
       const categories = map(openedAccounts.value, (account) => account.title)
       const expenses = map(openedAccounts.value, (item) =>
         parseFloat((Number(item.totalExpense) / 10000).toFixed(2)),

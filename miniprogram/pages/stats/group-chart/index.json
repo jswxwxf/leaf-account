@@ -2,7 +2,9 @@
   "$schema": "https://vite.icebreaker.top/component.json",
   "component": true,
   "usingComponents": {
-    "qiun-data-charts": "@qiun/wx-ucharts/index"
+    "qiun-data-charts": "@qiun/wx-ucharts/index",
+    "check-group": "/components/check-group/index",
+    "check-group-item": "/components/check-group-item/index"
   },
   "styleIsolation": "apply-shared"
 }

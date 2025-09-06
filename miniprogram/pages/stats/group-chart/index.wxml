@@ -1,11 +1,21 @@
-<view wx:if="{{ chartReady }}" class="w-full h-52 px-4 pl-0 pt-2 block box-border">
-  <qiun-data-charts
-    type="column"
-    animation="{{ false }}"
-    chart-data="{{ chartData }}"
-    opts="{{ chartOptions }}"
-    ontap
-    ontouch
-    @getIndex="onChartTap"
-  />
+<view class="w-full h-52 px-4 pl-0 pt-2 block box-border">
+  <block wx:if="{{ chartReady }}">
+    <view class="p-4">
+      <check-group value="{{ checkedValue }}" @change="onCheckedChange" multiple>
+        <check-group-item title="不计入" value="exclude" />
+        <check-group-item title="转账" value="transfer" />
+        <check-group-item title="余额" value="balance" />
+        <check-group-item title="收支" value="type" />
+      </check-group>
+    </view>
+    <qiun-data-charts
+      type="column"
+      animation="{{ false }}"
+      chart-data="{{ chartData }}"
+      opts="{{ chartOptions }}"
+      ontap
+      ontouch
+      @getIndex="onChartTap"
+    />
+  </block>
 </view>

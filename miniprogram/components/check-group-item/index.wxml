@@ -1,0 +1,6 @@
+<view
+  class="check-group-item {{ active ? 'check-group-item--active' : '' }}"
+  @tap="onClick"
+>
+  {{ title }}
+</view>

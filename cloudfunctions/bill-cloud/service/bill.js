@@ -1087,7 +1087,7 @@ async function _deleteBills(event, models, dbOrTransaction) {
  * @returns {Promise<object>} - 分组聚合后的结果
  */
 async function groupBills(event, models) {
-  const { by: dimension, exclude, transfer = true } = event.query
+  const { by: dimension, exclude, transfer = true, balance = true } = event.query
   const where = await buildBillQuery(event, models)
   const $ = _.aggregate
 
@@ -1125,6 +1125,21 @@ async function groupBills(event, models) {
     if (transferCategories.length > 0) {
       const transferCategoryIds = transferCategories.map((c) => c._id)
       aggregate.match({ category: _.nin(transferCategoryIds) })
+    }
+  }
+
+  // 新增：如果 balance 为 false，则排除“余额”相关的分类
+  if (balance === false) {
+    const { data: balanceCategories } = await db
+      .collection('category')
+      .where({
+        name: _.in(['余额']),
+      })
+      .field({ _id: true })
+      .get()
+    if (balanceCategories.length > 0) {
+      const balanceCategoryIds = balanceCategories.map((c) => c._id)
+      aggregate.match({ category: _.nin(balanceCategoryIds) })
     }
   }
 
