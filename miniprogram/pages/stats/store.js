@@ -38,7 +38,7 @@ export default function store() {
 
   onAccountChange(
     (newAccount) => {
-      if (selectedAccounts.value.length <= 1) {
+      if (!selectedAccounts.value.map(x => x._id).includes(newAccount._id)) {
         selectedAccounts.value = [newAccount]
       }
     },
