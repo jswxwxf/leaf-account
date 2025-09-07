@@ -31,11 +31,23 @@ defineComponent({
       if (!groupedBills.value || groupedBills.value.length === 0) {
         return
       }
-      const data = groupedBills.value.slice(0, 5).map((item) => ({
-        name: item.groupInfo.name,
-        value: Math.abs(item.totalAmount),
-        labelText: `${item.groupInfo.name}: ${Number(item.totalAmount).toFixed(2)}`,
-      }))
+      let data
+      if (typeValue.value === '20') {
+        data = [...groupedBills.value]
+          .reverse()
+          .slice(0, 5)
+          .map((item) => ({
+            name: item.groupInfo.name,
+            value: Math.abs(item.totalAmount),
+            labelText: `${item.groupInfo.name}: ${Number(item.totalAmount).toFixed(2)}`,
+          }))
+      } else {
+        data = groupedBills.value.slice(0, 5).map((item) => ({
+          name: item.groupInfo.name,
+          value: Math.abs(item.totalAmount),
+          labelText: `${item.groupInfo.name}: ${Number(item.totalAmount).toFixed(2)}`,
+        }))
+      }
 
       chartData.value = deepCopy({
         series: [{ data }],
