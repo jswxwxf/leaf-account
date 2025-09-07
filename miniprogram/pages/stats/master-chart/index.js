@@ -66,7 +66,8 @@ defineComponent({
       chartOptions.value.yAxis.data[0].min = finalMin
       chartOptions.value.yAxis.data[0].max = finalMax
 
-      if (availableAccounts.value.length <= 3) {
+      chartOptions.value.dataLabel = false
+      if (availableAccounts.value.length <= 5) {
         chartOptions.value.dataLabel = true
       }
 
