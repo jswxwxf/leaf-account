@@ -2,6 +2,7 @@
   <block wx:if="{{ chartReady }}">
     <qiun-data-charts
       type="column"
+      canvas2d
       animation="{{ false }}"
       chart-data="{{ chartData }}"
       opts="{{ chartOptions }}"

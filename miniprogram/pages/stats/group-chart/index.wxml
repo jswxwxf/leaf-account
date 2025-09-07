@@ -1,7 +1,8 @@
-<view class="w-full h-52 px-4 pl-0 pt-2 block box-border">
-  <view class="flex justify-between px-4 pb-0 gap-1">
-    <view class="flex-1 py-1 px-2 text-sm border leading-5 border-green-500 text-green-500 select-none">
-      账本：{{ account.title }}
+<view class="w-full h-52 px-4 pl-0 pt-4 block box-border">
+  <view class="flex justify-between items-center px-4 pb-0 gap-2">
+    <view class="flex-1 py-1 px-2 text-sm leading-5 select-none" style="box-shadow: 0 0 5px rgba(0, 0, 0, 0.2)">
+      <text class="text-sm text-slate-400">账本：</text>
+      <text class="text-base font-bold text-slate-700">{{ account.title }}</text>
     </view>
     <van-button
       type="primary"
@@ -31,6 +32,7 @@
   <block wx:if="{{ chartReady }}">
     <qiun-data-charts
       type="column"
+      canvas2d
       animation="{{ false }}"
       chart-data="{{ chartData }}"
       opts="{{ chartOptions }}"

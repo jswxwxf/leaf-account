@@ -13,6 +13,7 @@
         reshow="{{ visible && chartReady }}"
         opts-watch="{{ !chartReady }}"
         type="line"
+        canvas2d
         animation="{{ false }}"
         chart-data="{{chartData}}"
         opts="{{ chartOptions }}"
