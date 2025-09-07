@@ -11,7 +11,7 @@
   }
 </wxs>
 
-<view class="pb-6">
+<view class="pb-12">
   <view class="p-4 bg-white shadow-md mb-4">
     <view class="grid grid-cols-3 gap-4 text-center">
       <view>

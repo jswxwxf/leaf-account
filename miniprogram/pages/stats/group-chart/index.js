@@ -50,9 +50,15 @@ defineComponent({
       // 按月份
       if (dimension.value === 'month') {
         categories = map(groupedBills.value, (item) => item._id)
-        amounts = amounts = map(groupedBills.value, (item) =>
-          parseFloat(Number(item.totalAmount).toFixed(2)),
-        )
+        if (typeValue.value === '20') {
+          amounts = map(groupedBills.value, (item) =>
+            Math.abs(parseFloat(Number(item.totalAmount).toFixed(2))),
+          )
+        } else {
+          amounts = amounts = map(groupedBills.value, (item) =>
+            parseFloat(Number(item.totalAmount).toFixed(2)),
+          )
+        }
       } else {
         // 按分类
         if (typeValue.value === '20') {
