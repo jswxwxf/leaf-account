@@ -11,12 +11,18 @@ export default defineComponent({
     let _resolve = null
     let _reject = null
 
-    const fetchAccounts = async (currentAccount) => {
+    const fetchAccounts = async (opts = {}) => {
       const res = await getAccounts({ opened: true })
-      const accountToFilter = currentAccount || getApp().globalData.account.value
+      const accountToFilter = opts.currentAccount || getApp().globalData.account.value
       // action-sheet 需要 name 字段
       accounts.value = res.data
         .filter((item) => item.name !== accountToFilter.name)
+        .filter((item) => {
+          if (opts.hideStats) {
+            return item.showInStats
+          }
+          return true
+        })
         .map((item) => ({ ...item, name: item.title }))
     }
 
@@ -25,7 +31,7 @@ export default defineComponent({
     })
 
     const show = async (options = {}) => {
-      await fetchAccounts(options.currentAccount)
+      await fetchAccounts(options)
       if (accounts.value.length === 0) {
         return Promise.resolve()
       }

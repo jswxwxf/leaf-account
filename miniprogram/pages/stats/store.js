@@ -15,7 +15,9 @@ export default function store() {
   const typeValue = ref('all')
 
   // 使用 computed 派生出已开启的账户列表
-  const availableAccounts = computed(() => accounts.value.filter((acc) => acc.isOpened))
+  const availableAccounts = computed(() =>
+    accounts.value.filter((acc) => acc.isOpened && acc.showInStats),
+  )
 
   const fetchAccounts = async () => {
     const res = await getAccounts()
@@ -44,7 +46,7 @@ export default function store() {
   )
 
   const onChangeAccount = async (e) => {
-    account.value = await showAccountSelector({ currentAccount: account.value })
+    account.value = await showAccountSelector({ currentAccount: account.value, hideStats: true })
     fetchGroupedBills()
   }
 

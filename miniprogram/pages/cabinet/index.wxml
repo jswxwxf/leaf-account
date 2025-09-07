@@ -8,6 +8,7 @@
       @deactivate="handleDeactivate"
       @export="handleExport"
       @import="handleImport"
+      @toggle-show-in-stats="handleShowInStats"
       data-index="{{ index }}"
     />
   </block>

@@ -138,6 +138,13 @@ defineComponent({
       fetchAccounts()
     }
 
+    const handleShowInStats = async (e) => {
+      const { index } = e.currentTarget.dataset
+      const account = e.detail
+      await updateAccount(account._id, { showInStats: !account.showInStats })
+      accounts.value[index].showInStats = !account.showInStats
+    }
+
     onTabItemTap(() => {
       getApp().globalData.currentTab.value = 'cabinet'
     })
@@ -150,6 +157,7 @@ defineComponent({
       handleTransfer,
       handleExport,
       handleImport,
+      handleShowInStats,
     }
   },
 })

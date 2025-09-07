@@ -16,10 +16,17 @@
     <view class="flex flex-col items-start gap-1">
       <view class="flex items-center gap-2">
         <view
-          class="text-base font-medium leading-tight van-ellipsis bg-black/30 py-1 px-2 w-36 {{ !account.isOpened ? 'text-gray-400' : '' }}"
+          class="flex text-base font-medium leading-tight van-ellipsis bg-black/30 py-1 px-2 w-36 {{ !account.isOpened ? 'text-gray-400' : '' }}"
         >
           {{ account.title }}
-          <text class="text-sm">{{ !account.isOpened ?' | 未启用': '' }}</text>
+          <text wx:if="{{ !account.isOpened }}" class="text-sm">| 未启用</text>
+          <view class="flex-1" />
+          <van-icon
+            wx:if="{{ account.isOpened }}"
+            name="browsing-history-o"
+            color="{{ account.showInStats ? 'white' : 'darkgray'}}"
+            @click="toggleShowInStats"
+          />
         </view>
         <van-button wx:if="{{ account.isOpened }}" size="mini" custom-class="cabinet-btn" @tap="handleRename">
           改名
@@ -42,12 +49,29 @@
     </view>
 
     <view class="grid grid-rows-3 grid-cols-2 gap-1">
-      <van-button size="mini" custom-class="cabinet-btn" @tap="handleTap">{{ account.isOpened ? '记帐' : '启用' }}</van-button>
-      <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !account.isOpened || account.name === 'leaf-maple' }}" @tap="handleDeactivate">停用</van-button>
-      <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !enableTransfer }}" @tap="handleTransferOut">转出</van-button>
-      <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !account.isOpened }}" @tap="handleExport">导出</van-button>
-      <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !enableTransfer }}" @tap="handleTransferIn">转入</van-button>
-      <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !account.isOpened }}" @tap="handleImport">导入</van-button>
+      <van-button size="mini" custom-class="cabinet-btn" @tap="handleTap">
+        {{ account.isOpened ? '记帐' : '启用' }}
+      </van-button>
+      <van-button
+        size="mini"
+        custom-class="cabinet-btn"
+        disabled="{{ !account.isOpened || account.name === 'leaf-maple' }}"
+        @tap="handleDeactivate"
+      >
+        停用
+      </van-button>
+      <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !enableTransfer }}" @tap="handleTransferOut">
+        转出
+      </van-button>
+      <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !account.isOpened }}" @tap="handleExport">
+        导出
+      </van-button>
+      <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !enableTransfer }}" @tap="handleTransferIn">
+        转入
+      </van-button>
+      <van-button size="mini" custom-class="cabinet-btn" disabled="{{ !account.isOpened }}" @tap="handleImport">
+        导入
+      </van-button>
     </view>
   </view>
 </view>

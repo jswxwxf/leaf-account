@@ -46,6 +46,10 @@ defineComponent({
       triggerEvent('import', props.account)
     }
 
+    const toggleShowInStats = async () => {
+      triggerEvent('toggle-show-in-stats', props.account)
+    }
+
     return {
       enableTransfer,
       handleTap,
@@ -55,6 +59,7 @@ defineComponent({
       handleDeactivate,
       handleExport,
       handleImport,
+      toggleShowInStats,
     }
   },
 })

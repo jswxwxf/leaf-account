@@ -23,7 +23,7 @@ const _ = db.command
 async function _updateAccount(event, models, dbOrTransaction) {
   const { accountId } = event.query || {}
   const { balanceIncrement, incomeIncrement, expenseIncrement } = event.body || {}
-  let { title } = event.body || {}
+  let { title, showInStats } = event.body || {}
   if (typeof title === 'string') {
     title = title.trim()
   }
@@ -48,6 +48,7 @@ async function _updateAccount(event, models, dbOrTransaction) {
   if (incomeIncrement) updateData.totalIncome = _.inc(incomeIncrement)
   if (expenseIncrement) updateData.totalExpense = _.inc(expenseIncrement)
   if (title) updateData.title = title
+  if (typeof showInStats === 'boolean') updateData.showInStats = showInStats
 
   if (Object.keys(updateData).length === 0) return accounts[0]
 
