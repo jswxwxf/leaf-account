@@ -108,13 +108,11 @@ const withAccount = (models, event) => async (ctx, next) => {
  */
 const withSummary = (models, event) => async (ctx, next) => {
   await next() // 先执行后续路由
-  const { startTime, endTime, accountId } = event.query || {}
+  const { accountId } = event.query || {}
   if (
     WITH_SUMMARY_ROUTES.includes(event.$url) &&
     ctx.body &&
     ctx.body.success &&
-    startTime &&
-    endTime &&
     accountId
   ) {
     const summary = await getBillsSummary(

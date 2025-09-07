@@ -37,8 +37,8 @@
       </view>
     </van-field>
     <view class="flex justify-between items-center px-2 text-sm bg-black/30">
-      <view class="p-1 van-ellipsis">收 <text class="font-bold ml-1">{{monthValue === '' ? 'N/A' : '¥' + utils.formatMoney(totalIncome) }}</text></view>
-      <view class="p-1 van-ellipsis">支 <text class="font-bold ml-1">{{monthValue === '' ? 'N/A' : '¥' + utils.formatMoney(-totalExpense) }}</text></view>
+      <view class="p-1 van-ellipsis">收 <text class="font-bold ml-1">{{ '¥' + utils.formatMoney(totalIncome) }}</text></view>
+      <view class="p-1 van-ellipsis">支 <text class="font-bold ml-1">{{ '¥' + utils.formatMoney(-totalExpense) }}</text></view>
       <view class="p-1 van-ellipsis" @tap="onBalanceTap">总余 <text class="font-bold ml-1">¥{{ utils.formatMoney(totalBalance) }}</text></view>
     </view>
   </view>
