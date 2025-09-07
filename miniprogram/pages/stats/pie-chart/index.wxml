@@ -1,4 +1,4 @@
-<view class="w-full h-52 px-4 pl-0 block box-border">
+<view class="w-full h-52 px-4 block box-border">
   <block wx:if="{{ chartReady }}">
     <qiun-data-charts
       type="pie"

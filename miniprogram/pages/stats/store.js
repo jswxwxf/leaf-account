@@ -29,11 +29,12 @@ export default function store() {
       balance: checkedValue.value.includes('balance'),
       type: typeValue.value === 'all' ? undefined : typeValue.value,
       accountId: account.value?._id,
+      month: monthValue.value,
     })
     groupedBills.value = res.data
   }
 
-  watch([dimension, checkedValue, typeValue], () => fetchGroupedBills())
+  watch([dimension, monthValue, checkedValue, typeValue], () => fetchGroupedBills())
 
   onAccountChange(
     (newAccount) => {

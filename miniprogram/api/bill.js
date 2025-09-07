@@ -1,5 +1,6 @@
 import { get, post } from './request-cloud.js'
 import { getMonthRange } from '@/utils/date.js'
+import dayjs from '@/vendor/dayjs/esm/index.js'
 
 /**
  * @typedef {object} Bill
@@ -179,6 +180,9 @@ export function resetBills() {
 export function groupBillsBy(dimension, query = {}) {
   if (!dimension) {
     throw new Error('groupBillsBy 函数需要 dimension 参数')
+  }
+  if (query.month) {
+    query.month = dayjs().year() + '年' + query.month + '月'
   }
   return get('bill-cloud', {
     $url: '/group/bills',
