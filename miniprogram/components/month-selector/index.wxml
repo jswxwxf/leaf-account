@@ -1,0 +1,22 @@
+<van-popup show="{{ visible }}" position="right" custom-style="height: 100%; width: 35%;" closeable safe-area-inset-bottom="{{false}}" bind:close="handleClose">
+  <view class="flex flex-col w-full h-full">
+    <view class="flex m-2 ml-4">
+      <view class="text-lg font-bold flex-1">选择月份</view>
+    </view>
+
+    <!-- 月份列表 -->
+    <view class="flex-1 flex flex-col">
+      <van-button
+        wx:for="{{ months }}"
+        wx:key="*this"
+        type="{{ selectedMonth === item ? 'primary' : 'default' }}"
+        custom-class="w-full"
+        block
+        bind:tap="handleSelect"
+        data-item="{{ item }}"
+      >
+        {{ item }}月
+      </van-button>
+    </view>
+  </view>
+</van-popup>

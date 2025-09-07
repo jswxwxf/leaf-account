@@ -3,6 +3,7 @@
   "component": true,
   "usingComponents": {
     "account-helper": "/components/account-helper/index",
+    "month-helper": "/components/month-helper/index",
     "check-group": "/components/check-group/index",
     "check-group-item": "/components/check-group-item/index",
     "master-chart": "./master-chart/index",

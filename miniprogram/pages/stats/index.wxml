@@ -1,4 +1,15 @@
 <wxs src="../../utils/utils.wxs" module="utils" />
+<wxs module="tools">
+  var formatMonth = function(month) {
+    var year = getDate().getFullYear()
+    if (!month) return year + '全年'
+    return year + '年' + month + '月'
+  }
+
+  module.exports = {
+    formatMonth: formatMonth,
+  }
+</wxs>
 
 <view class="pb-6">
   <view class="p-4 bg-white shadow-md mb-4">
@@ -36,7 +47,32 @@
     </van-button>
   </view>
 
-  <view class="p-4 flex items-center justify-between">
+  <view class="px-4 pt-4 flex items-center justify-between">
+    <view>
+      <text class="text-xs">维度：</text>
+      <check-group size="small" value="{{ dimension }}" @change="onDimensionChange">
+        <check-group-item title="分类" value="category" />
+        <check-group-item title="月份" value="month" />
+      </check-group>
+    </view>
+    <view class="flex justify-between items-center gap-2">
+      <view class="flex-1 px-2 text-sm leading-5 select-none" style="box-shadow: 0 0 5px rgba(0, 0, 0, 0.2)">
+        <text class="text-sm text-slate-400">月份：</text>
+        <text class="text-sm font-bold text-slate-700">{{ tools.formatMonth(monthValue) }}</text>
+      </view>
+      <van-button
+        type="primary"
+        size="small"
+        plain
+        @click="onMonthChange"
+        disabled="{{ availableAccounts.length === 1 }}"
+      >
+        切换月份
+      </van-button>
+    </view>
+  </view>
+
+  <view class="p-4 pt-2 flex items-center justify-between">
     <view>
       <text class="text-xs">包含：</text>
       <check-group size="small" value="{{ checkedValue }}" @change="onCheckedChange" multiple>
@@ -58,3 +94,4 @@
 </view>
 
 <account-helper />
+<month-helper />

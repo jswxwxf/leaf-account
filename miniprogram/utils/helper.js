@@ -62,3 +62,12 @@ export function showImexportPopup(account, options) {
   }
   return imexportPopup.value.show(account, options)
 }
+
+export const monthSelector = ref(null)
+
+export function showMonthSelector(value, options) {
+  if (!monthSelector.value) {
+    return Promise.reject(new Error('Month selector not initialized'))
+  }
+  return monthSelector.value.show(value, options)
+}

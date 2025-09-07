@@ -6,7 +6,7 @@ import { deepCopy } from '@/utils/index.js'
 
 defineComponent({
   setup() {
-    const { groupedBills, typeValue } = inject(storeKey)
+    const { groupedBills, dimension, typeValue } = inject(storeKey)
 
     const chartReady = ref(false)
     const chartOptions = ref({
@@ -18,7 +18,7 @@ defineComponent({
           offsetAngle: 0,
           labelWidth: 15,
           border: true,
-          borderWidth: 3,
+          borderWidth: 1,
           borderColor: '#FFFFFF',
           linearType: 'custom',
         },
@@ -31,22 +31,33 @@ defineComponent({
       if (!groupedBills.value || groupedBills.value.length === 0) {
         return
       }
+
       let data
-      if (typeValue.value === '20') {
-        data = [...groupedBills.value]
-          .reverse()
-          .slice(0, 5)
-          .map((item) => ({
+      // 按月份
+      if (dimension.value === 'month') {
+        data = groupedBills.value.map((item) => ({
+          name: item._id,
+          value: Math.abs(item.totalAmount),
+          labelText: `${item._id}: ${Number(item.totalAmount).toFixed(2)}`,
+        }))
+      } else {
+        // 按分类
+        if (typeValue.value === '20') {
+          data = [...groupedBills.value]
+            .reverse()
+            .slice(0, 5)
+            .map((item) => ({
+              name: item?.groupInfo?.name || item._id,
+              value: Math.abs(item.totalAmount),
+              labelText: `${item.groupInfo.name}: ${Number(item.totalAmount).toFixed(2)}`,
+            }))
+        } else {
+          data = groupedBills.value.slice(0, 5).map((item) => ({
             name: item.groupInfo.name,
             value: Math.abs(item.totalAmount),
             labelText: `${item.groupInfo.name}: ${Number(item.totalAmount).toFixed(2)}`,
           }))
-      } else {
-        data = groupedBills.value.slice(0, 5).map((item) => ({
-          name: item.groupInfo.name,
-          value: Math.abs(item.totalAmount),
-          labelText: `${item.groupInfo.name}: ${Number(item.totalAmount).toFixed(2)}`,
-        }))
+        }
       }
 
       chartData.value = deepCopy({

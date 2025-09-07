@@ -31,7 +31,8 @@ defineComponent({
       const options = [{ text: '全部', value: '' }]
       const current = new Date()
       const year = current.getFullYear()
-      for (let i = 12; i >= 1; i--) {
+      const currentMonth = current.getMonth() + 1
+      for (let i = currentMonth; i >= 1; i--) {
         const month = i.toString().padStart(2, '0')
         options.push({
           text: `${year}年${month}月`,

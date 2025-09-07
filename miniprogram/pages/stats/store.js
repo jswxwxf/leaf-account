@@ -2,13 +2,15 @@ import { computed, onShow, ref, watch } from '@vue-mini/core'
 import { getAccounts } from '@/api/account.js'
 import { groupBillsBy } from '@/api/bill.js'
 import { onAccountChange } from '@/utils/index.js'
-import { showAccountSelector } from '@/utils/helper.js'
+import { showAccountSelector, showMonthSelector } from '@/utils/helper.js'
 
 export default function store() {
   const accounts = ref([])
   const account = ref()
   const groupedBills = ref([])
 
+  const dimension = ref('category')
+  const monthValue = ref('')
   const checkedValue = ref(['exclude'])
   const typeValue = ref('all')
 
@@ -21,7 +23,7 @@ export default function store() {
   }
 
   const fetchGroupedBills = async () => {
-    const res = await groupBillsBy('category', {
+    const res = await groupBillsBy(dimension.value, {
       exclude: checkedValue.value.includes('exclude'),
       transfer: checkedValue.value.includes('transfer'),
       balance: checkedValue.value.includes('balance'),
@@ -31,7 +33,7 @@ export default function store() {
     groupedBills.value = res.data
   }
 
-  watch([checkedValue, typeValue], () => fetchGroupedBills())
+  watch([dimension, checkedValue, typeValue], () => fetchGroupedBills())
 
   onAccountChange(
     (newAccount) => {
@@ -43,6 +45,14 @@ export default function store() {
   const onChangeAccount = async (e) => {
     account.value = await showAccountSelector({ currentAccount: account.value })
     fetchGroupedBills()
+  }
+
+  const onDimensionChange = (e) => {
+    dimension.value = e.detail
+  }
+
+  const onMonthChange = async (e) => {
+    monthValue.value = await showMonthSelector(monthValue.value)
   }
 
   const onCheckedChange = (e) => {
@@ -66,10 +76,14 @@ export default function store() {
     account,
     availableAccounts,
     groupedBills,
+    dimension,
+    monthValue,
     checkedValue,
     typeValue,
     fetchAccounts,
     fetchGroupedBills,
+    onDimensionChange,
+    onMonthChange,
     onChangeAccount,
     onCheckedChange,
     onTypeChange,

@@ -6,7 +6,7 @@ import { deepCopy } from '@/utils/index.js'
 
 defineComponent({
   setup() {
-    const { groupedBills, typeValue } = inject(storeKey)
+    const { groupedBills, dimension, typeValue } = inject(storeKey)
 
     const chart = ref()
     const chartReady = ref(false)
@@ -46,14 +46,26 @@ defineComponent({
       }
       let categories
       let amounts
-      if (typeValue.value === '20') {
-        categories = map(groupedBills.value, (item) => item.groupInfo.name).reverse()
-        amounts = map(groupedBills.value, (item) =>
-          Math.abs(parseFloat(Number(item.totalAmount).toFixed(2))),
-        ).reverse()
+
+      // 按月份
+      if (dimension.value === 'month') {
+        categories = map(groupedBills.value, (item) => item._id)
+        amounts = amounts = map(groupedBills.value, (item) =>
+          parseFloat(Number(item.totalAmount).toFixed(2)),
+        )
       } else {
-        categories = map(groupedBills.value, (item) => item.groupInfo.name)
-        amounts = map(groupedBills.value, (item) => parseFloat(Number(item.totalAmount).toFixed(2)))
+        // 按分类
+        if (typeValue.value === '20') {
+          categories = map(groupedBills.value, (item) => item.groupInfo.name).reverse()
+          amounts = map(groupedBills.value, (item) =>
+            Math.abs(parseFloat(Number(item.totalAmount).toFixed(2))),
+          ).reverse()
+        } else {
+          categories = map(groupedBills.value, (item) => item.groupInfo.name)
+          amounts = map(groupedBills.value, (item) =>
+            parseFloat(Number(item.totalAmount).toFixed(2)),
+          )
+        }
       }
 
       // 动态计算 y-axis 的 min 和 max 值
