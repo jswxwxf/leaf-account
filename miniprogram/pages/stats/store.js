@@ -6,7 +6,7 @@ import { showAccountsSelector, showMonthSelector } from '@/utils/helper.js'
 
 export default function store() {
   const accounts = ref([])
-  const selectedAccounts = ref()
+  const selectedAccounts = ref([])
   const groupedBills = ref([])
 
   const dimension = ref('category')
@@ -38,7 +38,9 @@ export default function store() {
 
   onAccountChange(
     (newAccount) => {
-      selectedAccounts.value = [newAccount]
+      if (selectedAccounts.value.length <= 1) {
+        selectedAccounts.value = [newAccount]
+      }
     },
     { immediate: true },
   )
