@@ -38,7 +38,7 @@ defineComponent({
         data = groupedBills.value.map((item) => ({
           name: item._id,
           value: Math.abs(item.totalAmount),
-          labelText: `${item._id}: ${Number(item.totalAmount).toFixed(2)}`,
+          labelText: `${item._id.split('-')[1]}月: ${Number(item.totalAmount).toFixed(2)}`,
         }))
       } else {
         // 按分类

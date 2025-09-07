@@ -2,7 +2,7 @@
   "$schema": "https://vite.icebreaker.top/component.json",
   "component": true,
   "usingComponents": {
-    "account-helper": "/components/account-helper/index",
+    "accounts-helper": "/components/accounts-helper/index",
     "month-helper": "/components/month-helper/index",
     "check-group": "/components/check-group/index",
     "check-group-item": "/components/check-group-item/index",

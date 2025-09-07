@@ -1087,8 +1087,22 @@ async function _deleteBills(event, models, dbOrTransaction) {
  * @returns {Promise<object>} - 分组聚合后的结果
  */
 async function groupBills(event, models) {
-  const { by: dimension, exclude = true, transfer = true, balance = true } = event.query
+  const {
+    by: dimension,
+    accountIds,
+    exclude = true,
+    transfer = true,
+    balance = true,
+  } = event.query || {}
   const where = await buildBillQuery(event, models)
+
+  // 仅在 groupBills 中处理 accountIds
+  if (accountIds && accountIds.length > 0) {
+    // 移除 buildBillQuery 可能已添加的 accountId 条件
+    const andClauses = where.$and.filter((cond) => !cond.account)
+    andClauses.push({ account: { $in: accountIds } })
+    where.$and = andClauses
+  }
   const $ = _.aggregate
 
   if (where.noMatch) {

@@ -2,11 +2,11 @@ import { computed, onShow, ref, watch } from '@vue-mini/core'
 import { getAccounts } from '@/api/account.js'
 import { groupBillsBy } from '@/api/bill.js'
 import { onAccountChange } from '@/utils/index.js'
-import { showAccountSelector, showMonthSelector } from '@/utils/helper.js'
+import { showAccountsSelector, showMonthSelector } from '@/utils/helper.js'
 
 export default function store() {
   const accounts = ref([])
-  const account = ref()
+  const selectedAccounts = ref()
   const groupedBills = ref([])
 
   const dimension = ref('category')
@@ -15,12 +15,10 @@ export default function store() {
   const typeValue = ref('all')
 
   // 使用 computed 派生出已开启的账户列表
-  const availableAccounts = computed(() =>
-    accounts.value.filter((acc) => acc.isOpened && acc.showInStats),
-  )
+  const availableAccounts = computed(() => accounts.value.filter((acc) => acc.showInStats))
 
   const fetchAccounts = async () => {
-    const res = await getAccounts()
+    const res = await getAccounts({ opened: true })
     accounts.value = res.data
   }
 
@@ -30,7 +28,7 @@ export default function store() {
       transfer: checkedValue.value.includes('transfer'),
       balance: checkedValue.value.includes('balance'),
       type: typeValue.value === 'all' ? undefined : typeValue.value,
-      accountId: account.value?._id,
+      accounts: selectedAccounts.value,
       month: monthValue.value,
     })
     groupedBills.value = res.data
@@ -40,13 +38,15 @@ export default function store() {
 
   onAccountChange(
     (newAccount) => {
-      account.value = newAccount
+      selectedAccounts.value = [newAccount]
     },
     { immediate: true },
   )
 
-  const onChangeAccount = async (e) => {
-    account.value = await showAccountSelector({ currentAccount: account.value, hideStats: true })
+  const onSelectAccounts = async (e) => {
+    selectedAccounts.value = await showAccountsSelector(selectedAccounts.value, {
+      hideStats: true,
+    })
     fetchGroupedBills()
   }
 
@@ -76,7 +76,7 @@ export default function store() {
 
   return {
     accounts,
-    account,
+    selectedAccounts,
     availableAccounts,
     groupedBills,
     dimension,
@@ -87,7 +87,7 @@ export default function store() {
     fetchGroupedBills,
     onDimensionChange,
     onMonthChange,
-    onChangeAccount,
+    onSelectAccounts,
     onCheckedChange,
     onTypeChange,
   }

@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "accounts-selector": "../accounts-selector/index"
+  }
+}

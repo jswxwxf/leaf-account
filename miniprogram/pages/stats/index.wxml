@@ -6,8 +6,18 @@
     return year + '年' + month + '月'
   }
 
+  var joinAccountTitles = function(accounts) {
+    if (!accounts || accounts.length === 0) {
+      return '';
+    }
+    return accounts.map(function(acc) {
+      return acc.title;
+    }).join(',');
+  }
+
   module.exports = {
     formatMonth: formatMonth,
+    joinAccountTitles: joinAccountTitles,
   }
 </wxs>
 
@@ -32,18 +42,18 @@
   <master-chart />
 
   <view class="flex justify-between items-center px-4 pt-4 pb-0 gap-2">
-    <view class="flex-1 py-1 px-2 text-sm leading-5 select-none" style="box-shadow: 0 0 5px rgba(0, 0, 0, 0.2)">
+    <view class="flex-1 py-1 px-2 text-sm leading-5 select-none overflow-hidden whitespace-nowrap text-ellipsis" style="box-shadow: 0 0 5px rgba(0, 0, 0, 0.2)">
       <text class="text-sm text-slate-400">账本：</text>
-      <text class="text-base font-bold text-slate-700">{{ account.title }}</text>
+      <text class="text-base font-bold text-slate-700">{{ tools.joinAccountTitles(selectedAccounts) }}</text>
     </view>
     <van-button
       type="primary"
       size="small"
       plain
-      @click="onChangeAccount"
+      @click="onSelectAccounts"
       disabled="{{ availableAccounts.length === 1 }}"
     >
-      切换账本
+      选择账本
     </van-button>
   </view>
 
@@ -92,5 +102,5 @@
   <group-chart />
 </view>
 
-<account-helper />
+<accounts-helper />
 <month-helper />

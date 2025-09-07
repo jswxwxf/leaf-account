@@ -71,3 +71,12 @@ export function showMonthSelector(value, options) {
   }
   return monthSelector.value.show(value, options)
 }
+
+export const accountsSelector = ref(null)
+
+export function showAccountsSelector(value, options) {
+  if (!accountsSelector.value) {
+    return Promise.reject(new Error('Accounts selector not initialized'))
+  }
+  return accountsSelector.value.show(value, options)
+}
