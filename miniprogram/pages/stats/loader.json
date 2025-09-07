@@ -8,6 +8,7 @@
     "index": "view"
   },
   "lazyCodeLoading": "requiredComponents",
+  "enablePullDownRefresh": true,
   "styleIsolation": "apply-shared",
   "backgroundColor": "#334155",
   "backgroundTextStyle": "light"

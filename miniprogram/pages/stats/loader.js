@@ -1,5 +1,11 @@
-import { defineComponent } from '@vue-mini/core'
+import { defineComponent, onPullDownRefresh } from '@vue-mini/core'
 
 defineComponent({
-  setup() {},
+  setup(props, { selectComponent }) {
+    onPullDownRefresh(async () => {
+      const stats = selectComponent('#index')
+      await Promise.all([stats.fetchAccounts(), stats.fetchGroupedBills()])
+      wx.stopPullDownRefresh()
+    })
+  },
 })
