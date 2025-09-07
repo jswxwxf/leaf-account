@@ -1,12 +1,13 @@
 import { defineComponent, inject, ref, watch } from '@vue-mini/core'
 import cfu from '@qiun/wx-ucharts/config-ucharts.js'
 import { storeKey } from '../store'
-import { map, flatten } from 'lodash'
+import { map } from 'lodash'
 import { deepCopy } from '@/utils/index.js'
 
 defineComponent({
   setup() {
-    const { groupedBills } = inject(storeKey)
+    const state = inject(storeKey)
+    const { groupedBills } = state
 
     const chart = ref()
     const chartReady = ref(false)
@@ -38,8 +39,6 @@ defineComponent({
       },
     })
     const chartData = ref({})
-
-    const checkedValue = ref([])
 
     const updateChartData = () => {
       chartReady.value = false
@@ -77,18 +76,12 @@ defineComponent({
       chart.value = cfu.instance[e.detail.id]
     }
 
-    const onCheckedChange = (e) => {
-      console.log('check-group changed', e)
-      checkedValue.value = e.detail
-    }
-
     return {
+      ...state,
       chartReady,
       chartOptions,
       chartData,
-      checkedValue,
       onChartTap,
-      onCheckedChange,
     }
   },
 })

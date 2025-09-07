@@ -5,7 +5,7 @@ import { getBills } from '@/api/bill.js'
 import { getAccount } from '@/api/account.js'
 import { groupBillsByDate, isBillMatch } from '@/service/bill-service.js'
 import { getCurrentMonth, formatDate } from '@/utils/date.js'
-import { isCurrentPage, until } from '@/utils/index.js'
+import { isCurrentPage, until, onAccountChange } from '@/utils/index.js'
 
 export const MAX_BATCH_BILLS = 20
 
@@ -118,6 +118,8 @@ function useAccount(rawBills, billsManager) {
     try {
       const { data: accountInfo } = await getAccount(name)
       currentAccount.value = accountInfo
+      getApp().globalData.account.value.title = accountInfo.title
+      getApp().globalData.account.value._id = accountInfo._id
       billsManager.updateAccountSummary({ account: accountInfo })
       await until(() => isCurrentPage('pages/account/index'), { maxRetry: Infinity })
       wx.setNavigationBarTitle({
@@ -258,15 +260,12 @@ export default function store() {
   }
 
   // 监听筛选条件变化，自动重新获取数据
-  watch(
-    [monthValue, queryData],
-    () => {
-      loadData()
-    },
-  )
+  watch([monthValue, queryData], () => {
+    loadData()
+  })
 
-  watch(getApp().globalData.account, async (value) => {
-    currentAccount.value = value
+  onAccountChange(async (newAccount) => {
+    currentAccount.value = newAccount
     resetQuery()
     await loadAccount()
     loadData()

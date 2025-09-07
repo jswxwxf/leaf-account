@@ -162,6 +162,15 @@ export function onTabChange(callback) {
   return stop
 }
 
+export function onAccountChange(callback, opts = {}) {
+  const stop = watch(getApp().globalData.account, (newAccount, oldAccount) => {
+    callback(newAccount, oldAccount)
+  })
+  if (opts.immediate === true) {
+    callback(getApp().globalData.account.value)
+  }
+  return stop
+}
 
 /**
  * 深拷贝一个对象。

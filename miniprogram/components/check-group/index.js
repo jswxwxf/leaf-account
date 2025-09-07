@@ -11,6 +11,18 @@ export default defineComponent({
       type: Boolean,
       value: false,
     },
+    type: {
+      type: String,
+      value: 'primary', // primary, info, warning, danger
+    },
+    rounded: {
+      type: Boolean,
+      value: false,
+    },
+    size: {
+      type: String,
+      value: 'medium', // mini, small, medium, large
+    },
   },
 
   setup(props, { triggerEvent }) {

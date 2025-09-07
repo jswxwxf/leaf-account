@@ -1,3 +1,12 @@
-<view class="check-group">
+<view class="inline-flex flex-wrap overflow-hidden border last:border-r-0 select-none {{ rounded ? 'rounded-md' : '' }}
+  {{ type === 'primary' ? 'border-blue-500' : '' }}
+  {{ type === 'info' ? 'border-gray-500' : '' }}
+  {{ type === 'warning' ? 'border-yellow-500' : '' }}
+  {{ type === 'danger' ? 'border-red-500' : '' }}
+  {{ size === 'mini' ? 'text-xs' : '' }}
+  {{ size === 'small' ? 'text-sm' : '' }}
+  {{ size === 'medium' ? 'text-base' : '' }}
+  {{ size === 'large' ? 'text-lg' : '' }}
+">
   <slot />
 </view>

@@ -1,11 +1,22 @@
 <view class="w-full h-52 px-4 pl-0 pt-2 block box-border">
   <block wx:if="{{ chartReady }}">
-    <view class="p-4">
-      <check-group value="{{ checkedValue }}" @change="onCheckedChange" multiple>
+    <view class="flex justify-between px-4 pb-0 gap-1">
+      <view class="flex-1 py-1 px-2 text-sm border leading-5 border-green-500 text-green-500 select-none">
+        账本：{{ account.title }}
+      </view>
+      <van-button type="primary" size="small" plain @click="onChangeAccount" disabled="{{ availableAccounts.length === 1 }}">切换账本</van-button>
+    </view>
+    <view class="p-4 flex justify-between">
+      <check-group size="small" value="{{ checkedValue }}" @change="onCheckedChange" multiple>
         <check-group-item title="不计入" value="exclude" />
         <check-group-item title="转账" value="transfer" />
         <check-group-item title="余额" value="balance" />
         <check-group-item title="收支" value="type" />
+      </check-group>
+      <check-group size="small" value="{{ typeValue }}" @change="onTypeChange">
+        <check-group-item title="全部" value="all" />
+        <check-group-item title="支出" value="10" />
+        <check-group-item title="收入" value="20" />
       </check-group>
     </view>
     <qiun-data-charts

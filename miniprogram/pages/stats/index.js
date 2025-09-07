@@ -5,10 +5,10 @@ defineComponent({
   setup() {
     const state = store()
     provide(storeKey, state)
-    const { openedAccounts } = state
+    const { availableAccounts } = state
 
     const totals = computed(() => {
-      return openedAccounts.value.reduce(
+      return availableAccounts.value.reduce(
         (acc, account) => {
           acc.expense += Number(account.totalExpense)
           acc.income += Number(account.totalIncome)
@@ -24,7 +24,7 @@ defineComponent({
     })
 
     return {
-      openedAccounts,
+      availableAccounts,
       totals,
     }
   },

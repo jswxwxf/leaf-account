@@ -1,13 +1,51 @@
 import { computed, onShow, ref } from '@vue-mini/core'
 import { getAccounts } from '@/api/account.js'
 import { groupBillsBy } from '@/api/bill.js'
+import { onAccountChange } from '@/utils/index.js'
+import { showAccountSelector } from '@/utils/helper.js'
+
+function useFilter() {
+  const account = ref()
+  const checkedValue = ref([])
+  const typeValue = ref('all')
+
+  onAccountChange(
+    (newAccount) => {
+      account.value = newAccount
+    },
+    { immediate: true },
+  )
+
+  const onChangeAccount = async (e) => {
+    account.value = await showAccountSelector({ currentAccount: account.value })
+  }
+
+  const onCheckedChange = (e) => {
+    checkedValue.value = e.detail
+  }
+
+  const onTypeChange = (e) => {
+    typeValue.value = e.detail
+  }
+
+  return {
+    account,
+    checkedValue,
+    typeValue,
+    onChangeAccount,
+    onCheckedChange,
+    onTypeChange,
+  }
+}
 
 export default function store() {
   const accounts = ref([])
   const groupedBills = ref([])
 
+  const filterState = useFilter()
+
   // 使用 computed 派生出已开启的账户列表
-  const openedAccounts = computed(() => accounts.value.filter((acc) => acc.isOpened))
+  const availableAccounts = computed(() => accounts.value.filter((acc) => acc.isOpened))
 
   const fetchAccounts = async () => {
     const res = await getAccounts()
@@ -35,10 +73,11 @@ export default function store() {
 
   return {
     accounts,
-    openedAccounts,
+    availableAccounts,
     groupedBills,
     fetchAccounts,
     fetchGroupedBills,
+    ...filterState,
   }
 }
 

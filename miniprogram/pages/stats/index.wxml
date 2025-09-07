@@ -21,3 +21,5 @@
   <master-chart />
   <group-chart />
 </view>
+
+<account-helper />

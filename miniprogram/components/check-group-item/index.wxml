@@ -1,5 +1,14 @@
 <view
-  class="check-group-item {{ active ? 'check-group-item--active' : '' }}"
+  class="leading-5 border-r {{ active ? 'text-white' : 'bg-white' }}
+    {{ parent.props.type === 'primary' ? (active ? 'bg-blue-500' : 'text-blue-500') : '' }}
+    {{ parent.props.type === 'info' ? (active ? 'bg-gray-500' : 'text-gray-500') : '' }}
+    {{ parent.props.type === 'warning' ? (active ? 'bg-yellow-500' : 'text-yellow-500') : '' }}
+    {{ parent.props.type === 'danger' ? (active ? 'bg-red-500' : 'text-red-500') : '' }}
+    {{ parent.props.size === 'mini' ? 'py-0.5 px-1' : '' }}
+    {{ parent.props.size === 'small' ? 'py-1 px-2' : '' }}
+    {{ parent.props.size === 'medium' ? 'py-1.5 px-3' : '' }}
+    {{ parent.props.size === 'large' ? 'py-2 px-4' : '' }}
+  "
   @tap="onClick"
 >
   {{ title }}

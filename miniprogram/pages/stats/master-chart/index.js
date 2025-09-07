@@ -6,7 +6,7 @@ import { deepCopy } from '@/utils/index.js'
 
 defineComponent({
   setup() {
-    const { openedAccounts } = inject(storeKey)
+    const { availableAccounts } = inject(storeKey)
 
     const chartReady = ref(false)
     const chartOptions = ref({
@@ -40,18 +40,18 @@ defineComponent({
 
     const updateChartData = () => {
       chartReady.value = false
-      if (!openedAccounts.value || openedAccounts.value.length === 0) {
+      if (!availableAccounts.value || availableAccounts.value.length === 0) {
         return
       }
 
-      const categories = map(openedAccounts.value, (account) => account.title)
-      const expenses = map(openedAccounts.value, (item) =>
+      const categories = map(availableAccounts.value, (account) => account.title)
+      const expenses = map(availableAccounts.value, (item) =>
         parseFloat((Number(item.totalExpense) / 10000).toFixed(2)),
       )
-      const incomes = map(openedAccounts.value, (item) =>
+      const incomes = map(availableAccounts.value, (item) =>
         parseFloat((Number(item.totalIncome) / 10000).toFixed(2)),
       )
-      const balances = map(openedAccounts.value, (item) =>
+      const balances = map(availableAccounts.value, (item) =>
         parseFloat((Number(item.balance) / 10000).toFixed(2)),
       )
 
@@ -66,7 +66,7 @@ defineComponent({
       chartOptions.value.yAxis.data[0].min = finalMin
       chartOptions.value.yAxis.data[0].max = finalMax
 
-      if (openedAccounts.value.length <= 3) {
+      if (availableAccounts.value.length <= 3) {
         chartOptions.value.dataLabel = true
       }
 
@@ -106,7 +106,7 @@ defineComponent({
       }, 300)
     }
 
-    watch(openedAccounts, updateChartData)
+    watch(availableAccounts, updateChartData)
 
     const onChartTap = (e) => {
       if (e.detail.legendIndex === -1) return
