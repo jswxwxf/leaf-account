@@ -1087,7 +1087,7 @@ async function _deleteBills(event, models, dbOrTransaction) {
  * @returns {Promise<object>} - 分组聚合后的结果
  */
 async function groupBills(event, models) {
-  const { by: dimension, exclude, transfer = true, balance = true } = event.query
+  const { by: dimension, exclude = true, transfer = true, balance = true } = event.query
   const where = await buildBillQuery(event, models)
   const $ = _.aggregate
 
@@ -1101,7 +1101,7 @@ async function groupBills(event, models) {
   aggregate.match(where)
 
   // 2. 附加过滤条件
-  if (exclude) {
+  if (exclude === false) {
     const { data: excludedTags } = await db
       .collection('tag')
       .where({ name: '不计入' })
