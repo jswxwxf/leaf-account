@@ -24,6 +24,7 @@ defineComponent({
     })
 
     return {
+      ...state,
       availableAccounts,
       totals,
     }

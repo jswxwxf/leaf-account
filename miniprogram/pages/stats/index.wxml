@@ -1,6 +1,6 @@
 <wxs src="../../utils/utils.wxs" module="utils" />
 
-<view>
+<view class="pb-6">
   <view class="p-4 bg-white shadow-md mb-4">
     <view class="grid grid-cols-3 gap-4 text-center">
       <view>
@@ -19,6 +19,40 @@
   </view>
 
   <master-chart />
+
+  <view class="flex justify-between items-center px-4 pt-4 pb-0 gap-2">
+    <view class="flex-1 py-1 px-2 text-sm leading-5 select-none" style="box-shadow: 0 0 5px rgba(0, 0, 0, 0.2)">
+      <text class="text-sm text-slate-400">账本：</text>
+      <text class="text-base font-bold text-slate-700">{{ account.title }}</text>
+    </view>
+    <van-button
+      type="primary"
+      size="small"
+      plain
+      @click="onChangeAccount"
+      disabled="{{ availableAccounts.length === 1 }}"
+    >
+      切换账本
+    </van-button>
+  </view>
+
+  <view class="p-4 flex items-center justify-between">
+    <view>
+      <text class="text-xs">包含：</text>
+      <check-group size="small" value="{{ checkedValue }}" @change="onCheckedChange" multiple>
+        <check-group-item title="不计入" value="exclude" />
+        <check-group-item title="转账" value="transfer" />
+        <check-group-item title="余额" value="balance" />
+      </check-group>
+    </view>
+    <check-group size="small" value="{{ typeValue }}" @change="onTypeChange">
+      <check-group-item title="全部" value="all" />
+      <check-group-item title="支出" value="20" />
+      <check-group-item title="收入" value="10" />
+    </check-group>
+  </view>
+
+  <pie-chart />
   <group-chart />
 </view>
 

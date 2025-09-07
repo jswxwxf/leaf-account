@@ -6,8 +6,7 @@ import { deepCopy } from '@/utils/index.js'
 
 defineComponent({
   setup() {
-    const state = inject(storeKey)
-    const { groupedBills } = state
+    const { groupedBills, typeValue } = inject(storeKey)
 
     const chart = ref()
     const chartReady = ref(false)
@@ -45,14 +44,26 @@ defineComponent({
       if (!groupedBills.value || groupedBills.value.length === 0) {
         return
       }
-      const categories = map(groupedBills.value, (item) => item.groupInfo.name)
-      const amounts = map(groupedBills.value, (item) =>
-        parseFloat(Number(item.totalAmount).toFixed(2)),
-      )
+      let categories
+      let amounts
+      if (typeValue.value === '20') {
+        categories = map(groupedBills.value, (item) => item.groupInfo.name).reverse()
+        amounts = map(groupedBills.value, (item) =>
+          Math.abs(parseFloat(Number(item.totalAmount).toFixed(2))),
+        ).reverse()
+      } else {
+        categories = map(groupedBills.value, (item) => item.groupInfo.name)
+        amounts = map(groupedBills.value, (item) => parseFloat(Number(item.totalAmount).toFixed(2)))
+      }
 
       // 动态计算 y-axis 的 min 和 max 值
       chartOptions.value.yAxis.data[0].min = Math.floor(Math.min(...amounts, 0))
       chartOptions.value.yAxis.data[0].max = Math.ceil(Math.max(...amounts, 0))
+
+      let color = {
+        10: '#22c55e',
+        20: '#1f2937',
+      }[typeValue.value]
 
       chartData.value = deepCopy({
         categories,
@@ -60,6 +71,7 @@ defineComponent({
           {
             name: '金额',
             data: amounts,
+            color,
           },
         ],
       })
@@ -77,7 +89,6 @@ defineComponent({
     }
 
     return {
-      ...state,
       chartReady,
       chartOptions,
       chartData,

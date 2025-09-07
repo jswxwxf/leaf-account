@@ -9,7 +9,7 @@ export default function store() {
   const account = ref()
   const groupedBills = ref([])
 
-  const checkedValue = ref([])
+  const checkedValue = ref(['exclude'])
   const typeValue = ref('all')
 
   // 使用 computed 派生出已开启的账户列表

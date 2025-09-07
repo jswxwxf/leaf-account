@@ -14,6 +14,7 @@
         opts-watch="{{ !chartReady }}"
         type="line"
         canvas2d
+        disable-scroll
         animation="{{ false }}"
         chart-data="{{chartData}}"
         opts="{{ chartOptions }}"
