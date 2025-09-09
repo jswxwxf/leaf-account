@@ -97,9 +97,21 @@
     </check-group>
   </view>
 
-  <pie-chart @item-tap="onItemTap" />
-  <view class="h-4" />
-  <group-chart @item-tap="onItemTap" />
+  <view class="p-4 pt-2 flex items-center justify-between">
+    总计：{{ utils.formatMoney(filterAmount) }}
+  </view>
+
+  <view class="relative">
+    <pie-chart @item-tap="onItemTap" />
+    <view class="h-4" />
+    <group-chart @item-tap="onItemTap" />
+    <view
+      wx:if="{{ filterAmount === 0 }}"
+      class="absolute top-0 left-0 z-10 flex items-center justify-center w-full h-full text-gray-700 bg-white"
+    >
+      暂无数据
+    </view>
+  </view>
 </view>
 
 <accounts-helper />

@@ -5,7 +5,7 @@ defineComponent({
   setup() {
     const state = store()
     provide(storeKey, state)
-    const { availableAccounts, selectedAccounts, dimension, checkedValue, monthValue } = state
+    const { availableAccounts, selectedAccounts, dimension, checkedValue, monthValue, groupedBills } = state
 
     const totals = computed(() => {
       return availableAccounts.value.reduce(
@@ -17,6 +17,10 @@ defineComponent({
         },
         { expense: 0, income: 0, balance: 0 },
       )
+    })
+
+    const filterAmount = computed(() => {
+      return groupedBills.value.reduce((acc, bill) => acc + Number(bill.totalAmount), 0)
     })
 
     onTabItemTap(() => {
@@ -55,6 +59,7 @@ defineComponent({
       ...state,
       availableAccounts,
       totals,
+      filterAmount,
       onItemTap,
     }
   },
