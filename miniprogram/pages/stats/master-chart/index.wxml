@@ -1,12 +1,10 @@
 <view class="w-full h-52 px-4 pl-0 pt-2 block box-border">
-  <block wx:if="{{ chartReady }}">
-    <qiun-data-charts
-      type="column"
-      canvas2d
-      animation="{{ false }}"
-      chart-data="{{ chartData }}"
-      opts="{{ chartOptions }}"
-      @getIndex="onChartTap"
-    />
-  </block>
+  <qiun-data-charts
+    type="column"
+    canvas2d
+    animation="{{ false }}"
+    chart-data="{{ chartData }}"
+    opts="{{ chartOptions }}"
+    @getIndex="onChartTap"
+  />
 </view>
