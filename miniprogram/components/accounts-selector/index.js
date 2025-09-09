@@ -55,6 +55,9 @@ defineComponent({
     }
 
     const handleConfirm = () => {
+      if (selectedIds.value.length === 0 && accounts.value.length > 0) {
+        selectedIds.value = [accounts.value[0]._id]
+      }
       hide()
       const selectedAccounts = accounts.value.filter((acc) => selectedIds.value.includes(acc._id))
       _resolve(selectedAccounts)
