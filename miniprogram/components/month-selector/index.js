@@ -49,6 +49,11 @@ defineComponent({
       _resolve(item)
     }
 
+    const onSelectAllYear = () => {
+      hide()
+      _resolve('')
+    }
+
     return {
       visible,
       months,
@@ -57,6 +62,7 @@ defineComponent({
       show,
       handleClose,
       handleSelect,
+      onSelectAllYear,
     }
   },
 })

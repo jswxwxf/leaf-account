@@ -1,6 +1,14 @@
-<van-popup show="{{ visible }}" position="right" custom-style="height: 100%; width: 50%;" closeable safe-area-inset-bottom="{{false}}" bind:close="handleClose">
+<van-popup
+  show="{{ visible }}"
+  position="right"
+  custom-style="height: 100%; width: 50%;"
+  closeable
+  safe-area-inset-bottom="{{false}}"
+  bind:close="handleClose"
+>
   <view class="flex flex-col w-full h-full">
-    <view class="flex m-2 ml-4">
+    <view class="flex items-center m-2 ml-6">
+      <van-checkbox shape="square" value="{{ allChecked }}" bind:change="onAllCheckChange" />
       <view class="text-lg font-bold flex-1">选择账户</view>
     </view>
 

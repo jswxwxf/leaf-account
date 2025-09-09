@@ -1,4 +1,11 @@
-<van-popup show="{{ visible }}" position="right" custom-style="height: 100%; width: 35%;" closeable safe-area-inset-bottom="{{false}}" bind:close="handleClose">
+<van-popup
+  show="{{ visible }}"
+  position="right"
+  custom-style="height: 100%; width: 35%;"
+  closeable
+  safe-area-inset-bottom="{{false}}"
+  bind:close="handleClose"
+>
   <view class="flex flex-col w-full h-full">
     <view class="flex m-2 ml-4">
       <view class="text-lg font-bold flex-1">选择月份</view>
@@ -16,6 +23,14 @@
         data-item="{{ item }}"
       >
         {{ item }}月
+      </van-button>
+      <van-button
+        type="{{ selectedMonth === item ? 'primary' : 'default' }}"
+        custom-class="w-full"
+        block
+        @tap="onSelectAllYear"
+      >
+        全年
       </van-button>
     </view>
   </view>

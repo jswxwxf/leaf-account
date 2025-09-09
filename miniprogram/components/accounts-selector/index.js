@@ -1,4 +1,4 @@
-import { defineComponent, ref } from '@vue-mini/core'
+import { defineComponent, ref, computed } from '@vue-mini/core'
 import { onTabChange } from '@/utils/index.js'
 import { getAccounts } from '@/api/account.js'
 
@@ -60,15 +60,32 @@ defineComponent({
       _resolve(selectedAccounts)
     }
 
+    const allChecked = computed(() => {
+      if (accounts.value.length === 0) return false
+      return selectedIds.value.length === accounts.value.length
+    })
+
+    const onAllCheckChange = (event) => {
+      if (event.detail) {
+        // a. 全选
+        selectedIds.value = accounts.value.map((acc) => acc._id)
+      } else {
+        // b. 全不选
+        selectedIds.value = []
+      }
+    }
+
     return {
       visible,
       accounts,
       options,
       selectedIds,
+      allChecked,
       show,
       handleClose,
       onAccountsChange,
       handleConfirm,
+      onAllCheckChange,
     }
   },
 })
