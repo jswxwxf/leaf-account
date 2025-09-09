@@ -12,7 +12,7 @@ export default function store() {
   const dimension = ref('category')
   const monthValue = ref('')
   const checkedValue = ref(['exclude'])
-  const typeValue = ref('all')
+  const typeValue = ref('20')
 
   // 使用 computed 派生出已开启的账户列表
   const availableAccounts = computed(() => accounts.value.filter((acc) => acc.showInStats))

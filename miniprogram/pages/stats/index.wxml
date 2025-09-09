@@ -97,9 +97,9 @@
     </check-group>
   </view>
 
-  <pie-chart />
+  <pie-chart @item-tap="onItemTap" />
   <view class="h-4" />
-  <group-chart />
+  <group-chart @item-tap="onItemTap" />
 </view>
 
 <accounts-helper />

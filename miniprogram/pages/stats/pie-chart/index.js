@@ -5,9 +5,10 @@ import { map } from 'lodash'
 import { deepCopy } from '@/utils/index.js'
 
 defineComponent({
-  setup() {
+  setup(props, { triggerEvent }) {
     const { groupedBills, dimension, typeValue } = inject(storeKey)
 
+    const chart = ref()
     const chartReady = ref(false)
     const chartOptions = ref({
       enableScroll: false,
@@ -72,10 +73,32 @@ defineComponent({
 
     watch(groupedBills, updateChartData)
 
+    const onChartTap = (e) => {
+      chart.value = cfu.instance[e.detail.id]
+      const currentIndex = e.detail?.currentIndex
+      if (currentIndex === -1 || currentIndex === undefined) return
+
+      let selectedData
+      // 饼图在支出分类时，数据源是 `[...groupedBills.value].reverse().slice(0, 5)`
+      // 这意味着图表上索引为 `i` 的项，对应原始数组 `groupedBills` 中倒数第 `i+1` 个元素。
+      if (typeValue.value === '20' && dimension.value === 'category') {
+        const originalIndex = groupedBills.value.length - 1 - currentIndex
+        selectedData = groupedBills.value[originalIndex]
+      } else {
+        // 其他情况，数据源是 `groupedBills.value.slice(0, 5)`，索引可以直接对应。
+        selectedData = groupedBills.value[currentIndex]
+      }
+
+      if (selectedData) {
+        triggerEvent('item-tap', selectedData)
+      }
+    }
+
     return {
       chartReady,
       chartOptions,
       chartData,
+      onChartTap,
     }
   },
 })

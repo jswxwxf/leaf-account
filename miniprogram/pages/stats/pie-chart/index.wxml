@@ -6,6 +6,7 @@
       animation="{{ false }}"
       chart-data="{{ chartData }}"
       opts="{{ chartOptions }}"
+      @getIndex="onChartTap"
     />
   </block>
 </view>

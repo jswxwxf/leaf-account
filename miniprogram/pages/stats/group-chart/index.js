@@ -5,7 +5,7 @@ import { map } from 'lodash'
 import { deepCopy } from '@/utils/index.js'
 
 defineComponent({
-  setup() {
+  setup(props, { triggerEvent }) {
     const { groupedBills, dimension, typeValue } = inject(storeKey)
 
     const chart = ref()
@@ -104,6 +104,21 @@ defineComponent({
 
     const onChartTap = (e) => {
       chart.value = cfu.instance[e.detail.id]
+      const currentIndex = e.detail?.currentIndex?.index
+      if (currentIndex === -1 || currentIndex === undefined) return
+
+      let selectedData
+      // 当为支出且按分类查看时，数据是倒序的
+      if (typeValue.value === '20' && dimension.value === 'category') {
+        const reverseIndex = groupedBills.value.length - 1 - currentIndex
+        selectedData = groupedBills.value[reverseIndex]
+      } else {
+        selectedData = groupedBills.value[currentIndex]
+      }
+
+      if (selectedData) {
+        triggerEvent('item-tap', selectedData)
+      }
     }
 
     return {
