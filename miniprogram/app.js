@@ -11,6 +11,7 @@ createApp({
       name: 'leaf-maple',
     }),
     currentTab: ref('account'),
+    query: ref(), // 因为 switchTab 不能带参数，所以在跳转到帐本明细的时候，可以在这里临时存放查询条件
   },
   setup() {
     wx.cloud.init({

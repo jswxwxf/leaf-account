@@ -162,6 +162,13 @@ export function onTabChange(callback) {
   return stop
 }
 
+export function onQueryChange(callback) {
+  const stop = watch(getApp().globalData.query, (newQuery, oldQuery) => {
+    callback(newQuery, oldQuery)
+  })
+  return stop
+}
+
 export function onAccountChange(callback, opts = {}) {
   const stop = watch(getApp().globalData.account, (newAccount, oldAccount) => {
     callback(newAccount, oldAccount)

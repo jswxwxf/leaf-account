@@ -25,14 +25,15 @@ defineComponent({
 
     const onItemTap = (e) => {
       if (selectedAccounts.value.length > 1) return
-      // 如果只选中一个账本，点击可以跳到对应的详情页。
+      // 如果只选中一个账本，点击可以跳到对应的帐本明细
       let account = selectedAccounts.value[0]
       let category
-      let month = monthValue.value
+      let month = `${new Date().getFullYear()}-${monthValue.value}`
       let exclude = checkedValue.value.includes('exclude')
       if (dimension.value === 'category') {
         category = e.detail.groupInfo
       } else {
+        // 当按月份分组时，e.detail._id 就是 'YYYY-MM' 格式的字符串
         month = e.detail._id
       }
       wx.setTabBarItem({
@@ -40,6 +41,11 @@ defineComponent({
         text: account.title,
       })
       getApp().globalData.account.value = account
+      getApp().globalData.query.value = {
+        category,
+        month,
+        exclude,
+      }
       wx.switchTab({
         url: `/pages/account/index`,
       })

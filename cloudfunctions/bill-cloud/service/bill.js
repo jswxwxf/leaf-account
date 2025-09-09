@@ -200,7 +200,7 @@ async function buildBillQuery(event, models) {
  * @param {object} event - 云函数的原始 event 对象
  */
 async function getBillsSummary(event, models) {
-  const { minAmount, maxAmount } = event.query || {}
+  const { minAmount, maxAmount, exclude = true } = event.query || {}
   const whereClause = await buildBillQuery(event, models)
 
   if (whereClause.noMatch) {
@@ -223,10 +223,22 @@ async function getBillsSummary(event, models) {
   }
   const isAmountInRange = amountConditions.length > 0 ? $.and(amountConditions) : true
 
-  const aggregateResult = await db
-    .collection('bill')
-    .aggregate()
-    .match(matchClause)
+  const aggregate = db.collection('bill').aggregate().match(matchClause)
+
+  // 附加过滤条件：不计入
+  if (exclude === false) {
+    const { data: excludedTags } = await db
+      .collection('tag')
+      .where({ name: '不计入' })
+      .field({ _id: true })
+      .get()
+    const excludedTagIds = excludedTags.map((t) => t._id)
+    if (excludedTagIds.length > 0) {
+      aggregate.match({ tags: _.nin(excludedTagIds) })
+    }
+  }
+
+  const aggregateResult = await aggregate
     .group({
       _id: null,
       totalIncome: $.sum($.cond([$.and([$.gt(['$amount', 0]), isAmountInRange]), '$amount', 0])),

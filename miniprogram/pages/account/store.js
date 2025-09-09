@@ -5,7 +5,7 @@ import { getBills } from '@/api/bill.js'
 import { getAccount } from '@/api/account.js'
 import { groupBillsByDate, isBillMatch } from '@/service/bill-service.js'
 import { getCurrentMonth, formatDate } from '@/utils/date.js'
-import { isCurrentPage, until, onAccountChange } from '@/utils/index.js'
+import { isCurrentPage, until, onAccountChange, onQueryChange } from '@/utils/index.js'
 
 export const MAX_BATCH_BILLS = 20
 
@@ -258,6 +258,16 @@ export default function store() {
     }
     return resetAndFetchBills(query)
   }
+
+  onQueryChange((query) => {
+    if (query.month) {
+      monthValue.value = query.month
+    }
+    queryData.value = {
+      categories: query.category ? [query.category] : [],
+      exclude: query.exclude,
+    }
+  })
 
   // 监听筛选条件变化，自动重新获取数据
   watch([monthValue, queryData], () => {
