@@ -91,16 +91,17 @@
     总计：{{ utils.formatMoney(filterAmount) }}
   </view>
 
-  <view class="relative">
+  <view hidden="{{ filterAmount === 0 }}">
     <pie-chart @item-tap="onItemTap" />
     <view class="h-4" />
     <group-chart @item-tap="onItemTap" />
-    <view
-      wx:if="{{ filterAmount === 0 }}"
-      class="absolute top-0 left-0 z-10 flex items-center justify-center w-full h-full text-gray-700 bg-white"
-    >
-      暂无数据
-    </view>
+  </view>
+  <view
+    class="flex items-center justify-center w-full h-full text-gray-700 bg-white"
+    style="height: 860rpx"
+    hidden="{{ filterAmount !== 0 }}"
+  >
+    暂无数据
   </view>
 </view>
 

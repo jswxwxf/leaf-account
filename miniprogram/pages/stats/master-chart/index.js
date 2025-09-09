@@ -48,8 +48,8 @@ defineComponent({
       )
 
       // 动态计算 y-axis 的 min 和 max 值
-      chartOptions.value.yAxis.data[0].min = Math.floor(Math.min(...balances))
-      chartOptions.value.yAxis.data[0].max = Math.ceil(Math.max(...balances))
+      chartOptions.value.yAxis.data[0].min = Math.floor(Math.min(...balances, 0))
+      chartOptions.value.yAxis.data[0].max = Math.ceil(Math.max(...balances, 0))
 
       chartData.value = deepCopy({
         categories: categories,
