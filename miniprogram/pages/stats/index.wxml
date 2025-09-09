@@ -75,7 +75,7 @@
     <view>
       <text class="text-xs">包含：</text>
       <check-group size="small" value="{{ checkedValue }}" @change="onCheckedChange" multiple>
-        <check-group-item title="不计入" value="exclude" />
+        <check-group-item title="非日常" value="exclude" />
         <check-group-item title="转账" value="transfer" />
         <check-group-item title="余额" value="balance" />
       </check-group>

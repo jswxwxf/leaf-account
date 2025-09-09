@@ -548,8 +548,8 @@ async function exportAccount(event, models) {
           const amountRange = `D3:D${worksheet.rowCount}`
           const typeRange = `B3:B${worksheet.rowCount}`
           const tagsRange = `F3:F${worksheet.rowCount}`
-          row.getCell('G').value = { formula: `SUMIFS(${amountRange}, ${range}, "${currentDate}", ${typeRange}, "收入", ${tagsRange}, "<>*不计入*")`, result: undefined }
-          row.getCell('H').value = { formula: `SUMIFS(${amountRange}, ${range}, "${currentDate}", ${typeRange}, "支出", ${tagsRange}, "<>*不计入*")`, result: undefined }
+          row.getCell('G').value = { formula: `SUMIFS(${amountRange}, ${range}, "${currentDate}", ${typeRange}, "收入", ${tagsRange}, "<>*非日常*")`, result: undefined }
+          row.getCell('H').value = { formula: `SUMIFS(${amountRange}, ${range}, "${currentDate}", ${typeRange}, "支出", ${tagsRange}, "<>*非日常*")`, result: undefined }
         }
       })
       const buffer = await workbook.xlsx.writeBuffer()

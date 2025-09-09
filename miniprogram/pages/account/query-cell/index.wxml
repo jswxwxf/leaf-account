@@ -53,7 +53,7 @@
       <query-tag label="标签" value="{{ queryData.tags }}" data-field="tags" @change="handleFormChange" />
       <!-- 备注 -->
       <view class="flex items-center mt-2 gap-10">
-        <view class="text-sm text-gray-600">隐藏“不计入”帐单</view>
+        <view class="text-sm text-gray-600">隐藏“非日常”帐单</view>
         <view>
           <van-switch checked="{{ queryData.excludeTag }}" @change="handleExcludeChange" size="40rpx" />
         </view>

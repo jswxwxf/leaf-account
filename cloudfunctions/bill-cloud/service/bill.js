@@ -225,11 +225,11 @@ async function getBillsSummary(event, models) {
 
   const aggregate = db.collection('bill').aggregate().match(matchClause)
 
-  // 附加过滤条件：不计入
+  // 附加过滤条件：非日常
   if (exclude === false) {
     const { data: excludedTags } = await db
       .collection('tag')
-      .where({ name: '不计入' })
+      .where({ name: '非日常' })
       .field({ _id: true })
       .get()
     const excludedTagIds = excludedTags.map((t) => t._id)
@@ -378,7 +378,7 @@ async function getBills(event, models) {
         return true
       }
       // 直接通过 $lookup 填充的 tags 数组查找 name 属性
-      return !bill.tags.some((tag) => tag.name === '不计入')
+      return !bill.tags.some((tag) => tag.name === '非日常')
     })
   }
 
@@ -1154,7 +1154,7 @@ async function groupBills(event, models) {
   if (exclude === false) {
     const { data: excludedTags } = await db
       .collection('tag')
-      .where({ name: '不计入' })
+      .where({ name: '非日常' })
       .field({ _id: true })
       .get()
     const excludedTagIds = excludedTags.map((t) => t._id)
