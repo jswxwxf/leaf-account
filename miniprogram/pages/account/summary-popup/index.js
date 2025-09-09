@@ -1,6 +1,7 @@
-import { defineComponent, ref, computed, watch, inject } from '@vue-mini/core'
+import { defineComponent, ref, watch, inject } from '@vue-mini/core'
+import dayjs from '@/vendor/dayjs/esm/index.js'
 import Toast from '@vant/weapp/toast/toast.js'
-import { getAllBills } from '@/api/bill.js'
+import { getAllBills, getBillsSummary } from '@/api/bill.js'
 import { formatDate } from '@/utils/date.js'
 import { onTabChange } from '@/utils/index.js'
 import { generateSummaryText } from '@/service/bill-service.js'
@@ -8,22 +9,33 @@ import { storeKey } from '../store'
 
 defineComponent({
   setup() {
-    const { currentAccount, totalIncome, totalExpense } = inject(storeKey)
+    const { currentAccount } = inject(storeKey)
     const visible = ref(false)
     const content = ref('')
     const currentDate = ref()
+    const totalIncome = ref(0)
+    const totalExpense = ref(0)
 
     const generateSummary = async () => {
       const query = {
         createdAt: currentDate.value,
         accountId: currentAccount.value._id,
       }
-      const res = await getAllBills(query)
+      const summaryQuery = {
+        month: dayjs(currentDate.value).format('YYYY-MM'),
+        accountId: currentAccount.value._id,
+      }
+      const [billsRes, summaryRes] = await Promise.all([
+        getAllBills(query),
+        getBillsSummary(summaryQuery),
+      ])
+      totalIncome.value = summaryRes.data.totalIncome || 0
+      totalExpense.value = summaryRes.data.totalExpense || 0
       content.value = generateSummaryText(
-        res.data,
+        billsRes.data,
         totalIncome.value,
         totalExpense.value,
-        res.account.balance,
+        billsRes.account.balance,
       )
     }
 

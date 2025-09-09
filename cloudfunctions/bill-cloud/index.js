@@ -85,6 +85,14 @@ exports.main = (event, context) => {
   })
 
   /**
+   * @desc 获取账单汇总
+   */
+  app.router('/get/bills/summary', async (ctx) => {
+    const data = await getBillsSummary(event, models)
+    ctx.body = { code: 200, success: true, message: '获取成功', data }
+  })
+
+  /**
    * @desc 按指定维度对账单进行分组
    * @param {object} query - 查询参数
    * @param {string} query.by - 分组维度，例如 'category'、'month'

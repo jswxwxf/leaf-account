@@ -17,6 +17,11 @@ defineComponent({
       queryData.value[field] = value
     }
 
+    const handleExcludeChange = (e) => {
+      queryData.value.excludeTag = e.detail
+      queryData.value.exclude = !queryData.value.excludeTag
+    }
+
     const handleQuery = () => {
       _queryData.value = { ...queryData.value }
       queryDropDownClosed.value = Date.now()
@@ -33,6 +38,7 @@ defineComponent({
     return {
       queryData,
       handleFormChange,
+      handleExcludeChange,
       clearQueryData,
       handleQuery,
       handleReset,

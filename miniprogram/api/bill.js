@@ -193,3 +193,15 @@ export function groupBillsBy(dimension, query = {}) {
     query: processQuery({ ...query, by: dimension }),
   })
 }
+
+/**
+ * 获取账单汇总信息
+ * @param {object} query - 查询参数
+ * @returns {Promise<{totalIncome: number, totalExpense: number}>}
+ */
+export function getBillsSummary(query = {}) {
+  return get('bill-cloud', {
+    $url: '/get/bills/summary',
+    query: processQuery(query),
+  })
+}

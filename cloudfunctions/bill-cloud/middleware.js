@@ -23,6 +23,7 @@ const REQUIRE_LOGIN_ROUTES = [
   '/get/account/import',
   '/get/account/export',
   '/get/task',
+  '/get/bills/summary',
 ]
 const REQUIRE_ACCOUNT_ID_ROUTES = [
   '/upsert/bill',

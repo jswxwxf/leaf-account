@@ -264,6 +264,7 @@ export default function store() {
     queryData.value = {
       categories: query.category ? [query.category] : [],
       exclude: query.exclude,
+      excludeTag: !query.exclude,
     }
   })
 
