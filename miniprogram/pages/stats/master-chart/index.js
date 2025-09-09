@@ -5,13 +5,16 @@ import { map, flatten } from 'lodash'
 import { deepCopy } from '@/utils/index.js'
 
 defineComponent({
-  setup() {
+  setup(props, { triggerEvent }) {
     const { availableAccounts } = inject(storeKey)
 
     const chartReady = ref(false)
     const chartOptions = ref({
+      dataLabel: true,
       enableScroll: false,
-      dataLabel: false,
+      legend: {
+        show: false,
+      },
       xAxis: {
         rotateLabel: true,
         marginTop: 16,
@@ -32,11 +35,6 @@ defineComponent({
       },
     })
     const chartData = ref({})
-    const chartMinMax = ref([
-      [0, 0],
-      [0, 0],
-      [0, 0],
-    ])
 
     const updateChartData = () => {
       chartReady.value = false
@@ -45,61 +43,24 @@ defineComponent({
       }
 
       const categories = map(availableAccounts.value, (account) => account.title)
-      const expenses = map(availableAccounts.value, (item) =>
-        parseFloat((Number(item.totalExpense) / 10000).toFixed(2)),
-      )
-      const incomes = map(availableAccounts.value, (item) =>
-        parseFloat((Number(item.totalIncome) / 10000).toFixed(2)),
-      )
       const balances = map(availableAccounts.value, (item) =>
-        parseFloat((Number(item.balance) / 10000).toFixed(2)),
+        parseFloat(Number(item.balance).toFixed(2)),
       )
 
       // 动态计算 y-axis 的 min 和 max 值
-      chartMinMax.value[0] = [Math.floor(Math.min(...expenses)), Math.ceil(Math.max(...expenses))]
-      chartMinMax.value[1] = [Math.floor(Math.min(...incomes)), Math.ceil(Math.max(...incomes))]
-      chartMinMax.value[2] = [Math.floor(Math.min(...balances)), Math.ceil(Math.max(...balances))]
-
-      const allData = flatten(chartMinMax.value)
-      const finalMin = Math.min(...allData)
-      const finalMax = Math.max(...allData)
-      chartOptions.value.yAxis.data[0].min = finalMin
-      chartOptions.value.yAxis.data[0].max = finalMax
-
-      chartOptions.value.dataLabel = false
-      if (availableAccounts.value.length <= 5) {
-        chartOptions.value.dataLabel = true
-      }
+      chartOptions.value.yAxis.data[0].min = Math.floor(Math.min(...balances))
+      chartOptions.value.yAxis.data[0].max = Math.ceil(Math.max(...balances))
 
       chartData.value = deepCopy({
         categories: categories,
         series: [
           {
-            name: '支出(万)',
-            data: expenses,
-            color: '#1f2937',
-          },
-          {
-            name: '收入(万)',
-            data: incomes,
-            color: '#22c55e',
-          },
-          {
-            name: '结余(万)',
+            name: '结余',
             data: balances,
             color: '#3b82f6',
           },
         ],
       })
-
-      // let options = {}
-      // if (dailyBills.value.length > 7) {
-      //   options = {
-      //     dataLabel: false,
-      //     xAxis: { fontColor: 'rgba(0, 0, 0, 0)' },
-      //   }
-      // }
-      // chartOptions.value = options
 
       // 延迟确保图表组件渲染完成
       setTimeout(() => {
@@ -110,46 +71,13 @@ defineComponent({
     watch(availableAccounts, updateChartData)
 
     const onChartTap = (e) => {
-      if (e.detail.legendIndex === -1) return
-      const chart = cfu.instance[e.detail.id]
-      const legends = chart.opts.chartData.legendData.points[0]
-      const options = {
-        dataLabel: chartOptions.value.dataLabel,
-        yAxis: {
-          data: [{}],
-        },
-      }
+      const currentIndex = e.detail?.currentIndex?.index
+      if (currentIndex === -1 || currentIndex === undefined) return
 
-      // 根据可见的 legends，从已计算好的 chartMinMax 中收集 min/max 范围
-      let visibleCount = 0
-      let allData = legends.reduce((acc, legend, index) => {
-        if (legend.show) {
-          visibleCount++
-          acc.push(...chartMinMax.value[index])
-        }
-        return acc
-      }, [])
-      if (visibleCount === 0) {
-        allData = flatten(chartMinMax.value)
+      const selectedData = availableAccounts.value[currentIndex]
+      if (selectedData) {
+        triggerEvent('item-tap', selectedData)
       }
-
-      const finalMin = Math.min(...allData)
-      const finalMax = Math.max(...allData)
-      options.yAxis = {
-        data: [
-          {
-            min: finalMin,
-            max: finalMax,
-          },
-        ],
-      }
-
-      if (visibleCount === 1) {
-        options.dataLabel = true
-      }
-
-      options.redraw = true
-      chart.updateData(options)
     }
 
     return {

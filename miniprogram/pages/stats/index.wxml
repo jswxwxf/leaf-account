@@ -23,23 +23,13 @@
 
 <view class="pb-12">
   <view class="p-4 bg-white shadow-md mb-4">
-    <view class="grid grid-cols-3 gap-4 text-center">
-      <view>
-        <view class="text-sm text-gray-500">总支出</view>
-        <view class="text-lg font-bold text-gray-800">{{ utils.formatMoney(totals.expense) }}</view>
-      </view>
-      <view>
-        <view class="text-sm text-gray-500">总收入</view>
-        <view class="text-lg font-bold text-green-600">{{ utils.formatMoney(totals.income) }}</view>
-      </view>
-      <view>
-        <view class="text-sm text-gray-500">总结余</view>
-        <view class="text-lg font-bold text-blue-600">{{ utils.formatMoney(totals.balance) }}</view>
-      </view>
+    <view class="flex items-center justify-center space-x-2 text-center">
+      <view class="text-sm text-gray-500">总结余:</view>
+      <view class="text-lg font-bold text-blue-600">{{ utils.formatMoney(totals.balance) }}</view>
     </view>
   </view>
 
-  <master-chart />
+  <master-chart @item-tap="onAccountTap" />
 
   <view class="flex justify-between items-center px-4 pt-4 pb-0 gap-2">
     <view class="flex-1 py-1 px-2 text-sm leading-5 select-none overflow-hidden whitespace-nowrap text-ellipsis" style="box-shadow: 0 0 5px rgba(0, 0, 0, 0.2)">

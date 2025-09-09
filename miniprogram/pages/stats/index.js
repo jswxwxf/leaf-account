@@ -5,7 +5,14 @@ defineComponent({
   setup() {
     const state = store()
     provide(storeKey, state)
-    const { availableAccounts, selectedAccounts, dimension, checkedValue, monthValue, groupedBills } = state
+    const {
+      availableAccounts,
+      selectedAccounts,
+      dimension,
+      checkedValue,
+      monthValue,
+      groupedBills,
+    } = state
 
     const totals = computed(() => {
       return availableAccounts.value.reduce(
@@ -26,6 +33,22 @@ defineComponent({
     onTabItemTap(() => {
       getApp().globalData.currentTab.value = 'stats'
     })
+
+    const onAccountTap = (e) => {
+      const account = e.detail
+      wx.setTabBarItem({
+        index: 0,
+        text: account.title,
+      })
+      getApp().globalData.account.value = account
+      getApp().globalData.query.value = {
+        month: '',
+        exclude: true,
+      }
+      wx.switchTab({
+        url: `/pages/account/index`,
+      })
+    }
 
     const onItemTap = (e) => {
       if (selectedAccounts.value.length > 1) return
@@ -60,6 +83,7 @@ defineComponent({
       availableAccounts,
       totals,
       filterAmount,
+      onAccountTap,
       onItemTap,
     }
   },
