@@ -260,9 +260,7 @@ export default function store() {
   }
 
   onQueryChange((query) => {
-    if (query.month) {
-      monthValue.value = query.month
-    }
+    monthValue.value = query.month
     queryData.value = {
       categories: query.category ? [query.category] : [],
       exclude: query.exclude,

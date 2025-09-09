@@ -299,6 +299,7 @@ async function getBills(event, models) {
   let accumulatedBills = []
   let loopCount = 0
   let hasReachedEnd = false
+  const $ = _.aggregate
 
   while (accumulatedBills.length < MIN_RECORDS && loopCount < MAX_LOOP) {
     const periodEndDate = dayjs(currentDateTs).endOf('day')
@@ -326,22 +327,35 @@ async function getBills(event, models) {
       ],
     }
 
-    const { data: periodBills } = await db
+    const { list: periodBills } = await db
       .collection('bill')
-      .where(periodWhereClause)
-      .orderBy('datetime', 'desc')
-      .limit(1000)
-      .field({
-        _id: true,
-        amount: true,
-        datetime: true,
-        note: true,
-        category: true, // 字段名是 category, 其值为 ID
-        tags: true,
-        createdAt: true,
-        relatedBill: true,
+      .aggregate()
+      .match(periodWhereClause)
+      .sort({ datetime: -1 })
+      .lookup({
+        from: 'category',
+        localField: 'category',
+        foreignField: '_id',
+        as: 'categoryInfo',
       })
-      .get()
+      .lookup({
+        from: 'tag',
+        localField: 'tags',
+        foreignField: '_id',
+        as: 'tagsInfo',
+      })
+      .project({
+        _id: 1,
+        amount: 1,
+        datetime: 1,
+        note: 1,
+        createdAt: 1,
+        relatedBill: 1,
+        category: $.arrayElemAt(['$categoryInfo', 0]),
+        tags: '$tagsInfo',
+      })
+      .limit(1000)
+      .end()
 
     if (periodBills && periodBills.length > 0) {
       accumulatedBills = accumulatedBills.concat(periodBills)
@@ -355,11 +369,21 @@ async function getBills(event, models) {
     loopCount++
   }
 
-  const billsWithCategory = await populateCategoriesForBills(accumulatedBills, models)
-  const populatedBills = await populateTagsForBills(billsWithCategory, models)
+  const { exclude = true } = event.query || {}
+  let finalBills = accumulatedBills
+
+  if (exclude === false) {
+    finalBills = accumulatedBills.filter((bill) => {
+      if (!bill.tags || bill.tags.length === 0) {
+        return true
+      }
+      // 直接通过 $lookup 填充的 tags 数组查找 name 属性
+      return !bill.tags.some((tag) => tag.name === '不计入')
+    })
+  }
 
   return {
-    data: populatedBills,
+    data: finalBills,
     nextStartDate: hasReachedEnd ? null : currentDateTs,
   }
 }

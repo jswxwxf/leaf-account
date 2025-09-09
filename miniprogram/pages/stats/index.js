@@ -28,7 +28,7 @@ defineComponent({
       // 如果只选中一个账本，点击可以跳到对应的帐本明细
       let account = selectedAccounts.value[0]
       let category
-      let month = `${new Date().getFullYear()}-${monthValue.value}`
+      let month = monthValue.value ? `${new Date().getFullYear()}-${monthValue.value}` : ''
       let exclude = checkedValue.value.includes('exclude')
       if (dimension.value === 'category') {
         category = e.detail.groupInfo
