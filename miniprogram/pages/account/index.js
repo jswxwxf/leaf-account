@@ -113,6 +113,8 @@ defineComponent({
     const imagePath = ref('')
     const textContent = ref('')
 
+    const scrollTo = ref('')
+
     const { processBill } = useBillPopup(state, billPopup)
     const { handleOcr } = useProcessPhoto()
     const { analyzeBillsFromText } = useAi()
@@ -375,6 +377,10 @@ defineComponent({
       }
     }
 
+    const handleTapDay = (e) => {
+      scrollTo.value = 'date-' + e.detail
+    }
+
     onTabItemTap(() => {
       getApp().globalData.currentTab.value = 'account'
     })
@@ -385,6 +391,7 @@ defineComponent({
       imagePath,
       textContent,
       refreshing,
+      scrollTo,
       handleRefresh,
       handleActionSelect,
       handleAddBill,
@@ -392,6 +399,7 @@ defineComponent({
       handleCopyBill,
       handleDeleteBill,
       handleReconcile,
+      handleTapDay,
     }
   },
 })

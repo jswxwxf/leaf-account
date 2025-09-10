@@ -12,7 +12,7 @@
     <bill-popup id="bill-popup" />
     <batch-popup id="batch-popup" />
     <update-popup id="update-popup" />
-    <chart-popup id="chart-popup" />
+    <chart-popup id="chart-popup" @tap-bill-day="handleTapDay" />
 
     <!-- Bill List -->
     <view class="flex-1 relative">
@@ -25,11 +25,13 @@
         lower-threshold="100"
         @scrolltolower="loadMore"
         scroll-top="{{ scrollTop }}"
+        scroll-into-view="{{ scrollTo }}"
+        scroll-with-animation
       >
         <view class="pb-16 pt-2 relative">
-          <block wx:for="{{ dailyBills }}" wx:key="_id">
+          <view wx:for="{{ dailyBills }}" wx:key="_id" id="{{ 'date-' + item.datetime }}">
             <bill-group item="{{ item }}" @copy="handleCopyBill" @edit="handleEditBill" @delete="handleDeleteBill" />
-          </block>
+          </view>
           <!-- Loading and No More States -->
           <view class="py-4 text-center text-gray-500 text-sm">
             <view wx:if="{{ loading }}">正在加载...</view>

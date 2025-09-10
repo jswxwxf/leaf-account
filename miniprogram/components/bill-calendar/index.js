@@ -102,6 +102,7 @@ defineComponent({
           isCurrentMonth: true,
           isToday: currentDay.isSame(dayjs(), 'day'),
           isWeekend: [0, 6].includes(currentDay.day()),
+          datetime: billInfo.datetime,
           income: billInfo.income,
           expense: billInfo.expense,
           incomePercent: maxIncome.value > 0 ? ((billInfo.income || 0) / maxIncome.value) * 100 : 0,
@@ -136,6 +137,14 @@ defineComponent({
       handleMonthChange(currentDate.value.add(1, 'month'))
     }
 
+    const handleTapDay = (e) => {
+      const day = e.currentTarget.dataset.item
+      if (!day.isCurrentMonth || (!day.income && !day.expense)) {
+        return
+      }
+      triggerEvent('tap-bill-day', day.datetime)
+    }
+
     return {
       currentYear,
       currentMonth,
@@ -143,6 +152,7 @@ defineComponent({
       days,
       handlePrevMonth,
       handleNextMonth,
+      handleTapDay,
     }
   },
 })

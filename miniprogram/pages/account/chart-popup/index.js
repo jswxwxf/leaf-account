@@ -5,7 +5,7 @@ import { map, reverse } from 'lodash'
 import { storeKey } from '../store'
 
 defineComponent({
-  setup() {
+  setup(props, { triggerEvent }) {
     const { dailyBills, monthValue } = inject(storeKey)
 
     const visible = ref(false)
@@ -94,6 +94,10 @@ defineComponent({
       monthValue.value = e.detail
     }
 
+    const handleTapBillDay = (e) => {
+      triggerEvent('tap-bill-day', e.detail)
+    }
+
     return {
       active,
       visible,
@@ -107,6 +111,7 @@ defineComponent({
       handleConfirm,
       onChange,
       handleMonthChange,
+      handleTapBillDay,
     }
   },
 })
