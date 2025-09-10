@@ -6,10 +6,11 @@ import { storeKey } from '../store'
 
 defineComponent({
   setup() {
-    const { dailyBills } = inject(storeKey)
+    const { dailyBills, monthValue } = inject(storeKey)
 
     const visible = ref(false)
     const chartReady = ref(false)
+    const active = ref('chart')
     const chartOptions = ref({
       dataLabel: true,
       enableScroll: true,
@@ -60,6 +61,7 @@ defineComponent({
 
     const show = () => {
       visible.value = true
+      active.value = 'chart'
       return new Promise((resolve, reject) => {
         _resolve = resolve
         _reject = reject
@@ -80,18 +82,25 @@ defineComponent({
       visible.value = false
     }
 
+    const onChange = (event) => {
+      active.value = event.detail.name
+    }
+
     onTabChange(() => {
       handleClose()
     })
 
     return {
+      active,
       visible,
       chartReady,
       chartOptions,
       chartData,
+      monthValue,
       show,
       handleClose,
       handleConfirm,
+      onChange,
     }
   },
 })

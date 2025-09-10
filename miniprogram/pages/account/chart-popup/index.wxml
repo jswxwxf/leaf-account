@@ -8,24 +8,42 @@
 >
   <view class="h-full w-full bg-neutral-50 pt-2 max-h-screen border-b border-dashed border-b-slate-400">
     <!-- Chart Content Goes Here -->
-    <view wx:if="{{ visible }}" class="w-full h-52 px-4 pl-0 block box-border">
-      <qiun-data-charts
-        reshow="{{ visible && chartReady }}"
-        opts-watch="{{ !chartReady }}"
-        type="line"
-        canvas2d
-        disable-scroll
-        animation="{{ false }}"
-        chart-data="{{chartData}}"
-        opts="{{ chartOptions }}"
-        ontap
-        ontouch
-      />
+    <view wx:if="{{ visible }}">
+      <view wx:if="{{ active === 'chart' }}" class="w-full h-52 px-4 pl-0 block box-border">
+        <qiun-data-charts
+          reshow="{{ visible && chartReady }}"
+          opts-watch="{{ !chartReady }}"
+          type="line"
+          canvas2d
+          disable-scroll
+          animation="{{ false }}"
+          chart-data="{{chartData}}"
+          opts="{{ chartOptions }}"
+          ontap
+          ontouch
+        />
+      </view>
+      <view wx:if="{{ active === 'calendar' }}" class="h-52">
+        <bill-calendar show-header="{{ false }}" />
+      </view>
     </view>
 
     <!-- Footer -->
-    <view class="flex items-center px-4 pb-4">
-      <view class="flex-1 text-xs text-gray-400 text-center">点击图例可切换</view>
+    <view class="flex items-center px-4 pl-0 py-4">
+      <view class="flex-1">
+        <van-tabs
+          type="card"
+          active="{{ active }}"
+          @change="onChange"
+          color="#22c55e"
+          nav-class="!bg-transparent"
+          tab-class="text-xs !py-1"
+        >
+          <van-tab title="图表" name="chart"></van-tab>
+          <van-tab title="日历" name="calendar" disabled="{{ !monthValue }}"></van-tab>
+        </van-tabs>
+      </view>
+      <view class="text-xs text-gray-400 text-center flex-1 {{ active !== 'chart' ? 'opacity-0' : '' }}">点击图例可切换</view>
       <view class="flex justify-end items-center space-x-6">
         <view class="i-ep-close text-2xl" @tap="handleClose" />
       </view>

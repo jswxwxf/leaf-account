@@ -2,7 +2,9 @@
   "$schema": "https://vite.icebreaker.top/component.json",
   "component": true,
   "usingComponents": {
-    "qiun-data-charts": "@qiun/wx-ucharts/index"
+    "qiun-data-charts": "@qiun/wx-ucharts/index",
+    "calendar-selector": "../../../components/calendar-selector/index",
+    "bill-calendar": "../../../components/bill-calendar/index"
   },
   "styleIsolation": "apply-shared"
 }
