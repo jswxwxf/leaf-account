@@ -1,6 +1,7 @@
 import { defineComponent, ref, computed, watch } from '@vue-mini/core'
 import dayjs from '@/vendor/dayjs/esm/index.js'
 import { keyBy } from 'lodash'
+import { useSwipe } from '@/composables/use-swipe.js'
 
 defineComponent({
   properties: {
@@ -145,6 +146,11 @@ defineComponent({
       triggerEvent('tap-bill-day', day.datetime)
     }
 
+    const { handleTouchStart, handleTouchEnd } = useSwipe({
+      onSwipeLeft: handleNextMonth,
+      onSwipeRight: handlePrevMonth,
+    })
+
     return {
       currentYear,
       currentMonth,
@@ -153,6 +159,8 @@ defineComponent({
       handlePrevMonth,
       handleNextMonth,
       handleTapDay,
+      handleTouchStart,
+      handleTouchEnd,
     }
   },
 })
