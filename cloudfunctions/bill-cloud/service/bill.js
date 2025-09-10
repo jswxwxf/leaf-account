@@ -400,25 +400,38 @@ async function getAllBills(event, models) {
     return []
   }
 
-  const { data } = await db
+  const $ = _.aggregate
+  const { list: data } = await db
     .collection('bill')
-    .where(where)
-    .orderBy('datetime', 'desc')
+    .aggregate()
+    .match(where)
+    .sort({ datetime: -1 })
     .limit(1000)
-    .field({
-      _id: true,
-      amount: true,
-      datetime: true,
-      note: true,
-      category: true, // 字段名是 category, 其值为 ID
-      tags: true,
-      createdAt: true,
-      relatedBill: true,
+    .lookup({
+      from: 'category',
+      localField: 'category',
+      foreignField: '_id',
+      as: 'categoryInfo',
     })
-    .get()
+    .lookup({
+      from: 'tag',
+      localField: 'tags',
+      foreignField: '_id',
+      as: 'tagsInfo',
+    })
+    .project({
+      _id: 1,
+      amount: 1,
+      datetime: 1,
+      note: 1,
+      createdAt: 1,
+      relatedBill: 1,
+      category: $.arrayElemAt(['$categoryInfo', 0]),
+      tags: '$tagsInfo',
+    })
+    .end()
 
-  const billsWithCategory = await populateCategoriesForBills(data, models)
-  return populateTagsForBills(billsWithCategory, models)
+  return data
 }
 
 /**
@@ -790,7 +803,6 @@ async function _saveBill(billToSave, accountId, models, dbOrTransaction) {
   }
 
   // 保存成功后，从数据库重新获取完整的账单信息，以确保数据一致性
-  const { _getBillsByIds } = require('./bill.js')
   const newBills = await _getBillsByIds({ query: { ids: [savedBillId] } }, models, dbOrTransaction)
 
   if (!newBills || newBills.length === 0) {
@@ -850,7 +862,6 @@ async function _saveTransfer(event, models, dbOrTransaction) {
       const savedBill = await _saveBill(bill, currentAccountId, models, tx)
 
       // 使用 getBillsByIds 获取完整的关联账单信息
-      const { _getBillsByIds } = require('./bill.js')
       const relatedBills = await _getBillsByIds({ query: { ids: [bill.relatedBill] } }, models, tx)
 
       if (!relatedBills || relatedBills.length === 0) {
