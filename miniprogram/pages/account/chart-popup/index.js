@@ -19,6 +19,7 @@ defineComponent({
         // marginTop: 16,
         itemCount: 5,
         scrollShow: true,
+        scrollAlign: 'right',
       },
       extra: {
         line: {
