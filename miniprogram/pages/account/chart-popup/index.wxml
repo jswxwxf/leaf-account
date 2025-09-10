@@ -44,7 +44,8 @@
           <van-tab title="日历" name="calendar"></van-tab>
         </van-tabs>
       </view>
-      <view class="text-xs text-gray-400 text-center flex-1 {{ active !== 'chart' ? 'opacity-0' : '' }}">点击图例可切换</view>
+      <view wx:if="{{active === 'chart'}}" class="text-xs text-gray-400 text-center flex-1">点击图例可切换</view>
+      <view wx:if="{{active === 'calendar'}}" class="text-xs text-gray-400 text-center flex-1">左右滑动可切换月份</view>
       <view class="flex justify-end items-center space-x-6">
         <view class="i-ep-close text-2xl" @tap="handleClose" />
       </view>
