@@ -57,6 +57,16 @@ defineComponent({
       return keyBy(props.dailyBills || [], (bill) => dayjs(bill.datetime).format('YYYY-MM-DD'))
     })
 
+    const maxIncome = computed(() => {
+      if (!props.dailyBills || props.dailyBills.length === 0) return 0
+      return Math.max(...props.dailyBills.map(b => b.income || 0))
+    })
+
+    const maxExpense = computed(() => {
+      if (!props.dailyBills || props.dailyBills.length === 0) return 0
+      return Math.max(...props.dailyBills.map(b => b.expense || 0))
+    })
+
     const weekdays = computed(() => {
       const days = ['日', '一', '二', '三', '四', '五', '六']
       return [...days.slice(props.firstDayOfWeek), ...days.slice(0, props.firstDayOfWeek)]
@@ -94,6 +104,8 @@ defineComponent({
           isWeekend: [0, 6].includes(currentDay.day()),
           income: billInfo.income,
           expense: billInfo.expense,
+          incomePercent: maxIncome.value > 0 ? ((billInfo.income || 0) / maxIncome.value) * 100 : 0,
+          expensePercent: maxExpense.value > 0 ? ((billInfo.expense || 0) / maxExpense.value) * 100 : 0,
         })
       }
 
