@@ -75,7 +75,7 @@ defineComponent({
     const onChartTap = (e) => {
       const currentIndex = e.detail?.currentIndex?.index
       if (currentIndex === -1 || currentIndex === undefined) return
-      let bill = dailyBills.value[currentIndex]
+      let bill = dailyBills.value[dailyBills.value.length - 1 - currentIndex]
       if (bill) {
         triggerEvent('tap-bill-day', bill.datetime)
       }

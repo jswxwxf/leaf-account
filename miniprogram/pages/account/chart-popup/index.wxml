@@ -9,7 +9,7 @@
   <view class="h-full w-full bg-neutral-50 pt-2 max-h-screen border-b border-dashed border-b-slate-400">
     <!-- Chart Content Goes Here -->
     <view wx:if="{{ visible }}">
-      <view hidden="{{ active !== 'chart' }}" class="w-full h-52 px-4 pl-0 block box-border">
+      <view wx:if="{{ active === 'chart' }}" class="w-full h-52 px-4 pl-0 block box-border">
         <qiun-data-charts
           reshow="{{ active === 'chart' }}"
           type="line"
@@ -23,7 +23,7 @@
           @getIndex="onChartTap"
         />
       </view>
-      <view hidden="{{ active !== 'calendar' }}" class="h-52">
+      <view wx:if="{{ active === 'calendar' }}" class="h-52">
         <bill-calendar
           first-day-of-week="1"
           daily-bills="{{ dailyBills }}"

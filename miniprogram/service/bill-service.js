@@ -31,10 +31,10 @@ export function groupBillsByDate(bills) {
   const mapped = map(grouped, (dailyRawBills, date) => {
     const { income, expense } = dailyRawBills.reduce(
       (acc, bill) => {
-        // 如果 bill.tags 存在并且包含 '非日常'，则跳过
-        if (bill.tags && some(bill.tags, { name: '非日常' })) {
-          return acc
-        }
+        // // 如果 bill.tags 存在并且包含 '非日常'，则跳过
+        // if (bill.tags && some(bill.tags, { name: '非日常' })) {
+        //   return acc
+        // }
         if (bill.amount > 0) {
           acc.income += bill.amount
         } else if (bill.amount < 0) {

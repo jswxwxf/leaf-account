@@ -12,7 +12,7 @@
   </view>
 
   <!-- Dates -->
-  <view class="grid grid-cols-7 text-center flex-1" catch:touchstart="handleTouchStart" catch:touchend="handleTouchEnd">
+  <view class="grid grid-cols-7 text-center flex-1" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
     <view wx:for="{{days}}" wx:key="index" class="flex flex-col" @tap="handleTapDay" data-item="{{item}}">
       <view class="relative flex-1 flex flex-col justify-center items-center {{ item.isToday ? 'bg-green-100' : '' }}">
         <text class="h-8 py-1 {{ item.isCurrentMonth ? '' : 'text-gray-400' }} {{ item.isWeekend && item.isCurrentMonth ? 'text-orange-500' : '' }}">{{item.day}}</text>
