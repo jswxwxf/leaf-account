@@ -235,7 +235,7 @@ async function getCategoriesByIds(event, models) {
  * @param {object} [dbOrTransaction] - 可选的数据库或事务实例
  * @returns {Promise<Array<object>>} - 分类对象列表
  */
-async function _getCategoryByNames(event, models, dbOrTransaction) {
+async function getCategoryByNames(event, models, dbOrTransaction) {
   const { categories: categoriesInfo } = event.query || {}
   const { OPENID } = cloud.getWXContext()
   const dbInstance = dbOrTransaction || db
@@ -353,5 +353,5 @@ module.exports = {
   deleteCategory,
   updateCategory,
   populateCategoriesForBills,
-  _getCategoryByNames,
+  getCategoryByNames,
 }
