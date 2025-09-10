@@ -24,7 +24,7 @@
         />
       </view>
       <view wx:if="{{ active === 'calendar' }}" class="h-52">
-        <bill-calendar show-header="{{ false }}" />
+        <bill-calendar first-day-of-week="1" daily-bills="{{ dailyBills }}" month="{{ monthValue }}" @month-change="handleMonthChange" />
       </view>
     </view>
 

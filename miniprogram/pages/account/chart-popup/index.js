@@ -90,6 +90,10 @@ defineComponent({
       handleClose()
     })
 
+    const handleMonthChange = (e) => {
+      monthValue.value = e.detail
+    }
+
     return {
       active,
       visible,
@@ -97,10 +101,12 @@ defineComponent({
       chartOptions,
       chartData,
       monthValue,
+      dailyBills,
       show,
       handleClose,
       handleConfirm,
       onChange,
+      handleMonthChange,
     }
   },
 })
