@@ -11,7 +11,7 @@
     <view wx:if="{{ visible }}">
       <view hidden="{{ active !== 'chart' }}" class="w-full h-52 px-4 pl-0 block box-border">
         <qiun-data-charts
-          reshow="{{ visible && chartReady }}"
+          reshow="{{ active === 'chart' }}"
           type="line"
           canvas2d
           disable-scroll
@@ -21,11 +21,16 @@
           ontap
           ontouch
           @getIndex="onChartTap"
-          hidden="{{ !chartReady }}"
         />
       </view>
       <view hidden="{{ active !== 'calendar' }}" class="h-52">
-        <bill-calendar first-day-of-week="1" daily-bills="{{ dailyBills }}" month="{{ monthValue }}" @month-change="handleMonthChange" @tap-bill-day="handleTapBillDay" />
+        <bill-calendar
+          first-day-of-week="1"
+          daily-bills="{{ dailyBills }}"
+          month="{{ monthValue }}"
+          @month-change="handleMonthChange"
+          @tap-bill-day="handleTapBillDay"
+        />
       </view>
     </view>
 
