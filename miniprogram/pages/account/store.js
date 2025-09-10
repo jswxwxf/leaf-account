@@ -274,6 +274,7 @@ export default function store() {
   })
 
   onAccountChange(async (newAccount) => {
+    rawBills.value = []
     currentAccount.value = newAccount
     resetQuery()
     await loadAccount()

@@ -7,16 +7,16 @@
 
   <!-- Expense Content -->
   <view class="flex-grow overflow-auto px-4 pb-4" wx:if="{{ activeTab === '20' }}">
-    <block wx:if="{{ categories.expense.length > 0 }}">
+    <view wx:if="{{ categories.expense.length === 0 }}" class="text-center text-gray-500 py-10">
+      暂无支出分类，快来添加吧~
+    </view>
+    <block wx:else>
       <view class="grid grid-cols-3 gap-2">
         <block wx:for="{{ categories.expense }}" wx:key="_id">
           <category-box category="{{ item }}" @edit="handleEdit" @delete="handleDelete" />
         </block>
       </view>
     </block>
-    <view wx:else class="text-center text-gray-500 py-10">
-      暂无支出分类，快来添加吧~
-    </view>
   </view>
 
   <!-- Income Content -->

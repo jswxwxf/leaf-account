@@ -1,16 +1,16 @@
 <view class="flex flex-col h-screen">
   <!-- Content -->
   <view class="flex-grow overflow-auto p-4">
-    <block wx:if="{{ tags.length > 0 }}">
+    <view wx:if="{{ tags.length === 0 }}" class="text-center text-gray-500 py-10">
+      暂无标签，快来添加吧~
+    </view>
+    <block wx:else>
       <view class="grid grid-cols-3 gap-2">
         <block wx:for="{{ tags }}" wx:key="_id">
           <tag-box tag="{{ item }}" @edit="handleEdit" @delete="handleDelete" />
         </block>
       </view>
     </block>
-    <view wx:else class="text-center text-gray-500 py-10">
-      暂无标签，快来添加吧~
-    </view>
   </view>
 
   <!-- Footer -->

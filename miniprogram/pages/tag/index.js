@@ -6,7 +6,7 @@ import { newTag } from '@/service/tag-service.js'
 
 defineComponent({
   setup(props, { selectComponent }) {
-    const tags = ref([])
+    const tags = ref()
     const theNewTag = ref(newTag())
     const tagPopup = ref()
 

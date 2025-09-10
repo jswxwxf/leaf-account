@@ -7,8 +7,8 @@ defineComponent({
   setup(props, { selectComponent }) {
     const activeTab = ref('20')
     const categories = ref({
-      expense: [],
-      income: [],
+      expense: undefined,
+      income: undefined,
     })
     const newCategory = ref({ name: '' })
     const categoryPopup = ref()
