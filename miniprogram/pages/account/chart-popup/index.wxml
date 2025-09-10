@@ -40,7 +40,7 @@
           tab-class="text-xs !py-1"
         >
           <van-tab title="图表" name="chart"></van-tab>
-          <van-tab title="日历" name="calendar" disabled="{{ !monthValue }}"></van-tab>
+          <van-tab title="日历" name="calendar"></van-tab>
         </van-tabs>
       </view>
       <view class="text-xs text-gray-400 text-center flex-1 {{ active !== 'chart' ? 'opacity-0' : '' }}">点击图例可切换</view>
