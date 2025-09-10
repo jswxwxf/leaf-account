@@ -71,6 +71,23 @@ defineComponent({
     // 监听账单数据变化，自动更新图表
     watch(dailyBills, updateChartData)
 
+    const onChartTap = (e) => {
+      const currentIndex = e.detail?.currentIndex?.index
+      if (currentIndex === -1 || currentIndex === undefined) return
+      let bill = dailyBills.value[currentIndex]
+      if (bill) {
+        triggerEvent('tap-bill-day', bill.datetime)
+      }
+    }
+
+    const handleMonthChange = (e) => {
+      monthValue.value = e.detail
+    }
+
+    const handleTapBillDay = (e) => {
+      triggerEvent('tap-bill-day', e.detail)
+    }
+
     const handleClose = () => {
       _reject && _reject(new Error('用户取消'))
       visible.value = false
@@ -90,14 +107,6 @@ defineComponent({
       handleClose()
     })
 
-    const handleMonthChange = (e) => {
-      monthValue.value = e.detail
-    }
-
-    const handleTapBillDay = (e) => {
-      triggerEvent('tap-bill-day', e.detail)
-    }
-
     return {
       active,
       visible,
@@ -110,6 +119,7 @@ defineComponent({
       handleClose,
       handleConfirm,
       onChange,
+      onChartTap,
       handleMonthChange,
       handleTapBillDay,
     }

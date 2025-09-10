@@ -21,6 +21,7 @@
           opts="{{ chartOptions }}"
           ontap
           ontouch
+          @getIndex="onChartTap"
         />
       </view>
       <view wx:if="{{ active === 'calendar' }}" class="h-52">
