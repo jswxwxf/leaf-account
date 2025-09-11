@@ -44,7 +44,7 @@ const {
   updateCategory,
 } = require('./service/category.js')
 const { getTags, addTags, addTag, updateTag, deleteTag } = require('./service/tag.js')
-const { getTask } = require('./service/task.js')
+const { getTask, deleteTask } = require('./service/task.js')
 const { addFeedback } = require('./service/feedback.js')
 
 exports.main = (event, context) => {
@@ -188,6 +188,15 @@ exports.main = (event, context) => {
   app.router('/get/task', async (ctx) => {
     const data = await getTask(event, models)
     ctx.body = { code: 200, success: true, message: '获取成功', data }
+  })
+
+  app.router('/delete/task', async (ctx) => {
+    const data = await deleteTask(event, models)
+    if (data.deleted > 0) {
+      ctx.body = { code: 200, success: true, message: '删除成功' }
+    } else {
+      ctx.body = { code: 404, success: false, message: '未找到要删除的记录' }
+    }
   })
 
   /**

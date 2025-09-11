@@ -2,7 +2,7 @@ import { defineComponent, ref, onUnload } from '@vue-mini/core'
 import Toast from '@vant/weapp/toast/toast'
 import { promisic } from '@/utils/index.js'
 import { getAccountYears, exportAccount, importAccount } from '@/api/account.js'
-import { getTask } from '@/api/task.js'
+import { getTask, deleteTask } from '@/api/task.js'
 
 /**
  * 处理任务轮询、进度更新和文件下载的 Composable
@@ -184,6 +184,8 @@ defineComponent({
           // 导出成功后，手动调用下载
           if (task && task.result && task.result.fileID) {
             await downloadAndOpenFile(task.result.fileID)
+            // 导出成功，删除该任务
+            await deleteTask(task._id)
           }
         } else {
           if (!uploadFile.value) {
@@ -193,9 +195,11 @@ defineComponent({
           // 1. 调用独立的上传方法
           const fileID = await uploadAndGetFileID(uploadFile.value, currentAccount.value.name)
           // 2. 将 fileID 传给任务启动器
-          await runTask(() => importAccount(currentAccount.value._id, fileID))
+          const task = await runTask(() => importAccount(currentAccount.value._id, fileID))
           // 导入成功后，直接提示
           Toast.success('导入任务已成功')
+          // 导入成功，删除该任务
+          await deleteTask(task._id)
         }
         visible.value = false
         if (_resolve) {

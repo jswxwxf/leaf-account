@@ -105,8 +105,45 @@ async function updateTask(event, models) {
   })
 }
 
+/**
+ * 删除任务
+ * @param {object} event - 云函数的原始 event 对象
+ */
+async function deleteTask(event) {
+  const { taskId } = event.query
+  if (!taskId) {
+    throw new Error('缺少 taskId 参数')
+  }
+
+  // 1. 获取任务详情以拿到 fileID
+  const taskRes = await db.collection('task').doc(taskId).get()
+  const task = taskRes.data
+  if (task && task.result) {
+    const result = tryParseJSON(task.result)
+    if (result && result.fileID) {
+      try {
+        // 2. 如果有 fileID，则删除云存储中的文件
+        await cloud.deleteFile({
+          fileList: [result.fileID],
+        })
+      }
+      catch (e) {
+        console.error('删除云文件失败', e)
+        // 即使文件删除失败，也继续尝试删除任务记录
+      }
+    }
+  }
+
+  // 3. 删除数据库中的任务记录
+  const { stats } = await db.collection('task').doc(taskId).remove()
+  return {
+    deleted: stats.removed,
+  }
+}
+
 module.exports = {
   createTask,
   getTask,
   updateTask,
+  deleteTask,
 }

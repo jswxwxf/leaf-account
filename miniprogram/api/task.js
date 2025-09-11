@@ -1,4 +1,4 @@
-import { get } from './request-cloud.js'
+import { get, post } from './request-cloud.js'
 import { tryParseJson } from '../utils/index.js'
 
 /**
@@ -17,6 +17,18 @@ import { tryParseJson } from '../utils/index.js'
 export function getTask(taskId) {
   return get('bill-cloud', {
     $url: '/get/task',
+    query: { taskId },
+  })
+}
+
+/**
+ * 删除任务
+ * @param {string} taskId - 任务的 _id
+ * @returns {Promise<void>}
+ */
+export function deleteTask(taskId) {
+  return post('bill-cloud', {
+    $url: '/delete/task',
     query: { taskId },
   })
 }

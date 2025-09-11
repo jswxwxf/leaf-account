@@ -25,6 +25,7 @@ const REQUIRE_LOGIN_ROUTES = [
   '/get/task',
   '/get/bills/summary',
   '/post/feedback',
+  '/delete/task',
 ]
 const REQUIRE_ACCOUNT_ID_ROUTES = [
   '/upsert/bill',
