@@ -272,7 +272,10 @@ defineComponent({
     }
 
     const handleTextBills = async () => {
-      textContent.value = await textPopup.value.show()
+      textContent.value = await textPopup.value.show('', {
+          placeholder: '请输入账单文本内容...',
+          confirmText: 'AI 识别',
+        })
       const bills = await analyzeBillsFromText(textContent.value)
       if (bills && bills.length > 0) {
         if (bills.length > MAX_BATCH_BILLS) {

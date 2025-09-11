@@ -17,8 +17,8 @@ defineComponent({
 
     const show = (text, opts = {}) => {
       content.value = text || ''
-      placeholder.value = opts.placeholder || '请输入账单文本内容...'
-      confirmText.value = opts.confirmText || 'AI 识别'
+      placeholder.value = opts.placeholder || '请输入文本...'
+      confirmText.value = opts.confirmText || '提交'
       visible.value = true
       return new Promise((resolve, reject) => {
         _resolve = resolve
