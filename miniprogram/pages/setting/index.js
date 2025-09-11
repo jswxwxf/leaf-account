@@ -1,9 +1,16 @@
-import { defineComponent, onTabItemTap } from '@vue-mini/core'
+import { defineComponent, onTabItemTap, onShareAppMessage, ref, onReady } from '@vue-mini/core'
 import Dialog from '@vant/weapp/dialog/dialog'
 import { resetBills } from '@/api/bill.js'
+import { postFeedback } from '@/api/feedback.js'
 
 defineComponent({
   setup() {
+    const feedbackPopup = ref(null)
+
+    onReady(() => {
+      feedbackPopup.value = getCurrentPages().pop().selectComponent('#feedback-popup')
+    })
+
     const handleReset = async () => {
       try {
         await Dialog.confirm({
@@ -44,14 +51,39 @@ defineComponent({
       })
     }
 
+    const handleFeedback = async () => {
+      try {
+        const content = await feedbackPopup.value.show('', {
+          placeholder: '请输入您的反馈或建议...',
+          confirmText: '提交',
+        })
+        await postFeedback(content)
+        Dialog.alert({
+          title: '提交成功',
+          message: '感谢您的反馈，我们会尽快处理！',
+        })
+      } finally {
+        wx.hideLoading()
+      }
+    }
+
     onTabItemTap(() => {
       getApp().globalData.currentTab.value = 'setting'
+    })
+
+    onShareAppMessage(() => {
+      return {
+        title: '小枫记账，识图记账小程序',
+        path: '/pages/account/index',
+        imageUrl: '/assets/images/share.jpg',
+      }
     })
 
     return {
       handleReset,
       handleCategory,
       handleTag,
+      handleFeedback,
     }
   },
 })

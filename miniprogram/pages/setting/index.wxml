@@ -7,20 +7,25 @@
   </view>
 
   <view class="px-4 pb-4">
-    <van-button type="danger" block @tap="handleReset">
-      清空帐目重新开始
-    </van-button>
+    <van-button type="danger" block @tap="handleReset">清空帐目重新开始</van-button>
   </view>
 
   <view class="p-8">
-    <view class="flex items-center justify-center text-xs text-blue-500 space-x-4">
-      <text>常见问题</text>
+    <view class="flex items-center justify-around text-xs text-blue-500 w-full">
+      <text>使用手册</text>
       <view class="w-px h-3 bg-gray-400"></view>
-      <text>我要反馈</text>
+      <text @tap="handleFeedback">我要反馈</text>
       <view class="w-px h-3 bg-gray-400"></view>
-      <text>推荐给朋友</text>
+      <button
+        open-type="share"
+        class="!p-0 !m-0 !bg-transparent !border-0 !text-xs !text-blue-500 !leading-normal after:!border-0"
+        style="line-height: inherit"
+      >
+        推荐给朋友
+      </button>
     </view>
   </view>
 
   <van-dialog id="van-dialog" />
+  <text-popup id="feedback-popup" />
 </view>

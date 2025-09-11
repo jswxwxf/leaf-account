@@ -5,6 +5,8 @@ defineComponent({
   setup() {
     const visible = ref(false)
     const content = ref()
+    const placeholder = ref()
+    const confirmText = ref()
 
     let _resolve
     let _reject
@@ -13,8 +15,10 @@ defineComponent({
       handleClose()
     })
 
-    const show = (text) => {
+    const show = (text, opts = {}) => {
       content.value = text || ''
+      placeholder.value = opts.placeholder || '请输入账单文本内容...'
+      confirmText.value = opts.confirmText || 'AI 识别'
       visible.value = true
       return new Promise((resolve, reject) => {
         _resolve = resolve
@@ -43,6 +47,8 @@ defineComponent({
     return {
       visible,
       content,
+      placeholder,
+      confirmText,
       show,
       handleClose,
       handleConfirm,

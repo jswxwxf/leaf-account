@@ -45,6 +45,7 @@ const {
 } = require('./service/category.js')
 const { getTags, addTags, addTag, updateTag, deleteTag } = require('./service/tag.js')
 const { getTask } = require('./service/task.js')
+const { addFeedback } = require('./service/feedback.js')
 
 exports.main = (event, context) => {
   const app = new TcbRouter({ event })
@@ -298,6 +299,9 @@ exports.main = (event, context) => {
     }
   })
 
+  /**
+   * @desc 删除标签
+   */
   app.router('/delete/tag', async (ctx) => {
     const data = await deleteTag(event, models)
     if (data.deleted > 0) {
@@ -307,6 +311,9 @@ exports.main = (event, context) => {
     }
   })
 
+  /**
+   * @desc 更新分类
+   */
   app.router('/put/category', async (ctx) => {
     const data = await updateCategory(event, models)
     if (data.updated > 0) {
@@ -314,6 +321,14 @@ exports.main = (event, context) => {
     } else {
       ctx.body = { code: 404, success: false, message: '未找到要更新的记录' }
     }
+  })
+
+  /**
+   * @desc 提交用户反馈
+   */
+  app.router('/post/feedback', async (ctx) => {
+    const data = await addFeedback(event, models)
+    ctx.body = { code: 200, success: true, message: '添加成功', data }
   })
 
   return app.serve()

@@ -3,7 +3,7 @@
     <van-field
       value="{{ content }}"
       type="textarea"
-      placeholder="请输入账单文本内容..."
+      placeholder="{{ placeholder }}"
       border="{{ false }}"
       @input="handleChange"
       maxlength="512"
@@ -12,7 +12,7 @@
   </view>
   <view class="flex items-center justify-between p-2 bg-gray-200 shadow-lg">
     <van-button type="primary" @click="handleConfirm" custom-class="flex-1 w-32" disabled="{{ !content }}">
-      AI 识别
+      {{ confirmText }}
     </van-button>
     <van-button type="default" @click="handleClose" custom-class="flex-1 w-32">关闭</van-button>
   </view>

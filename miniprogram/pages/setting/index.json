@@ -1,7 +1,9 @@
 {
   "$schema": "https://vite.icebreaker.top/component.json",
   "component": true,
-  "usingComponents": {},
+  "usingComponents": {
+    "text-popup": "/pages/account/text-popup/index"
+  },
   "styleIsolation": "apply-shared",
   "navigationBarTitleText": "设置"
 }
