@@ -619,7 +619,7 @@ async function importAccount(event, models) {
     try {
       await updateTask({
         query: { taskId },
-        body: { status: 'processing', message: { text: '正在下载并解析文件...' } },
+        body: { status: 'processing', message: { text: '正在下载并解析文件...' }, result: { fileID } },
       }, models)
 
       const downloadRes = await cloud.downloadFile({ fileID })
@@ -721,7 +721,7 @@ async function importAccount(event, models) {
           body: {
             status: 'failed',
             message: { text: '导入失败，请检查文件格式或联系管理员' },
-            result: { error: e.message },
+            result: { error: e.message, fileID },
           },
         },
         models,
