@@ -3,7 +3,7 @@ import { isEmpty } from 'lodash'
 import Toast from '@vant/weapp/toast/toast.js'
 import Dialog from '@vant/weapp/dialog/dialog.js'
 import { parseDate } from '@/utils/date.js'
-import { onTabChange } from '@/utils/index.js'
+import { onTabChange, deepCopy } from '@/utils/index.js'
 import { newBill } from '@/service/bill-service.js'
 import { storeKey, MAX_BATCH_BILLS } from '../store'
 
@@ -137,9 +137,16 @@ defineComponent({
 
     const handleDeleteRow = (e) => {
       const { rowIndex } = e.currentTarget.dataset
-      if (list.value.length > 1) {
-        list.value.splice(rowIndex, 1)
-      }
+      if (list.value.length <= 1) return
+
+      const itemToDelete = list.value[rowIndex]
+
+      itemToDelete.deleted = true
+
+      // 2. After the animation duration, remove that specific item from the array
+      setTimeout(() => {
+        list.value = list.value.filter((item) => !item.deleted)
+      }, 300) // Match the animation duration in WXSS
     }
 
     const handleCopyRow = (e) => {
@@ -150,8 +157,16 @@ defineComponent({
       const { rowIndex } = e.currentTarget.dataset
       const rowToCopy = list.value[rowIndex]
       // Deep copy to avoid reference issues
-      const newRow = JSON.parse(JSON.stringify(rowToCopy))
+      const newRow = {
+        ...deepCopy(rowToCopy),
+        inserted: true,
+      }
       list.value.splice(rowIndex + 1, 0, newRow)
+
+      // Remove the animation class after the animation is done
+      setTimeout(() => {
+        delete newRow.inserted
+      }, 300) // Match animation duration
     }
 
     return {

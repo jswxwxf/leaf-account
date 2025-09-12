@@ -15,7 +15,7 @@
         wx:for-item="bill"
         wx:for-index="rowIndex"
         wx:key="rowIndex"
-        class="flex mb-[0.4rem] py-1 pl-1 bg-slate-100 items-center"
+        class="flex mb-[0.4rem] py-1 pl-1 bg-slate-100 items-center {{ bill.deleted ? 'slide-out-right' : '' }} {{ bill.inserted ? 'slide-in-left' : '' }}"
       >
         <view class="pl-1 pr-2">{{ rowIndex + 1 }}</view>
         <bill-form class="bill-form">
