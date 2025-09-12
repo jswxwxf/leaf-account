@@ -189,3 +189,12 @@ export function onAccountChange(callback, opts = {}) {
 export function deepCopy(obj) {
   return JSON.parse(JSON.stringify(obj))
 }
+
+/**
+ * 生成一个简单的随机 ID
+ * @param {string} [prefix=''] - ID 前缀
+ * @returns {string} - 生成的 ID
+ */
+export function generateId(prefix = '') {
+  return prefix + Date.now().toString(36) + Math.random().toString(36).substr(2)
+}

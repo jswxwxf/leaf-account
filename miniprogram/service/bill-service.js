@@ -1,6 +1,6 @@
 import { formatDate, getDayOfWeek } from '@/utils/date.js'
 import { groupBy, isEmpty, map, orderBy, some, sumBy } from 'lodash'
-import { formatMoney } from '@/utils/index.js'
+import { formatMoney, generateId } from '@/utils/index.js'
 import dayjs from 'dayjs'
 
 /**
@@ -9,6 +9,7 @@ import dayjs from 'dayjs'
  */
 export function newBill() {
   return {
+    _id: generateId('bill-'),
     datetime: Date.now(),
     category: '',
     amount: '',

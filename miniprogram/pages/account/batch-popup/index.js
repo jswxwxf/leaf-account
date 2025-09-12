@@ -3,7 +3,7 @@ import { isEmpty } from 'lodash'
 import Toast from '@vant/weapp/toast/toast.js'
 import Dialog from '@vant/weapp/dialog/dialog.js'
 import { parseDate } from '@/utils/date.js'
-import { onTabChange, deepCopy } from '@/utils/index.js'
+import { onTabChange, deepCopy, generateId } from '@/utils/index.js'
 import { newBill } from '@/service/bill-service.js'
 import { storeKey, MAX_BATCH_BILLS } from '../store'
 
@@ -29,6 +29,7 @@ defineComponent({
       hasInitialBills.value = bills && bills.length > 0
       if (hasInitialBills.value) {
         list.value = bills.map((bill) => ({
+          _id: generateId('bill-'),
           datetime: parseDate(bill.datetime),
           category: '', // AI尚不能识别分类
           amount: bill.amount || '',
@@ -132,7 +133,14 @@ defineComponent({
         return
       }
       const { rowIndex } = e.currentTarget.dataset
-      list.value.splice(rowIndex + 1, 0, newBill())
+      const newRow = newBill()
+      newRow.inserted = true
+      list.value.splice(rowIndex + 1, 0, newRow)
+
+      // Remove the animation class after the animation is done
+      setTimeout(() => {
+        delete newRow.inserted
+      }, 300) // Match animation duration
     }
 
     const handleDeleteRow = (e) => {
@@ -159,6 +167,7 @@ defineComponent({
       // Deep copy to avoid reference issues
       const newRow = {
         ...deepCopy(rowToCopy),
+        _id: generateId('bill-'), // 复制的行也需要新的唯一 ID
         inserted: true,
       }
       list.value.splice(rowIndex + 1, 0, newRow)
