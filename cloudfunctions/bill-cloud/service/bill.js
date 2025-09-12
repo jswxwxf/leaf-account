@@ -28,7 +28,6 @@ async function saveBill(event, models) {
   if (!isTransfer && !bill.category) {
     throw new Error('请求中缺少 category 对象')
   }
-  const { saveTransfer: _saveTransfer } = require('./helper.js')
 
   const transaction = await db.startTransaction()
   try {
@@ -580,7 +579,6 @@ async function saveTransfer(event, models) {
     query: { accountId },
   }
 
-  const { saveTransfer: _saveTransfer } = require('./helper.js')
   return _saveTransfer(eventForCommon, models)
 }
 
