@@ -1,4 +1,5 @@
 import { computed, onShow, ref, watch } from '@vue-mini/core'
+import dayjs from 'dayjs'
 import { getAccounts } from '@/api/account.js'
 import { groupBillsBy } from '@/api/bill.js'
 import { onAccountChange } from '@/utils/index.js'
@@ -10,7 +11,7 @@ export default function store() {
   const groupedBills = ref([])
 
   const dimension = ref('category')
-  const monthValue = ref('')
+  const monthValue = ref(dayjs().format('MM'))
   const checkedValue = ref(['exclude'])
   const typeValue = ref('20')
 

@@ -9,7 +9,7 @@ import dayjs from 'dayjs'
  */
 export function newBill() {
   return {
-    _id: generateId('bill-'),
+    _tempid: generateId('bill-'),
     datetime: Date.now(),
     category: '',
     amount: '',

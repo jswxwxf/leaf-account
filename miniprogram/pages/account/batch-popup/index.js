@@ -21,7 +21,7 @@ defineComponent({
     let _resolve, _reject
 
     onTabChange(() => {
-      handleClose()
+      hide()
     })
 
     const show = (bills, opts = {}) => {
@@ -29,7 +29,7 @@ defineComponent({
       hasInitialBills.value = bills && bills.length > 0
       if (hasInitialBills.value) {
         list.value = bills.map((bill) => ({
-          _id: generateId('bill-'),
+          _tempid: generateId('bill-'),
           datetime: parseDate(bill.datetime),
           category: '', // AI尚不能识别分类
           amount: bill.amount || '',
@@ -55,8 +55,7 @@ defineComponent({
 
     const handleClose = async () => {
       if (!hasInitialBills.value) {
-        _reject && _reject(new Error('用户取消'))
-        visible.value = false
+        hide()
         return
       }
 
@@ -64,6 +63,10 @@ defineComponent({
         title: '提示',
         message: '关闭后将丢失未保存的修改，是否确认关闭？',
       })
+      hide()
+    }
+
+    const hide = () => {
       _reject && _reject(new Error('用户取消'))
       visible.value = false
     }
@@ -167,7 +170,7 @@ defineComponent({
       // Deep copy to avoid reference issues
       const newRow = {
         ...deepCopy(rowToCopy),
-        _id: generateId('bill-'), // 复制的行也需要新的唯一 ID
+        _tempid: generateId('bill-'), // 复制的行也需要新的唯一 ID
         inserted: true,
       }
       list.value.splice(rowIndex + 1, 0, newRow)
