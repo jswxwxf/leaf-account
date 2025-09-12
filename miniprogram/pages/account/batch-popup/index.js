@@ -1,6 +1,7 @@
 import { defineComponent, inject, nextTick, ref } from '@vue-mini/core'
 import { isEmpty } from 'lodash'
 import Toast from '@vant/weapp/toast/toast.js'
+import Dialog from '@vant/weapp/dialog/dialog.js'
 import { parseDate } from '@/utils/date.js'
 import { onTabChange } from '@/utils/index.js'
 import { newBill } from '@/service/bill-service.js'
@@ -15,6 +16,7 @@ defineComponent({
     const outList = ref([])
     const billForms = ref([])
     const options = ref()
+    const hasInitialBills = ref(false)
 
     let _resolve, _reject
 
@@ -22,9 +24,10 @@ defineComponent({
       handleClose()
     })
 
-    const show = (bills, opts={}) => {
+    const show = (bills, opts = {}) => {
       options.value = opts
-      if (bills && bills.length > 0) {
+      hasInitialBills.value = bills && bills.length > 0
+      if (hasInitialBills.value) {
         list.value = bills.map((bill) => ({
           datetime: parseDate(bill.datetime),
           category: '', // AI尚不能识别分类
@@ -49,7 +52,17 @@ defineComponent({
       })
     }
 
-    const handleClose = () => {
+    const handleClose = async () => {
+      if (!hasInitialBills.value) {
+        _reject && _reject(new Error('用户取消'))
+        visible.value = false
+        return
+      }
+
+      await Dialog.confirm({
+        title: '提示',
+        message: '关闭后将丢失未保存的修改，是否确认关闭？',
+      })
       _reject && _reject(new Error('用户取消'))
       visible.value = false
     }
