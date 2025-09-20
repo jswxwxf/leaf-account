@@ -24,9 +24,8 @@
     plain
     @click="toggleImageFold"
     class="absolute right-2 top-2 pointer-events-auto"
-    custom-class="check-toggle-button"
+    custom-class="check-toggle-button {{ isPhotoFolded ? 'folded' : 'unfolded' }}"
   >
-    <van-icon name="{{ isPhotoFolded ? 'photo-o' : 'photo' }}" size="30px" />
   </van-button>
 
   <van-button
@@ -34,8 +33,7 @@
     plain
     @click="toggleTextFold"
     class="absolute right-2 pointer-events-auto {{ imagePath ? 'top-14' : 'top-2' }}"
-    custom-class="check-toggle-button"
+    custom-class="check-toggle-button {{ isTextFolded ? 'folded' : 'unfolded' }}"
   >
-    <van-icon name="{{ isTextFolded ? 'comment-o' : 'comment' }}" size="30px" />
   </van-button>
 </view>

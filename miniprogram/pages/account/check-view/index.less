@@ -4,3 +4,19 @@
   @apply !shadow-md;
   background-color: rgba(0,0,0,0.1) !important;
 }
+
+.check-toggle-button {
+  width: 30rpx;
+  height: 60rpx;
+  border-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.1);
+  color: transparent;
+
+  &.folded {
+    background-color: rgba(0, 0, 0, 0);
+  }
+
+  &.unfolded {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+}
