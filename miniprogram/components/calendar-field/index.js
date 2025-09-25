@@ -38,7 +38,7 @@ defineComponent({
 
     const formattedDate = computed(() => {
       if (!props.value) return ''
-      const format = props.type === 'short' ? 'MM月DD日' : 'YYYY-MM-DD'
+      const format = props.type === 'short' ? 'MM/DD' : 'YYYY-MM-DD'
       return formatDate(props.value, format)
     })
 
