@@ -1,0 +1,69 @@
+<!-- miniprogram/pages/account/crop-popup/index.wxml -->
+<van-popup
+  show="{{ visible }}"
+  custom-style="height: 100%; width: 100%; background-color: #000;"
+  position="bottom"
+  bind:close="onClose"
+>
+  <view class="text-white text-center text-sm pt-4">请拖拽边框，裁切掉与账单无关的部分</view>
+  <view class="h-full flex items-center justify-center p-4 pt-0 pb-16">
+    <view class="relative" style="width: {{imageInfo.width}}px; height: {{imageInfo.height}}px;">
+      <image src="{{imagePath}}" class="w-full h-full" mode="aspectFill" bind:load="onImageLoad"></image>
+
+      <!-- 遮罩层 -->
+      <view
+        class="absolute pointer-events-none"
+        style="left: {{cropBox.left}}px; top: {{cropBox.top}}px; width: {{cropBox.width}}px; height: {{cropBox.height}}px; box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5);"
+      ></view>
+
+      <!-- 裁剪框 -->
+      <view
+        class="absolute"
+        style="left: {{cropBox.left}}px; top: {{cropBox.top}}px; width: {{cropBox.width}}px; height: {{cropBox.height}}px;"
+      >
+        <!-- 默认边框 -->
+        <view
+          wx:if="{{ !activeEdge }}"
+          class="absolute inset-0 border-2 border-white box-border pointer-events-none"
+        ></view>
+        <!-- 高亮边框 -->
+        <view wx:else class="absolute inset-0 border-2 border-blue-500 box-border pointer-events-none"></view>
+
+        <!-- 四个边框热区 (透明) -->
+        <view
+          class="absolute -top-2 left-0 w-full h-4"
+          data-edge="top"
+          catch:touchstart="onTouchStart"
+          catch:touchmove="onTouchMove"
+          catch:touchend="onTouchEnd"
+        ></view>
+        <view
+          class="absolute -bottom-2 left-0 w-full h-4"
+          data-edge="bottom"
+          catch:touchstart="onTouchStart"
+          catch:touchmove="onTouchMove"
+          catch:touchend="onTouchEnd"
+        ></view>
+        <view
+          class="absolute -left-2 top-0 w-4 h-full"
+          data-edge="left"
+          catch:touchstart="onTouchStart"
+          catch:touchmove="onTouchMove"
+          catch:touchend="onTouchEnd"
+        ></view>
+        <view
+          class="absolute -right-2 top-0 w-4 h-full"
+          data-edge="right"
+          catch:touchstart="onTouchStart"
+          catch:touchmove="onTouchMove"
+          catch:touchend="onTouchEnd"
+        ></view>
+      </view>
+    </view>
+  </view>
+
+  <view class="fixed bottom-0 left-0 right-0 p-4 flex gap-4 justify-center">
+    <van-button bind:click="onClose">取消</van-button>
+    <van-button type="primary" bind:click="onConfirm">确定</van-button>
+  </view>
+</van-popup>

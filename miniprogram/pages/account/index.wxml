@@ -65,3 +65,4 @@
 <reconcile-popup id="reconcile-popup" />
 <summary-popup id="summary-popup" />
 <text-popup id="text-popup" />
+<crop-popup id="crop-popup" />

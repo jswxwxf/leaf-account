@@ -109,6 +109,7 @@ defineComponent({
     const summaryPopup = ref(null)
     const textPopup = ref(null)
     const chartPopup = ref(null)
+    const cropPopup = ref(null)
 
     const imagePath = ref('')
     const textContent = ref('')
@@ -127,6 +128,7 @@ defineComponent({
       summaryPopup.value = selectComponent('#summary-popup')
       textPopup.value = selectComponent('#text-popup')
       chartPopup.value = selectComponent('#chart-popup')
+      cropPopup.value = selectComponent('#crop-popup')
     })
 
     const scrollTop = ref(0)
@@ -257,6 +259,9 @@ defineComponent({
         return // exit if no image selected
       }
 
+      // 用户裁剪图片
+      imagePath.value = await cropPopup.value.show(imagePath.value)
+
       const texts = await handleOcr(imagePath.value)
       textContent.value = texts.join('\n')
       const bills = await analyzeBillsFromText(textContent.value)
@@ -273,9 +278,9 @@ defineComponent({
 
     const handleTextBills = async () => {
       textContent.value = await textPopup.value.show('', {
-          placeholder: '请输入账单文本内容...',
-          confirmText: 'AI 识别',
-        })
+        placeholder: '请输入账单文本内容...',
+        confirmText: 'AI 识别',
+      })
       const bills = await analyzeBillsFromText(textContent.value)
       if (bills && bills.length > 0) {
         if (bills.length > MAX_BATCH_BILLS) {

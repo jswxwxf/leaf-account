@@ -17,7 +17,8 @@
     "summary-popup": "./summary-popup/index",
     "text-popup": "./text-popup/index",
     "check-view": "./check-view/index",
-    "chart-popup": "./chart-popup/index"
+    "chart-popup": "./chart-popup/index",
+    "crop-popup": "./crop-popup/index"
   },
   "styleIsolation": "apply-shared"
 }
