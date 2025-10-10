@@ -243,14 +243,22 @@ defineComponent({
       }
     }
 
-    const handlePhotoBills = async () => {
+    const handlePhotoBills = async (source = 'media') => {
       try {
-        const res = await wx.chooseMedia({
-          count: 1,
-          mediaType: ['image'],
-          sourceType: ['album', 'camera'],
-        })
-        imagePath.value = res.tempFiles[0].tempFilePath
+        if (source === 'chat') {
+          const { tempFiles } = await wx.chooseMessageFile({
+            count: 1,
+            type: 'image',
+          })
+          imagePath.value = tempFiles[0].path
+        } else {
+          const { tempFiles } = await wx.chooseMedia({
+            count: 1,
+            mediaType: ['image'],
+            sourceType: ['album', 'camera'],
+          })
+          imagePath.value = tempFiles[0].tempFilePath
+        }
       } catch (err) {
         // Handle cancellation
         if (err.errMsg && !err.errMsg.includes('cancel')) {
@@ -361,6 +369,10 @@ defineComponent({
       }
       if (action.detail.value === 'photo') {
         handlePhotoBills()
+        return
+      }
+      if (action.detail.value === 'chat-photo') {
+        handlePhotoBills('chat')
         return
       }
       if (action.detail.value === 'text') {

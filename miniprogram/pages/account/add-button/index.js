@@ -12,6 +12,7 @@ defineComponent({
     const actions = ref([
       { name: '✍️ 记入多笔', value: 'batch' },
       { name: '📸 识图记帐', value: 'photo' },
+      { name: '💬 聊图记账', value: 'chat-photo' },
       { name: '⌨️ 文字记帐', value: 'text' },
       // { name: '语音记帐', value: 'voice' },
       { name: '📑 批量修改', value: 'batch-edit' },
