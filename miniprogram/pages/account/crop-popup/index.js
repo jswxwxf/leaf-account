@@ -137,26 +137,11 @@ defineComponent({
         // 将原始图片的裁剪区域，绘制到与裁剪框等大的离屏画布上
         ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, cropBox.width, cropBox.height)
 
-        // 将离屏Canvas转为临时文件路径
         const dataURL = offscreenCanvas.toDataURL()
-        const fs = wx.getFileSystemManager()
-        const tempFilePath = `${wx.env.USER_DATA_PATH}/crop_${Date.now()}.png`
-
-        fs.writeFile({
-          filePath: tempFilePath,
-          data: dataURL.split(',')[1],
-          encoding: 'base64',
-          success: () => {
-            if (_resolve) {
-              _resolve(tempFilePath)
-            }
-            onClose()
-          },
-          fail: (err) => {
-            console.error('Failed to write temp file', err)
-            if(_reject) _reject(err)
-          }
-        })
+        if (_resolve) {
+          _resolve(dataURL)
+        }
+        onClose()
       }
       img.src = imagePath.value
     }

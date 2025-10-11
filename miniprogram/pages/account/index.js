@@ -118,7 +118,7 @@ defineComponent({
 
     const { processBill } = useBillPopup(state, billPopup)
     const { handleOcr } = useProcessPhoto()
-    const { analyzeBillsFromText } = useAi()
+    const { analyzeBillsFromImage } = useAi()
 
     onReady(() => {
       billPopup.value = selectComponent('#bill-popup')
@@ -270,9 +270,9 @@ defineComponent({
       // 用户裁剪图片
       imagePath.value = await cropPopup.value.show(imagePath.value)
 
-      const texts = await handleOcr(imagePath.value)
-      textContent.value = texts.join('\n')
-      const bills = await analyzeBillsFromText(textContent.value)
+      // const texts = await handleOcr(imagePath.value)
+      // textContent.value = texts.join('\n')
+      const bills = await analyzeBillsFromImage(imagePath.value)
       if (bills && bills.length > 0) {
         if (bills.length > MAX_BATCH_BILLS) {
           Toast.fail(`单次识别账单数量不能超过 ${MAX_BATCH_BILLS} 条`)
