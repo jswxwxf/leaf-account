@@ -118,7 +118,7 @@ defineComponent({
 
     const { processBill } = useBillPopup(state, billPopup)
     const { handleOcr } = useProcessPhoto()
-    const { analyzeBillsFromImage } = useAi()
+    const { analyzeBillsFromText, analyzeBillsFromImage } = useAi()
 
     onReady(() => {
       billPopup.value = selectComponent('#bill-popup')
