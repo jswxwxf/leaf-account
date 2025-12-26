@@ -34,6 +34,7 @@ const {
   deactivateAccount,
   updateAccount,
   getAccountYears,
+  getAccountPeriod,
   exportAccount,
   importAccount,
 } = require('./service/account.js')
@@ -165,6 +166,14 @@ exports.main = (event, context) => {
     ctx.body = { code: 200, success: true, message: '获取成功', data }
   })
 
+  /**
+   * @desc 获取账本的账单时间范围
+   * @returns {{minDate: number, maxDate: number}} data - 包含最早和最晚时间戳的对象
+   */
+  app.router('/get/account/period', async (ctx) => {
+    const data = await getAccountPeriod(event, models)
+    ctx.body = { code: 200, success: true, message: '获取成功', data }
+  })
   /**
    * @desc 导出账本数据
    * @returns {object[]} data - 格式化后的账单数据

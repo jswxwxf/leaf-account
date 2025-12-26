@@ -419,6 +419,47 @@ async function getAccountYears(event, models) {
   return result.list.map((item) => item._id)
 }
 
+
+/**
+ * 获取账本的账单时间范围.
+ * @param {object} event - 云函数事件对象
+ * @param {object} models - 数据模型实例
+ * @returns {Promise<{minDate: number, maxDate: number}>} - 包含最早和最晚时间戳的对象
+ */
+async function getAccountPeriod(event, models) {
+  const { accountId } = event.query
+  const { OPENID } = cloud.getWXContext()
+
+  const $ = db.command.aggregate
+
+  // 1. 使用聚合一次性找出最早和最晚的账单日期
+  const aggregateResult = await db
+    .collection('bill')
+    .aggregate()
+    .match({
+      _openid: OPENID,
+      account: accountId,
+    })
+    .group({
+      _id: null,
+      minDate: $.min('$datetime'),
+      maxDate: $.max('$datetime'),
+    })
+    .end()
+
+  if (aggregateResult.list.length === 0) {
+    return []
+  }
+
+  const { minDate, maxDate } = aggregateResult.list[0]
+
+  // 2. 直接返回 minDate 和 maxDate 的时间戳
+  return {
+    minDate,
+    maxDate,
+  }
+}
+
 /**
  * 导出账本的所有账单数据为 Excel 文件。
  * 这是一个异步任务，会逐步更新任务进度。
@@ -826,6 +867,7 @@ module.exports = {
   _updateAccount,
   updateAccount,
   getAccountYears,
+  getAccountPeriod,
   exportAccount,
   importAccount,
 }

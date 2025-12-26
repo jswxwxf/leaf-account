@@ -124,3 +124,17 @@ export function getAccountYears(accountId) {
     },
   })
 }
+
+/**
+ * 获取账本的账单时间范围
+ * @param {string} accountId - 账本ID
+ * @returns {Promise<{minDate: number, maxDate: number}>}
+ */
+export function getAccountPeriod(accountId) {
+  return get('bill-cloud', {
+    $url: '/get/account/period',
+    query: {
+      accountId,
+    },
+  })
+}

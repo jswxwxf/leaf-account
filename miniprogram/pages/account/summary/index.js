@@ -1,6 +1,7 @@
 import { defineComponent, inject, ref, watch } from '@vue-mini/core'
 import { storeKey } from '../store'
 import { onTabChange } from '@/utils/index.js'
+import { getAccountMonths } from '@/service/account-service.js'
 
 defineComponent({
   properties: {
@@ -27,21 +28,27 @@ defineComponent({
       { text: '收入', value: '10' },
     ])
 
-    const generateMonthOptions = () => {
-      const options = [{ text: '全部', value: '' }]
-      const current = new Date()
-      const year = current.getFullYear()
-      const currentMonth = current.getMonth() + 1
-      for (let i = currentMonth; i >= 1; i--) {
-        const month = i.toString().padStart(2, '0')
-        options.push({
-          text: `${year}年${month}月`,
-          value: `${year}-${month}`,
-        })
-      }
-      return options
-    }
-    const monthOptions = ref(generateMonthOptions())
+    const monthOptions = ref([{ text: '全部', value: '' }])
+
+    watch(
+      currentAccount,
+      async (newAccount) => {
+        if (newAccount && newAccount._id) {
+          try {
+            const months = await getAccountMonths(newAccount._id)
+            const options = months.map((month) => ({
+              text: `${month.slice(0, 4)}年${month.slice(5)}月`,
+              value: month,
+            }))
+            monthOptions.value = [{ text: '全部', value: '' }, ...options]
+          } catch (error) {
+            console.error('获取账本月份失败:', error)
+            monthOptions.value = [{ text: '全部', value: '' }]
+          }
+        }
+      },
+      { immediate: true },
+    )
 
     const handleDateChange = (e) => {
       monthValue.value = e.detail
