@@ -4,7 +4,7 @@ import { getAccountPeriod } from '@/api/account.js'
 /**
  * 获取账本的所有月份，并处理业务逻辑
  * @param {string} accountId - 账本ID
- * @returns {Promise<string[]>} - 返回 YYYY-MM 格式的月份字符串数组
+ * @returns {Promise<number[]>} - 返回月份时间戳数组
  */
 export async function getAccountMonths(accountId) {
   const res = await getAccountPeriod(accountId)
@@ -12,7 +12,7 @@ export async function getAccountMonths(accountId) {
   if (!res.data || !res.data.minDate) {
     // 如果没有账单，则只返回当前月份
     const now = dayjs()
-    return [now.format('YYYY-MM')]
+    return [now.valueOf()]
   }
 
   const { minDate, maxDate } = res.data
@@ -25,7 +25,7 @@ export async function getAccountMonths(accountId) {
   const endDate = lastDateFromBill.isAfter(today) ? lastDateFromBill : today
 
   while (currentDate.isBefore(endDate) || currentDate.isSame(endDate, 'month')) {
-    months.push(currentDate.format('YYYY-MM'))
+    months.push(currentDate.valueOf())
     currentDate = currentDate.add(1, 'month')
   }
 

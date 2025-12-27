@@ -1,4 +1,5 @@
 import { defineComponent, inject, ref, watch } from '@vue-mini/core'
+import dayjs from 'dayjs'
 import { storeKey } from '../store'
 import { onTabChange } from '@/utils/index.js'
 import { getAccountMonths } from '@/service/account-service.js'
@@ -28,23 +29,26 @@ defineComponent({
       { text: '收入', value: '10' },
     ])
 
-    const monthOptions = ref([{ text: '全部', value: '' }])
+    const now = dayjs()
+    const currentMonth = now.format('YYYY-MM')
+    const monthOptions = ref([
+      { text: '全部', value: '' },
+      { text: now.format('YYYY年MM月'), value: now.format('YYYY-MM') },
+    ])
 
     watch(
       currentAccount,
       async (newAccount) => {
         if (newAccount && newAccount._id) {
-          try {
-            const months = await getAccountMonths(newAccount._id)
-            const options = months.map((month) => ({
-              text: `${month.slice(0, 4)}年${month.slice(5)}月`,
-              value: month,
-            }))
-            monthOptions.value = [{ text: '全部', value: '' }, ...options]
-          } catch (error) {
-            console.error('获取账本月份失败:', error)
-            monthOptions.value = [{ text: '全部', value: '' }]
-          }
+          const months = await getAccountMonths(newAccount._id)
+          const options = months.map((timestamp) => {
+            const date = dayjs(timestamp)
+            return {
+              text: date.format('YYYY年MM月'),
+              value: date.format('YYYY-MM'),
+            }
+          })
+          monthOptions.value = [{ text: '全部', value: '' }, ...options]
         }
       },
       { immediate: true },
