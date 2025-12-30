@@ -278,7 +278,7 @@ export default function store() {
     currentAccount.value = newAccount
     resetQuery()
     await loadAccount()
-    loadData()
+    // loadData() // 这里交由 onShow 加载数据
   })
 
   // 初始化时获取数据
@@ -289,7 +289,9 @@ export default function store() {
 
   // 页面显示时刷新数据
   onShow(() => {
-    loadData()
+    // 如果用户切换了账本，则需要等待账本信息加载完再刷新数据
+    // 使用 setTimeout 0 大法等待 onAccountChange 代码执行完成
+    setTimeout(() => loadData(), 0)
   })
 
   return {
