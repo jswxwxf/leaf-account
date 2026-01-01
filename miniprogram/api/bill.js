@@ -1,5 +1,5 @@
 import { get, post } from './request-cloud.js'
-import { getMonthRange } from '@/utils/date.js'
+import { getMonthRange, getYearRange } from '@/utils/date.js'
 import dayjs from '@/vendor/dayjs/esm/index.js'
 
 /**
@@ -22,11 +22,22 @@ import dayjs from '@/vendor/dayjs/esm/index.js'
  */
 function processQuery(query) {
   const finalQuery = { ...query }
-  // 处理月份范围
+  // 处理月份/年份范围
   if (finalQuery.month) {
-    const { startTime, endTime } = getMonthRange(finalQuery.month)
-    finalQuery.startTime = startTime
-    finalQuery.endTime = endTime
+    if (finalQuery.month !== '全部') {
+      console.log(finalQuery.month)
+      let startTime, endTime
+      // 判断是年份还是月份：如果以"年"结尾，则为年份
+      if (finalQuery.month.endsWith('年')) {
+        // 年份查询，例如 "2026年"
+        ;({ startTime, endTime } = getYearRange(finalQuery.month))
+      } else {
+        // 月份查询，例如 "2026年01月"
+        ;({ startTime, endTime } = getMonthRange(finalQuery.month))
+      }
+      finalQuery.startTime = startTime
+      finalQuery.endTime = endTime
+    }
     delete finalQuery.month
   }
 
@@ -182,8 +193,8 @@ export function groupBillsBy(dimension, query = {}) {
     throw new Error('groupBillsBy 函数需要 dimension 参数')
   }
   if (query.accounts && query.accounts.length > 0) {
-    query.accountIds = query.accounts.map(acc => acc._id);
-    delete query.accounts;
+    query.accountIds = query.accounts.map((acc) => acc._id)
+    delete query.accounts
   }
   return get('bill-cloud', {
     $url: '/group/bills',

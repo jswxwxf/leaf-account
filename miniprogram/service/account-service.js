@@ -31,8 +31,9 @@ export async function getAccountMonths(accountId) {
 }
 
 /**
- * 获取所有账本的月份选项列表
- * @returns {Promise<string[]>} - 返回格式化的月份字符串数组
+ * 获取所有账本的月份选项列表，包含年份选项
+ * 年份选项会插入在每年月份的前面
+ * @returns {Promise<string[]>} - 返回格式化的月份字符串数组（包含年份）
  */
 export async function getAllMonths() {
   const res = await getAccountPeriod()
@@ -46,7 +47,29 @@ export async function getAllMonths() {
   const end = dayjs(maxDate).startOf('month')
   const monthCount = end.diff(start, 'month') + 1
 
-  return Array.from({ length: monthCount }, (_, index) => {
+  // 生成所有月份
+  const months = Array.from({ length: monthCount }, (_, index) => {
     return start.add(index, 'month').format('YYYY年MM月')
   }).reverse()
+
+  // 按年份分组
+  const monthsByYear = {}
+  months.forEach((month) => {
+    const year = month.split('年')[0]
+    if (!monthsByYear[year]) {
+      monthsByYear[year] = []
+    }
+    monthsByYear[year].push(month)
+  })
+
+  // 构建最终列表：每年前面插入年份选项
+  const result = ['全部']
+  Object.keys(monthsByYear)
+    .sort((a, b) => b - a) // 年份降序
+    .forEach((year) => {
+      result.push(`${year}年`) // 添加年份选项
+      result.push(...monthsByYear[year]) // 添加该年的所有月份
+    })
+
+  return result
 }

@@ -78,12 +78,24 @@ export function parseDate(dateString) {
 
 /**
  * 获取指定月份的开始和结束时间戳
- * @param {string} monthString - 月份字符串 (YYYY-MM)
+ * @param {string} monthString - 月份字符串 (YYYY-MM 或 YYYY年MM月)
  * @returns {{startTime: number, endTime: number}}
  */
 export function getMonthRange(monthString) {
   const date = dayjs(monthString, 'YYYY-MM')
   const startTime = date.startOf('month').valueOf()
   const endTime = date.endOf('month').valueOf()
+  return { startTime, endTime }
+}
+
+/**
+ * 获取指定年份的开始和结束时间戳
+ * @param {string} yearString - 年份字符串 (YYYY年MM月 格式会被解析为年份)
+ * @returns {{startTime: number, endTime: number}}
+ */
+export function getYearRange(yearString) {
+  const date = dayjs(yearString, 'YYYY年')
+  const startTime = date.startOf('year').valueOf()
+  const endTime = date.endOf('year').valueOf()
   return { startTime, endTime }
 }

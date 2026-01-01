@@ -17,7 +17,7 @@
         wx:for="{{ months }}"
         wx:key="*this"
         type="{{ selectedMonth === item ? 'primary' : 'default' }}"
-        custom-class="w-full"
+        custom-class="w-full btn-text-left"
         block
         bind:tap="handleSelect"
         data-item="{{ item }}"

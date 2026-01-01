@@ -21,7 +21,7 @@ defineComponent({
       // 单选模式，value 现在是字符串
       selectedMonth.value = value || null
 
-      // 加载月份列表，如果失败会保持初始默认值
+      // 加载月份列表（已包含年份选项），如果失败会保持初始默认值
       const result = await getAllMonths()
       if (result) {
         months.value = result
