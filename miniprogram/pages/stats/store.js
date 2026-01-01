@@ -11,7 +11,7 @@ export default function store() {
   const groupedBills = ref([])
 
   const dimension = ref('category')
-  const monthValue = ref(dayjs().format('MM'))
+  const monthValue = ref(dayjs().format('YYYY年MM月'))
   const checkedValue = ref(['exclude'])
   const typeValue = ref('20')
 

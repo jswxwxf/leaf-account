@@ -58,7 +58,7 @@
     <view class="flex justify-between items-center gap-2">
       <view class="flex-1 px-2 py-1 text-sm leading-5 select-none" style="box-shadow: 0 0 5px rgba(0, 0, 0, 0.2)">
         <text class="text-sm text-slate-400">月份：</text>
-        <text class="text-sm font-bold text-slate-700">{{ tools.formatMonth(monthValue) }}</text>
+        <text class="text-sm font-bold text-slate-700">{{ monthValue }}</text>
       </view>
       <van-button
         type="primary"

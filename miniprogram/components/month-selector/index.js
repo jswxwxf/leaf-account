@@ -1,19 +1,12 @@
-import { defineComponent, ref, computed } from '@vue-mini/core'
+import { defineComponent, ref } from '@vue-mini/core'
 import { onTabChange } from '@/utils/index.js'
-
-const generateMonths = () => {
-  const months = []
-  for (let i = 1; i <= 12; i++) {
-    const month = i.toString().padStart(2, '0')
-    months.push(month)
-  }
-  return months
-}
+import { getAllMonths } from '@/service/account-service.js'
+import dayjs from 'dayjs'
 
 defineComponent({
   setup(props, { triggerEvent }) {
     const visible = ref(false)
-    const months = generateMonths()
+    const months = ref([dayjs().format('YYYY年MM月')])
     const selectedMonth = ref(null)
     const options = ref({})
 
@@ -23,11 +16,19 @@ defineComponent({
       handleClose()
     })
 
-    const show = (value, opts = {}) => {
+    const show = async (value, opts = {}) => {
       options.value = opts
-      visible.value = true
       // 单选模式，value 现在是字符串
       selectedMonth.value = value || null
+
+      // 加载月份列表，如果失败会保持初始默认值
+      const result = await getAllMonths()
+      if (result) {
+        months.value = result
+      }
+
+      visible.value = true
+
       return new Promise((resolve, reject) => {
         _resolve = resolve
         _reject = reject

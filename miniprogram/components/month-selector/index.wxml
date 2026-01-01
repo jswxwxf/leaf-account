@@ -22,15 +22,7 @@
         bind:tap="handleSelect"
         data-item="{{ item }}"
       >
-        {{ item }}月
-      </van-button>
-      <van-button
-        type="{{ selectedMonth === item ? 'primary' : 'default' }}"
-        custom-class="w-full"
-        block
-        @tap="onSelectAllYear"
-      >
-        全年
+        {{ item }}
       </van-button>
     </view>
   </view>

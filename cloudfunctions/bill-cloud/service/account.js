@@ -427,19 +427,24 @@ async function getAccountYears(event, models) {
  * @returns {Promise<{minDate: number, maxDate: number}>} - 包含最早和最晚时间戳的对象
  */
 async function getAccountPeriod(event, models) {
-  const { accountId } = event.query
+  const { accountId } = event.query || {}
   const { OPENID } = cloud.getWXContext()
 
   const $ = db.command.aggregate
+
+  // 构建动态匹配条件
+  const matchCondition = { _openid: OPENID }
+  if (accountId) {
+    // 如果提供了 accountId，则只查询该账户的账单
+    matchCondition.account = accountId
+  }
+  // 如果不提供 accountId，则查询用户所有账户的账单
 
   // 1. 使用聚合一次性找出最早和最晚的账单日期
   const aggregateResult = await db
     .collection('bill')
     .aggregate()
-    .match({
-      _openid: OPENID,
-      account: accountId,
-    })
+    .match(matchCondition)
     .group({
       _id: null,
       minDate: $.min('$datetime'),
@@ -448,7 +453,7 @@ async function getAccountPeriod(event, models) {
     .end()
 
   if (aggregateResult.list.length === 0) {
-    return []
+    return { minDate: null, maxDate: null }
   }
 
   const { minDate, maxDate } = aggregateResult.list[0]

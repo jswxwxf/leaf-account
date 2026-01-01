@@ -16,18 +16,37 @@ export async function getAccountMonths(accountId) {
   }
 
   const { minDate, maxDate } = res.data
-  const months = []
-  let currentDate = dayjs(minDate)
+  const start = dayjs(minDate).startOf('month')
 
   // 结束日期取 maxDate 和当前月份中更晚的那个
-  const lastDateFromBill = dayjs(maxDate)
-  const today = dayjs()
-  const endDate = lastDateFromBill.isAfter(today) ? lastDateFromBill : today
+  const lastDateFromBill = dayjs(maxDate).startOf('month')
+  const today = dayjs().startOf('month')
+  const end = lastDateFromBill.isAfter(today) ? lastDateFromBill : today
 
-  while (currentDate.isBefore(endDate) || currentDate.isSame(endDate, 'month')) {
-    months.push(currentDate.valueOf())
-    currentDate = currentDate.add(1, 'month')
+  const monthCount = end.diff(start, 'month') + 1
+
+  return Array.from({ length: monthCount }, (_, index) => {
+    return start.add(index, 'month').valueOf()
+  }).reverse()
+}
+
+/**
+ * 获取所有账本的月份选项列表
+ * @returns {Promise<string[]>} - 返回格式化的月份字符串数组
+ */
+export async function getAllMonths() {
+  const res = await getAccountPeriod()
+  const { minDate, maxDate } = res.data
+
+  if (!minDate || !maxDate) {
+    return
   }
 
-  return months.reverse()
+  const start = dayjs(minDate).startOf('month')
+  const end = dayjs(maxDate).startOf('month')
+  const monthCount = end.diff(start, 'month') + 1
+
+  return Array.from({ length: monthCount }, (_, index) => {
+    return start.add(index, 'month').format('YYYY年MM月')
+  }).reverse()
 }

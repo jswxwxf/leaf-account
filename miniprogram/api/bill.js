@@ -181,9 +181,6 @@ export function groupBillsBy(dimension, query = {}) {
   if (!dimension) {
     throw new Error('groupBillsBy 函数需要 dimension 参数')
   }
-  if (query.month) {
-    query.month = dayjs().year() + '年' + query.month + '月'
-  }
   if (query.accounts && query.accounts.length > 0) {
     query.accountIds = query.accounts.map(acc => acc._id);
     delete query.accounts;
