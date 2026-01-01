@@ -1176,7 +1176,7 @@ async function groupBills(event, models) {
     const { data: transferCategories } = await db
       .collection('category')
       .where({
-        name: _.in(['转账', '收转账']),
+        name: _.in(['转账', '收转账', '家存']),
         _openid: _.exists(false),
       })
       .field({ _id: true })
