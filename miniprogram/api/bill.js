@@ -25,7 +25,6 @@ function processQuery(query) {
   // 处理月份/年份范围
   if (finalQuery.month) {
     if (finalQuery.month !== '全部') {
-      console.log(finalQuery.month)
       let startTime, endTime
       // 判断是年份还是月份：如果以"年"结尾，则为年份
       if (finalQuery.month.endsWith('年')) {

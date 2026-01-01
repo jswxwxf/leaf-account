@@ -53,14 +53,14 @@ export async function getAllMonths() {
   }).reverse()
 
   // 按年份分组
-  const monthsByYear = {}
-  months.forEach((month) => {
+  const monthsByYear = months.reduce((acc, month) => {
     const year = month.split('年')[0]
-    if (!monthsByYear[year]) {
-      monthsByYear[year] = []
+    if (!acc[year]) {
+      acc[year] = []
     }
-    monthsByYear[year].push(month)
-  })
+    acc[year].push(month)
+    return acc
+  }, {})
 
   // 构建最终列表：每年前面插入年份选项
   const result = ['全部']
