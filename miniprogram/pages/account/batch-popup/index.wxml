@@ -28,7 +28,7 @@
                 type="short"
                 placeholder="输入日期"
                 field="datetime"
-                rule="required"
+                rule="required|past"
                 show-error="{{ false }}"
                 bind:change="handleFormChange"
                 data-field="datetime"

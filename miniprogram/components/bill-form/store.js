@@ -1,6 +1,7 @@
 import { ref } from '@vue-mini/core'
 import { validate as _validate, register, setLocales, setOptions, zh } from 'robust-validator'
 import { isEmpty as _isEmpty } from 'lodash'
+import dayjs from '@/vendor/dayjs/esm/index.js'
 
 setLocales(zh)
 setOptions({ language: 'zh' })
@@ -28,6 +29,15 @@ function isPositive(value) {
 
 register('positive', isPositive, {
   zh: '该字段是必须的.',
+})
+
+function isPast(value) {
+  if (!value) return false
+  return dayjs(value).isBefore(dayjs())
+}
+
+register('past', isPast, {
+  zh: '该字段必须是过去的时间.',
 })
 
 export default function store() {

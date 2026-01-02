@@ -14,7 +14,7 @@
           label="日期"
           value="{{ bill.datetime }}"
           field="datetime"
-          rule="required"
+          rule="required|past"
           data-field="datetime"
           @change="handleFormChange"
         />
