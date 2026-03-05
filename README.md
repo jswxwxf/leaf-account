@@ -88,6 +88,3 @@
 └── vite.config.mts         # weapp-vite 配置
 ```
 
-## 贡献
-
-欢迎提交 PR 和 Issue，一起完善这个项目！
