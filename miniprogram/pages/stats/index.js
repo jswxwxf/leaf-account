@@ -50,18 +50,26 @@ defineComponent({
       })
     }
 
+    function extractMonth(str) {
+      if (!str || str === '全部') return ''
+      // 处理 2024年03月 或 2024-03 转化为 2024-03
+      return str.replace('年', '-').replace('月', '')
+    }
+
     const onItemTap = (e) => {
       if (selectedAccounts.value.length > 1) return
       // 如果只选中一个账本，点击可以跳到对应的帐本明细
       let account = selectedAccounts.value[0]
       let category
-      let month = monthValue.value ? `${new Date().getFullYear()}-${monthValue.value}` : ''
+      let month = ''
       let exclude = checkedValue.value.includes('exclude')
+
       if (dimension.value === 'category') {
         category = e.detail.groupInfo
+        month = extractMonth(monthValue.value)
       } else {
-        // 当按月份分组时，e.detail._id 就是 'YYYY-MM' 格式的字符串
-        month = e.detail._id
+        // 当按月份分组时，e.detail._id 就是原始 ID
+        month = extractMonth(e.detail._id)
       }
       wx.setTabBarItem({
         index: 0,
