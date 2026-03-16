@@ -1,6 +1,6 @@
 <wxs src="../../../utils/utils.wxs" module="utils" />
 
-<view class="bg-white shadow-sm mb-2" hidden="{{ filteredBills.length === 0 }}" style="--checkbox-label-margin: 8px">
+<view class="bg-white shadow-sm mb-2" hidden="{{ bills.length === 0 }}" style="--checkbox-label-margin: 8px">
   <van-cell-group>
     <van-cell>
       <view slot="title" class="flex justify-between items-center whitespace-nowrap">
@@ -22,7 +22,7 @@
         </view>
       </view>
     </van-cell>
-    <block wx:for="{{ filteredBills }}" wx:key="_id" wx:for-item="bill">
+    <block wx:for="{{ bills }}" wx:key="_id" wx:for-item="bill">
       <van-swipe-cell class="swipe-cell" right-width="{{ 64 * 3 }}" disabled="{{ billPopped || batchEditPopped }}">
         <van-cell custom-class="{{ utils.isToday(bill.createdAt) ? 'bill-item--today' : '' }}">
           <view class="flex items-center">

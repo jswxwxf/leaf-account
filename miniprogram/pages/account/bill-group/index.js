@@ -58,20 +58,18 @@ defineComponent({
       })
     }
 
-    const filteredBills = computed(() => {
-      // 经过重构，检索已经变为服务端的全局查询
-      // 此处不再需要在前端基于 searchText 过滤
+    const bills = computed(() => {
       return props.item.bills
     })
 
     const allChecked = computed(() => {
-      if (filteredBills.value.length === 0) return false
-      return filteredBills.value.every((bill) => batchChecked.value[bill._id] === true)
+      if (bills.value.length === 0) return false
+      return bills.value.every((bill) => batchChecked.value[bill._id] === true)
     })
 
     const toggleAll = () => {
       const shouldCheck = !allChecked.value
-      filteredBills.value.forEach((bill) => {
+      bills.value.forEach((bill) => {
         onBatchCheck(bill, shouldCheck)
       })
     }
@@ -81,7 +79,7 @@ defineComponent({
       toggleAll,
       billPopped,
       batchEditPopped,
-      filteredBills,
+      bills,
       batchChecked,
       onBatchCheck,
       handleCopy,
