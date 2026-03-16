@@ -9,7 +9,7 @@ import { storeKey, MAX_BATCH_BILLS } from '../store'
 
 defineComponent({
   setup(props, { selectAllComponents }) {
-    const { searchText, updateSearchText, notes } = inject(storeKey)
+    const { notes } = inject(storeKey)
 
     const visible = ref(false)
     const list = ref([])
@@ -193,8 +193,6 @@ defineComponent({
       handleAddRow,
       handleDeleteRow,
       handleCopyRow,
-      searchText,
-      updateSearchText,
     }
   },
 })

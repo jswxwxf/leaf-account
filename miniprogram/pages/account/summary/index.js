@@ -14,14 +14,19 @@ defineComponent({
   setup(props, { triggerEvent, selectComponent }) {
     const {
       currentAccount,
+      queryData,
       monthValue,
       totalExpense,
       totalIncome,
       totalBalance,
       queryDropDownClosed,
-      searchText,
-      updateSearchText,
     } = inject(storeKey)
+
+    const searchText = ref('')
+
+    const updateSearchText = (e) => {
+      searchText.value = e.detail
+    }
 
     const typeOptions = ref([
       { text: '全部', value: '' },
@@ -66,6 +71,32 @@ defineComponent({
       selectComponent('#query-cell').clearQueryData()
     }
 
+    // 更新 handleSearch 逻辑以使用本地 searchText 并修改全局 queryData
+    const handleSearch = () => {
+      const keyword = searchText.value.trim()
+      if (!keyword) return
+
+      // 所有条件置空，只保留备注
+      queryData.value = { note: keyword }
+      // 日期置为空
+      monthValue.value = ''
+    }
+
+    // 更新 handleClearSearch 重置查询条件
+    const handleClearSearch = () => {
+      handleClearQuery()
+      handleResetMonth()
+    }
+
+    const handleClearQuery = () => {
+      searchText.value = ''
+      queryData.value = {}
+    }
+
+    const handleResetMonth = () => {
+      monthValue.value = currentMonth
+    }
+
     watch(queryDropDownClosed, () => {
       selectComponent('#query-dropdown').toggle(false)
     })
@@ -84,6 +115,10 @@ defineComponent({
       totalIncome,
       totalBalance,
       handleDateChange,
+      handleClearQuery,
+      handleResetMonth,
+      handleClearSearch,
+      handleSearch,
       onBalanceTap,
       searchText,
       updateSearchText,

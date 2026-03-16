@@ -1,5 +1,5 @@
 import { ref, computed, onShow, watch } from '@vue-mini/core'
-import { sumBy, orderBy } from 'lodash'
+import { sumBy, orderBy, debounce } from 'lodash'
 import dayjs from 'dayjs'
 import { getBills } from '@/api/bill.js'
 import { getAccount } from '@/api/account.js'
@@ -81,16 +81,10 @@ function useBills(rawBills, monthValue, queryData) {
 }
 
 function useUIState(rawBills) {
-  const searchText = ref('')
-
   const billPopped = ref(false)
   const batchEditPopped = ref(false)
 
   const queryDropDownClosed = ref()
-
-  function updateSearchText(e) {
-    searchText.value = e.detail
-  }
 
   const notes = computed(() => {
     const allNotes = rawBills.value.map((bill) => bill.note).filter(Boolean)
@@ -101,12 +95,10 @@ function useUIState(rawBills) {
   })
 
   return {
-    searchText,
     billPopped,
     batchEditPopped,
     notes,
     queryDropDownClosed,
-    updateSearchText,
   }
 }
 
@@ -253,14 +245,14 @@ export default function store() {
     await fetchBills(query, false)
   }
 
-  // 刷新数据
-  function loadData() {
+  // 刷新数据 (带防抖，防止多次改动条件触发多次请求)
+  const loadData = debounce(() => {
     const query = {
       ...queryData.value,
       month: monthValue.value,
     }
     return resetAndFetchBills(query)
-  }
+  }, 100)
 
   onQueryChange((query) => {
     monthValue.value = query.month
@@ -284,11 +276,11 @@ export default function store() {
     // loadData() // 这里交由 onShow 加载数据
   })
 
-  // 初始化时获取数据
-  ;(async function (params) {
-    await loadAccount()
-    loadData()
-  })()
+    // 初始化时获取数据
+    ; (async function (params) {
+      await loadAccount()
+      loadData()
+    })()
 
   // 页面显示时刷新数据
   onShow(() => {

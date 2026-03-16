@@ -14,7 +14,7 @@ defineComponent({
     },
   },
   setup(props, { triggerEvent, selectAllComponents }) {
-    const { searchText, billPopped, batchEditPopped, batchChecked, onBatchCheck } = inject(storeKey)
+    const { billPopped, batchEditPopped, batchChecked, onBatchCheck } = inject(storeKey)
 
     const clearSwipers = () => {
       selectAllComponents('.swipe-cell').forEach((cell) => {
@@ -59,9 +59,9 @@ defineComponent({
     }
 
     const filteredBills = computed(() => {
-      return props.item.bills.filter((bill) => {
-        return bill.note.includes(searchText.value.trim())
-      })
+      // 经过重构，检索已经变为服务端的全局查询
+      // 此处不再需要在前端基于 searchText 过滤
+      return props.item.bills
     })
 
     const allChecked = computed(() => {

@@ -11,29 +11,45 @@
     class="relative"
     style="--dropdown-menu-background-color: rgba(0, 0, 0, 0.5); --dropdown-menu-title-text-color: white"
   >
-    <van-dropdown-menu active-color="#5A9E62" style="--dropdown-menu-height: 45px">
-      <van-dropdown-item id="query-dropdown" title="查询" @open="clearQueryData">
-        <query-cell id="query-cell" />
-      </van-dropdown-item>
-      <van-dropdown-item
-        id="month-dropdown"
-        value="{{ monthValue }}"
-        options="{{ monthOptions }}"
-        popup-style="max-height: 60vh"
-        bind:change="handleDateChange"
-      />
-    </van-dropdown-menu>
+    <view class="relative">
+      <van-dropdown-menu active-color="#5A9E62" style="--dropdown-menu-height: 45px">
+        <van-dropdown-item id="query-dropdown" title="查询" @open="clearQueryData">
+          <query-cell id="query-cell" />
+        </van-dropdown-item>
+        <van-dropdown-item
+          id="month-dropdown"
+          value="{{ monthValue }}"
+          options="{{ monthOptions }}"
+          popup-style="max-height: 60vh"
+          bind:change="handleDateChange"
+        />
+      </van-dropdown-menu>
+      <!-- 下拉菜单右侧的清除与重置按钮覆盖层 -->
+      <view class="absolute inset-0 flex pointer-events-none z-10">
+        <view class="flex-1 flex justify-end items-center pr-2">
+          <view class="pointer-events-auto p-2" @tap.stop="handleClearQuery">
+            <van-icon name="close" color="white" size="16px" />
+          </view>
+        </view>
+        <view class="flex-1 flex justify-end items-center pr-2">
+          <view class="pointer-events-auto p-2" @tap.stop="handleResetMonth">
+            <van-icon name="clock-o" color="white" size="16px" />
+          </view>
+        </view>
+      </view>
+    </view>
     <van-field
       value="{{ searchText }}"
-      placeholder="在此输入检索已加载帐单备注"
+      placeholder="在此输入检索帐单备注"
       bind:change="updateSearchText"
       clearable
       custom-class="!bg-transparent"
       custom-style="--cell-background-color: rgba(0, 0, 0, 0.5); --field-input-text-color: white; --cell-font-size: 14px;"
+      @clear="handleClearSearch"
       placeholder-style="color: rgba(255, 255, 255, 0.7);"
     >
-      <view slot="right-icon">
-        <van-icon name="right-icon" name="search" color="white" />
+      <view slot="right-icon" class="flex items-center">
+        <van-icon name="search" color="white" @tap="handleSearch" />
       </view>
     </van-field>
     <view class="flex justify-between items-center px-2 text-sm bg-black/30">
