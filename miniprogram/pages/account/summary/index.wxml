@@ -40,7 +40,7 @@
     </view>
     <van-field
       value="{{ searchText }}"
-      placeholder="在此输入检索帐单备注"
+      placeholder="点此快捷搜索备注"
       bind:change="updateSearchText"
       clearable
       custom-class="!bg-transparent"

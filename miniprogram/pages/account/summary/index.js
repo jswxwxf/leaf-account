@@ -29,6 +29,16 @@ defineComponent({
       searchText.value = e.detail
     }
 
+    watch(
+      () => queryData.value.note,
+      (newNote) => {
+        const val = newNote || ''
+        if (searchText.value !== val) {
+          searchText.value = val
+        }
+      },
+    )
+
     const typeOptions = ref([
       { text: '全部', value: '' },
       { text: '支出', value: '20' },
