@@ -4,7 +4,7 @@ import { storeKey } from '../store'
 
 defineComponent({
   setup(props, { selectComponent }) {
-    const { searchText, updateSearchText, notes } = inject(storeKey)
+    const { notes } = inject(storeKey)
 
     const visible = ref(false)
     const bill = ref({})
@@ -51,7 +51,7 @@ defineComponent({
       const { field } = e.currentTarget.dataset
       let value = e.detail
       bill.value[field] = value
-      if (value.note) {
+      if (value?.note) {
         bill.value.note = value.note
       }
     }
@@ -64,13 +64,11 @@ defineComponent({
     return {
       visible,
       bill,
-      searchText,
       isTransferEditing,
       show,
       handleClose,
       handleConfirm,
       handleFormChange,
-      updateSearchText,
     }
   },
 })

@@ -19,7 +19,6 @@ function useBillPopup(state, billPopupRef) {
     currentAccount,
     queryData,
     monthValue,
-    searchText,
     updateBills,
     removeBills,
     updateAccountSummary,
@@ -36,7 +35,6 @@ function useBillPopup(state, billPopupRef) {
       billToUpsert = await billPopupRef.value.show(initialBill)
     } finally {
       billPopped.value = false
-      searchText.value = ''
     }
 
     if (billToUpsert) {
@@ -93,7 +91,6 @@ defineComponent({
       totalIncome,
       totalExpense,
       totalBalance,
-      searchText,
       billPopped,
       batchEditPopped,
       removeBills,
@@ -228,7 +225,6 @@ defineComponent({
         billPopped.value = false
         imagePath.value = ''
         textContent.value = ''
-        searchText.value = ''
       }
 
       if (bills && bills.length > 0) {

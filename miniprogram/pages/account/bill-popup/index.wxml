@@ -57,14 +57,7 @@
       <view>
         <van-button type="primary" size="small" @tap="handleConfirm" custom-class="w-20">确定</van-button>
       </view>
-      <view class="flex-1">
-        <van-field
-          value="{{ searchText }}"
-          placeholder="在此输入检索已加载帐单备注"
-          @change="updateSearchText"
-          clearable
-        />
-      </view>
+      <view class="flex-1" />
       <view class="flex justify-end items-center space-x-6">
         <view class="i-ep-close text-2xl" @tap="handleClose" />
       </view>

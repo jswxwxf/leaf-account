@@ -99,7 +99,7 @@ defineComponent({
       // 自定义组件的 value 在 e.detail 中，而不是 e.detail.value
       let value = e.detail
       list.value[rowIndex][field] = value
-      if (value.note) {
+      if (value?.note) {
         list.value[rowIndex].note = value.note
       }
     }
