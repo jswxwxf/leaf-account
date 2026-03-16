@@ -2,7 +2,7 @@ import { defineComponent, ref } from '@vue-mini/core'
 import { onTabChange } from '@/utils/index.js'
 
 defineComponent({
-  setup() {
+  setup(props, { selectComponent }) {
     const visible = ref(false) // 内部状态变量
     const minDate = new Date(new Date().getFullYear() - 5, 0, 1).getTime()
     const maxDate = new Date().getTime()
@@ -39,6 +39,11 @@ defineComponent({
       hide()
     }
 
+    const selectToday = () => {
+      _resolve(Date.now())
+      hide()
+    }
+
     return {
       visible, // WXML 中需要绑定 visible
       minDate,
@@ -47,6 +52,7 @@ defineComponent({
       show, // 暴露 show 方法
       onClose,
       onConfirm,
+      selectToday,
     }
   },
 })
