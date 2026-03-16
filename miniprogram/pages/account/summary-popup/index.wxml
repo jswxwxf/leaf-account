@@ -1,4 +1,4 @@
-<van-popup show="{{ visible }}" custom-style="height: 100%; width: 100%;" bind:close="handleClose">
+<van-popup show="{{ visible }}" custom-style="height: 100%; width: 100%;" @close="handleClose">
   <view class="h-full flex flex-col">
     <view class="flex w-full items-center justify-between px-2 py-1 drop-shadow-lg bg-white">
       <calendar-field label="记帐日期" border="{{ false }}" value="{{ currentDate }}" @change="handleDateChange" />

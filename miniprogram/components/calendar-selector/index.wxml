@@ -1,7 +1,7 @@
 <van-calendar
   show="{{ visible }}"
-  bind:close="onClose"
-  bind:confirm="onConfirm"
+  @close="onClose"
+  @confirm="onConfirm"
   min-date="{{ minDate }}"
   max-date="{{ maxDate }}"
   default-date="{{ defaultDate }}"

@@ -1,4 +1,4 @@
-<van-popup show="{{ visible }}" bind:close="onClose" closeable>
+<van-popup show="{{ visible }}" @close="onClose" closeable>
   <view class="p-4 h-full flex flex-col">
     <view class="mb-4">
       <view class="flex-1">{{ mode === 'import' ? '导入' : '导出' }} {{ currentAccount.title }} 帐单</view>
@@ -10,7 +10,7 @@
         </view>
       </block>
       <block wx:else>
-        <file-uploader id="file-uploader" class="w-48" extension="{{['xls', 'xlsx']}}" bind:change="onFileChange" disabled="{{isTaskRunning}}">
+        <file-uploader id="file-uploader" class="w-48" extension="{{['xls', 'xlsx']}}" @change="onFileChange" disabled="{{isTaskRunning}}">
           <view class="flex items-center justify-center h-full text-gray-400">
             <van-icon name="plus" size="20px" />
             <view class=" ml-2">点击选择文件</view>

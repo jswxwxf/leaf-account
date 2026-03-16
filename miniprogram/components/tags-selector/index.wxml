@@ -11,7 +11,7 @@ module.exports = {
 }
 </wxs>
 
-<van-popup show="{{ visible }}" position="bottom" closeable safe-area-inset-bottom="{{false}}" bind:close="handleClose">
+<van-popup show="{{ visible }}" position="bottom" closeable safe-area-inset-bottom="{{false}}" @close="handleClose">
   <view class="p-4">
     <view class="flex items-center justify-center relative mb-4 h-8">
       <view class="absolute left-0">
@@ -27,7 +27,7 @@ module.exports = {
         wx:key="_id"
         item="{{ item }}"
         selected="{{ tools.isSelected(item, selectedTags) }}"
-        bind:select="handleSelect"
+        @select="handleSelect"
       />
     </view>
     <view wx:else class="text-center text-gray-500 pb-6">
@@ -41,7 +41,7 @@ module.exports = {
         placeholder="新标签，点击右侧切换颜色"
         border="{{ false }}"
         use-button-slot
-        bind:change="onTagChange"
+        @change="onTagChange"
         error-message="{{ errors.name[0].message }}"
         custom-class="flex-1 input-wrapper input-wrapper--type-{{theNewTag.type}}"
       >

@@ -30,7 +30,7 @@
                 field="datetime"
                 rule="required|past"
                 show-error="{{ false }}"
-                bind:change="handleFormChange"
+                @change="handleFormChange"
                 data-field="datetime"
                 data-row-index="{{ rowIndex }}"
               />
@@ -41,7 +41,7 @@
                 field="category"
                 rule="required"
                 show-error="{{ false }}"
-                bind:change="handleFormChange"
+                @change="handleFormChange"
                 data-field="category"
                 data-row-index="{{ rowIndex }}"
               />
@@ -52,7 +52,7 @@
                 field="amount"
                 rule="requiredMoney"
                 show-error="{{ false }}"
-                bind:change="handleFormChange"
+                @change="handleFormChange"
                 data-field="amount"
                 data-row-index="{{ rowIndex }}"
               />
@@ -78,7 +78,7 @@
                 label=""
                 value="{{ bill.tags }}"
                 placeholder="输入标签"
-                bind:change="handleFormChange"
+                @change="handleFormChange"
                 data-field="tags"
                 data-row-index="{{ rowIndex }}"
               />
@@ -118,7 +118,7 @@
         <van-field
           value="{{ searchText }}"
           placeholder="在此输入检索已加载帐单备注"
-          bind:change="updateSearchText"
+          @change="updateSearchText"
           clearable
         />
       </view>

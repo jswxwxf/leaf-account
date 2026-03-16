@@ -21,7 +21,7 @@
           value="{{ monthValue }}"
           options="{{ monthOptions }}"
           popup-style="max-height: 60vh"
-          bind:change="handleDateChange"
+          @change="handleDateChange"
         />
       </van-dropdown-menu>
       <!-- 下拉菜单右侧的清除与重置按钮覆盖层 -->
@@ -41,8 +41,8 @@
     <van-field
       value="{{ searchText }}"
       placeholder="点此快捷搜索备注"
-      bind:change="updateSearchText"
-      bind:confirm="handleSearch"
+      @change="updateSearchText"
+      @confirm="handleSearch"
       confirm-type="search"
       clearable
       custom-class="!bg-transparent"

@@ -19,7 +19,7 @@ module.exports = {
 }
 </wxs>
 
-<van-popup show="{{ visible }}" position="bottom" closeable safe-area-inset-bottom="{{false}}" bind:close="handleClose">
+<van-popup show="{{ visible }}" position="bottom" closeable safe-area-inset-bottom="{{false}}" @close="handleClose">
   <view class="p-4">
     <view class="flex justify-between items-center mb-4">
       <van-button wx:if="{{ options.allowMultiple }}" type="primary" size="small" @tap="handleConfirm" custom-class="mr-4">确定</van-button>
@@ -88,7 +88,7 @@ module.exports = {
           slot="button"
           size="small"
           type="primary"
-          bind:click="handleAddNew"
+          @click="handleAddNew"
           disabled="{{ !theNewCategory.name }}"
         >
           确定

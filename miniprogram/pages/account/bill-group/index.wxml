@@ -10,7 +10,7 @@
             icon-size="16px"
             custom-class="{{ batchEditPopped ? 'batch-checkbox' : 'batch-checkbox--hidden' }}"
             value="{{ allChecked }}"
-            bind:change="toggleAll"
+            @change="toggleAll"
           >
             <text class="font-bold text-base">{{ utils.formatDateTime(item.datetime, 'YYYY年MM月DD日') }}</text>
           </van-checkbox>

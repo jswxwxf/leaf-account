@@ -1,4 +1,4 @@
-<van-popup show="{{ visible }}" position="bottom" closeable bind:close="handleClose">
+<van-popup show="{{ visible }}" position="bottom" closeable @close="handleClose">
   <view class="p-4">
     <view class="text-lg font-bold text-center mb-4 text-{{tag.type}}">编辑标签</view>
     <tag-editor

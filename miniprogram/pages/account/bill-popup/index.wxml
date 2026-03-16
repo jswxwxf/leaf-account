@@ -61,7 +61,7 @@
         <van-field
           value="{{ searchText }}"
           placeholder="在此输入检索已加载帐单备注"
-          bind:change="updateSearchText"
+          @change="updateSearchText"
           clearable
         />
       </view>

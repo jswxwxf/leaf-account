@@ -3,20 +3,20 @@
   show="{{ visible }}"
   custom-style="height: 100%; width: 100%; background-color: #000;"
   position="bottom"
-  bind:close="onClose"
+  @close="onClose"
   custom-class="overflow-y-hidden"
 >
   <!-- 顶部操作栏 -->
   <view class="fixed top-0 left-0 right-0 p-4 flex justify-between items-center z-10">
     <view class="text-white text-sm">请拖拽边框，裁切掉无关部分</view>
     <view class="flex gap-4">
-      <van-button size="small" bind:click="onClose">取消</van-button>
-      <van-button size="small" type="primary" bind:click="onConfirm">确定</van-button>
+      <van-button size="small" @click="onClose">取消</van-button>
+      <van-button size="small" type="primary" @click="onConfirm">确定</van-button>
     </view>
   </view>
   <view class="h-full flex items-center justify-center p-4 pt-28 pb-16">
     <view class="relative mt-2" style="width: {{imageInfo.width}}px; height: {{imageInfo.height}}px;">
-      <image src="{{imagePath}}" class="w-full h-full" mode="aspectFill" bind:load="onImageLoad"></image>
+      <image src="{{imagePath}}" class="w-full h-full" mode="aspectFill" @load="onImageLoad"></image>
 
       <!-- 遮罩层 -->
       <view

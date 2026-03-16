@@ -4,17 +4,17 @@
   custom-style="height: 100%; width: 50%;"
   closeable
   safe-area-inset-bottom="{{false}}"
-  bind:close="handleClose"
+  @close="handleClose"
 >
   <view class="flex flex-col w-full h-full">
     <view class="flex items-center m-2 ml-6">
-      <van-checkbox shape="square" value="{{ allChecked }}" bind:change="onAllCheckChange" />
+      <van-checkbox shape="square" value="{{ allChecked }}" @change="onAllCheckChange" />
       <view class="text-lg font-bold flex-1">选择账户</view>
     </view>
 
     <!-- 账户列表 -->
     <view class="flex-1 flex flex-col overflow-y-auto p-4">
-      <van-checkbox-group value="{{ selectedIds }}" bind:change="onAccountsChange">
+      <van-checkbox-group value="{{ selectedIds }}" @change="onAccountsChange">
         <van-checkbox
           wx:for="{{ accounts }}"
           wx:key="_id"
@@ -29,7 +29,7 @@
 
     <!-- 底部按钮 -->
     <view class="p-4">
-      <van-button type="primary" block bind:tap="handleConfirm">确定</van-button>
+      <van-button type="primary" block @tap="handleConfirm">确定</van-button>
     </view>
   </view>
 </van-popup>
