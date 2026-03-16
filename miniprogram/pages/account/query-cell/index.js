@@ -27,7 +27,7 @@ defineComponent({
       queryDropDownClosed.value = Date.now()
     }
 
-    const clearQueryData = () => {
+    const resetQueryData = () => {
       queryData.value = { ..._queryData.value }
     }
 
@@ -39,7 +39,7 @@ defineComponent({
       queryData,
       handleFormChange,
       handleExcludeChange,
-      clearQueryData,
+      resetQueryData,
       handleQuery,
       handleReset,
     }

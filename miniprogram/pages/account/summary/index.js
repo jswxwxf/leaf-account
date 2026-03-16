@@ -78,8 +78,8 @@ defineComponent({
       triggerEvent('balance-tap')
     }
 
-    function clearQueryData() {
-      selectComponent('#query-cell').clearQueryData()
+    function resetQueryData() {
+      selectComponent('#query-cell').resetQueryData()
     }
 
     // 更新 handleSearch 逻辑以使用本地 searchText 并修改全局 queryData
@@ -134,7 +134,7 @@ defineComponent({
       onBalanceTap,
       searchText,
       updateSearchText,
-      clearQueryData,
+      resetQueryData,
     }
   },
 })
