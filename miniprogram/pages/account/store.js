@@ -186,6 +186,13 @@ export default function store() {
   const queryData = ref({})
   const monthValue = ref('')
 
+  const hasQueryData = computed(() => {
+    return Object.values(queryData.value).some((val) => {
+      if (Array.isArray(val)) return val.length > 0
+      return !!val
+    })
+  })
+
   const uiState = useUIState(rawBills)
   const billsManager = useBills(rawBills, monthValue, queryData)
   const { currentAccount, error, loadAccount } = useAccount(rawBills, billsManager)
@@ -296,6 +303,7 @@ export default function store() {
     dailyBills,
     queryData,
     monthValue,
+    hasQueryData,
     loading,
     hasMore,
     loadData,

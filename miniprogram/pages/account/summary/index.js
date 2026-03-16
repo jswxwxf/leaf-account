@@ -20,6 +20,7 @@ defineComponent({
       totalIncome,
       totalBalance,
       queryDropDownClosed,
+      hasQueryData,
     } = inject(storeKey)
 
     const searchText = ref('')
@@ -114,6 +115,7 @@ defineComponent({
       totalExpense,
       totalIncome,
       totalBalance,
+      hasQueryData,
       handleDateChange,
       handleClearQuery,
       handleResetMonth,

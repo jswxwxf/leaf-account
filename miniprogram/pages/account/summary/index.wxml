@@ -27,12 +27,12 @@
       <!-- 下拉菜单右侧的清除与重置按钮覆盖层 -->
       <view class="absolute inset-0 flex pointer-events-none z-10">
         <view class="flex-1 flex justify-end items-center pr-2">
-          <view class="pointer-events-auto p-2" @tap.stop="handleClearQuery">
+          <view wx:if="{{ hasQueryData }}" class="pointer-events-auto p-2" @tap.stop="handleClearQuery">
             <van-icon name="close" color="white" size="16px" />
           </view>
         </view>
         <view class="flex-1 flex justify-end items-center pr-2">
-          <view class="pointer-events-auto p-2" @tap.stop="handleResetMonth">
+          <view wx:if="{{ monthValue === '' }}"  class="pointer-events-auto p-2" @tap.stop="handleResetMonth">
             <van-icon name="clock-o" color="white" size="16px" />
           </view>
         </view>
