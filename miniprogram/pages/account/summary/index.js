@@ -15,6 +15,8 @@ defineComponent({
     const {
       currentAccount,
       queryData,
+      setQuery,
+      clearQuery,
       monthValue,
       totalExpense,
       totalIncome,
@@ -88,7 +90,7 @@ defineComponent({
       if (!keyword) return
 
       // 所有条件置空，只保留备注
-      queryData.value = { note: keyword }
+      setQuery({ note: keyword })
       // 日期置为空
       monthValue.value = ''
     }
@@ -101,7 +103,7 @@ defineComponent({
 
     const handleClearQuery = () => {
       searchText.value = ''
-      queryData.value = {}
+      clearQuery()
     }
 
     const handleResetMonth = () => {

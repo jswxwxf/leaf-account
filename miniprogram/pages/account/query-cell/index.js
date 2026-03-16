@@ -5,7 +5,7 @@ import { storeKey } from '../store'
 defineComponent({
   properties: {},
   setup() {
-    const { queryData: _queryData, queryDropDownClosed } = inject(storeKey)
+    const { queryData: _queryData, setQuery, queryDropDownClosed } = inject(storeKey)
     const queryData = ref({ ..._queryData.value })
 
     const handleFormChange = (e) => {
@@ -23,7 +23,7 @@ defineComponent({
     }
 
     const handleQuery = () => {
-      _queryData.value = { ...queryData.value }
+      setQuery({ ...queryData.value })
       queryDropDownClosed.value = Date.now()
     }
 

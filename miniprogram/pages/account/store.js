@@ -198,8 +198,16 @@ export default function store() {
   const { currentAccount, error, loadAccount } = useAccount(rawBills, billsManager)
   const batchSelectState = useBatchSelect(rawBills)
 
-  function resetQuery() {
+  function setQuery(data) {
+    queryData.value = data || {}
+  }
+
+  function clearQuery() {
     queryData.value = {}
+  }
+
+  function resetQuery() {
+    clearQuery()
     monthValue.value = getCurrentMonth()
   }
 
@@ -304,6 +312,8 @@ export default function store() {
     queryData,
     monthValue,
     hasQueryData,
+    setQuery,
+    clearQuery,
     loading,
     hasMore,
     loadData,
