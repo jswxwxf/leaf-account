@@ -42,6 +42,8 @@
       value="{{ searchText }}"
       placeholder="点此快捷搜索备注"
       bind:change="updateSearchText"
+      bind:confirm="handleSearch"
+      confirm-type="search"
       clearable
       custom-class="!bg-transparent"
       custom-style="--cell-background-color: rgba(0, 0, 0, 0.5); --field-input-text-color: white; --cell-font-size: 14px;"
