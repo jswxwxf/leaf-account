@@ -37,3 +37,5 @@ vite.config.ts.timestamp-*.mjs
 # 本地环境配置
 miniprogram/envList.js
 project.private.config.json
+
+cloudfunctions/data-importer/db.json
