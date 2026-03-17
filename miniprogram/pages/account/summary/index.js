@@ -1,4 +1,4 @@
-import { defineComponent, inject, ref, watch } from '@vue-mini/core'
+import { defineComponent, inject, ref, watch, computed } from '@vue-mini/core'
 import dayjs from 'dayjs'
 import { storeKey } from '../store'
 import { onTabChange } from '@/utils/index.js'
@@ -76,6 +76,8 @@ defineComponent({
       monthValue.value = e.detail
     }
 
+    const isCurrentMonth = computed(() => monthValue.value === currentMonth)
+
     const onBalanceTap = () => {
       triggerEvent('balance-tap')
     }
@@ -124,6 +126,7 @@ defineComponent({
       typeOptions,
       monthOptions,
       monthValue,
+      isCurrentMonth,
       totalExpense,
       totalIncome,
       totalBalance,

@@ -32,7 +32,7 @@
           </view>
         </view>
         <view class="flex-1 flex justify-end items-center pr-2">
-          <view wx:if="{{ monthValue === '' }}"  class="pointer-events-auto p-2" @tap.stop="handleResetMonth">
+          <view wx:if="{{ !isCurrentMonth }}" class="pointer-events-auto p-2" @tap.stop="handleResetMonth">
             <van-icon name="clock-o" color="white" size="16px" />
           </view>
         </view>
