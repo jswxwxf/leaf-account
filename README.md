@@ -15,6 +15,24 @@
 - **标签系统**: 为账单添加多个标签，实现多维度管理。
 - **云端同步**: 所有数据安全地存储在云开发数据库中，实现多设备同步。
 
+## 软件截图
+
+| 帐本 | 账目 | 账目操作 |
+| :---: | :---: | :---: |
+| <img src="./screens/10-%E5%B8%90%E6%9C%AC.jpg" width="200" /> | <img src="./screens/20-%E8%B4%A6%E7%9B%AE.jpg" width="200" /> | <img src="./screens/21-%E8%B4%A6%E7%9B%AE%E6%93%8D%E4%BD%9C.jpg" width="200" /> |
+
+| 账目编辑 | 账目菜单 | 账目记账 |
+| :---: | :---: | :---: |
+| <img src="./screens/22-%E8%B4%A6%E7%9B%AE%E7%BC%96%E8%BE%91.jpg" width="200" /> | <img src="./screens/23-%E8%B4%A6%E7%9B%AE%E8%8F%9C%E5%8D%95.jpg" width="200" /> | <img src="./screens/24-%E8%B4%A6%E7%9B%AE%E8%AE%B0%E8%B4%A6.jpg" width="200" /> |
+
+| 账目图表 | 账目日历 | AI记账 |
+| :---: | :---: | :---: |
+| <img src="./screens/25-%E8%B4%A6%E7%9B%AE%E5%9B%BE%E8%A1%A8.jpg" width="200" /> | <img src="./screens/26-%E8%B4%A6%E7%9B%AE%E6%97%A5%E5%8E%86.jpg" width="200" /> | <img src="./screens/30-AI%20%E8%AE%B0%E8%B4%A6.jpg" width="200" /> |
+
+| AI记账解析 | AI记账结果 | 统计 |
+| :---: | :---: | :---: |
+| <img src="./screens/31-AI%20%E8%AE%B0%E8%B4%A6%E8%A7%A3%E6%9E%90.jpg" width="200" /> | <img src="./screens/32-AI%20%E8%AE%B0%E8%B4%A6%E7%BB%93%E6%9E%9C.jpg" width="200" /> | <img src="./screens/40-%E7%BB%9F%E8%AE%A1.jpg" width="200" /> |
+
 ## 技术栈
 
 - **前端**:
