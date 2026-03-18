@@ -65,10 +65,11 @@ export function groupBillsByDate(bills) {
  * @param {import('@/api/bill.js').Bill[]} bills - 原始账单列表
  * @param {number} totalIncome - 总收入
  * @param {number} totalExpense - 总支出
+ * @param {number} totalSaving - 总家存
  * @param {number} balance - 账户余额
  * @returns {string}
  */
-export function generateSummaryText(bills, totalIncome, totalExpense, balance) {
+export function generateSummaryText(bills, totalIncome, totalExpense, totalSaving, balance) {
   const { daily } = (bills || []).reduce(
     (acc, bill) => {
       const amount = bill.amount || 0
@@ -106,6 +107,7 @@ export function generateSummaryText(bills, totalIncome, totalExpense, balance) {
     `\n\n总收: ${formatMoney(totalIncome)}`,
     `总支: ${formatMoney(totalExpense)}`,
     `总余: ${formatMoney(balance)}`,
+    `总存: ${formatMoney(totalSaving)}`,
   ].join('\n')
 }
 

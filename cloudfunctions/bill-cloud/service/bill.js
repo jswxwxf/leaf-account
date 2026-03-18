@@ -195,6 +195,46 @@ async function buildBillQuery(event, models) {
 }
 
 /**
+ * 获取指定账户下“家存”分类的历史总金额
+ */
+async function _getSavingAmount(event, models) {
+  const { OPENID } = cloud.getWXContext()
+  const { accountId } = event.query || {}
+
+  try {
+    // 一次性查出名为“家存”的分类，然后在内存中筛选私有的或公共的
+    const { data: categories } = await db.collection('category').where({ name: '家存' }).get()
+    const category = categories.find((c) => c._openid === OPENID) || categories.find((c) => !c._openid)
+    const categoryId = category?._id
+
+    if (!categoryId) return 0
+
+    const savingsWhere = {
+      _openid: OPENID,
+      category: categoryId,
+    }
+    if (accountId) {
+      savingsWhere.account = accountId
+    }
+
+    const savingsRes = await db
+      .collection('bill')
+      .aggregate()
+      .match(savingsWhere)
+      .group({
+        _id: null,
+        total: _.aggregate.sum('$amount'),
+      })
+      .end()
+
+    return savingsRes.list[0]?.total || 0
+  } catch (e) {
+    console.error('查询家存汇总失败', e)
+    return 0
+  }
+}
+
+/**
  * 根据月份获取账单总计
  * @param {object} event - 云函数的原始 event 对象
  */
@@ -202,8 +242,15 @@ async function getBillsSummary(event, models) {
   const { minAmount, maxAmount, exclude = true } = event.query || {}
   const whereClause = await buildBillQuery(event, models)
 
+  // 统计“家存”历史总额
+  const totalSaving = await _getSavingAmount(event, models)
+
   if (whereClause.noMatch) {
-    return { totalIncome: 0, totalExpense: 0 }
+    return {
+      totalIncome: 0,
+      totalExpense: 0,
+      totalSaving: parseMoney(Math.abs(totalSaving)),
+    }
   }
 
   // 移除对 amount 的过滤，因为它会影响聚合计算
@@ -250,6 +297,7 @@ async function getBillsSummary(event, models) {
   return {
     totalIncome: parseMoney(summary.totalIncome),
     totalExpense: parseMoney(summary.totalExpense),
+    totalSaving: parseMoney(Math.abs(totalSaving)),
   }
 }
 
