@@ -15,6 +15,7 @@ defineComponent({
     const currentDate = ref()
     const totalIncome = ref(0)
     const totalExpense = ref(0)
+    const totalSaving = ref(0)
 
     const generateSummary = async () => {
       const query = {
@@ -31,10 +32,12 @@ defineComponent({
       ])
       totalIncome.value = summaryRes.data.totalIncome || 0
       totalExpense.value = summaryRes.data.totalExpense || 0
+      totalSaving.value = summaryRes.data.totalSaving || 0
       content.value = generateSummaryText(
         billsRes.data,
         totalIncome.value,
         totalExpense.value,
+        totalSaving.value,
         billsRes.account.balance,
       )
     }
