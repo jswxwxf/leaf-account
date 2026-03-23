@@ -1,4 +1,20 @@
 <wxs src="../../../utils/utils.wxs" module="utils" />
+<wxs module="tools">
+  var isTransferUnlinked = function(bill) {
+    if (!bill || !bill.category) return false
+    return (bill.category.name === '转账' || bill.category.name === '收转账') && !bill.relatedBill
+  }
+
+  var isCopyDisabled = function(bill) {
+    if (!bill || !bill.category) return false
+    return bill.category.name === '转账' || bill.category.name === '收转账'
+  }
+
+  module.exports = {
+    isTransferUnlinked: isTransferUnlinked,
+    isCopyDisabled: isCopyDisabled
+  }
+</wxs>
 
 <view class="bg-white shadow-sm mb-2" hidden="{{ bills.length === 0 }}" style="--checkbox-label-margin: 8px">
   <van-cell-group>
@@ -40,7 +56,7 @@
                 <view class="text-xs text-gray-500 overflow-hidden van-ellipsis">{{ bill.note }}</view>
               </view>
             </van-checkbox>
-            <view wx:if="{{(bill.category.name === '转账' || bill.category.name === '收转账') && !bill.relatedBill}}" class="mr-1">
+            <view wx:if="{{tools.isTransferUnlinked(bill)}}" class="mr-1">
               ⛓‍💥
             </view>
             <view wx:if="{{ bill.tags.length }}" class="flex items-end">
@@ -55,14 +71,15 @@
         </van-cell>
         <view slot="right" class="van-swipe-cell__right flex h-full">
           <view
-            class="h-full w-[64px] flex items-center justify-center text-white text-sm bg-blue-400 {{ disabled ? 'grayscale' : '' }}"
+            class="h-full w-[64px] flex items-center justify-center text-white text-sm bg-blue-400  {{ tools.isCopyDisabled(bill) ? 'grayscale' : '' }}"
             @tap="handleCopy"
             data-bill="{{bill}}"
+            data-disabled="{{tools.isCopyDisabled(bill)}}"
           >
             复制
           </view>
           <view
-            class="h-full w-[64px] flex items-center justify-center text-white text-sm bg-green-500 {{ disabled ? 'grayscale' : '' }}"
+            class="h-full w-[64px] flex items-center justify-center text-white text-sm bg-green-500"
             @tap="handleEdit"
             data-bill="{{bill}}"
           >

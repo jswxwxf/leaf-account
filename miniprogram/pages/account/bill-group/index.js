@@ -7,11 +7,7 @@ defineComponent({
     item: {
       type: Object,
       value: {},
-    },
-    disabled: {
-      type: Boolean,
-      value: false,
-    },
+    }
   },
   setup(props, { triggerEvent, selectAllComponents }) {
     const { billPopped, batchEditPopped, batchChecked, onBatchCheck } = inject(storeKey)
@@ -29,19 +25,17 @@ defineComponent({
     watch(billPopped, clearSwipers)
 
     const handleCopy = (e) => {
-      if (props.disabled) return
-      const { bill } = e.currentTarget.dataset
+      const { bill, disabled } = e.currentTarget.dataset
+      if (disabled) return
       triggerEvent('copy', bill)
     }
 
     const handleEdit = (e) => {
-      if (props.disabled) return
       const { bill } = e.currentTarget.dataset
       triggerEvent('edit', bill)
     }
 
     const handleDelete = (e) => {
-      if (props.disabled) return
       const { bill } = e.currentTarget.dataset
       triggerEvent('delete', bill)
     }
