@@ -86,18 +86,9 @@ function useUIState(rawBills) {
 
   const queryDropDownClosed = ref()
 
-  const notes = computed(() => {
-    const allNotes = rawBills.value.map((bill) => bill.note).filter(Boolean)
-    if (allNotes.length <= 1) {
-      return allNotes
-    }
-    return [...new Set(allNotes)]
-  })
-
   return {
     billPopped,
     batchEditPopped,
-    notes,
     queryDropDownClosed,
   }
 }

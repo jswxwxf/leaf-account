@@ -5,11 +5,10 @@ import Dialog from '@vant/weapp/dialog/dialog.js'
 import { parseDate } from '@/utils/date.js'
 import { onTabChange, deepCopy, generateId } from '@/utils/index.js'
 import { newBill } from '@/service/bill-service.js'
-import { storeKey, MAX_BATCH_BILLS } from '../store'
+import { MAX_BATCH_BILLS } from '../store'
 
 defineComponent({
   setup(props, { selectAllComponents }) {
-    const { notes } = inject(storeKey)
 
     const visible = ref(false)
     const list = ref([])
@@ -43,7 +42,6 @@ defineComponent({
       nextTick(() => {
         selectAllComponents('.bill-form').forEach((form) => {
           form.clearErrors()
-          form.setExtra('notes', notes)
         })
       })
       visible.value = true

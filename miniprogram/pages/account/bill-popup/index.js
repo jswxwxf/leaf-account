@@ -1,10 +1,8 @@
 import { defineComponent, ref, onReady, inject, computed } from '@vue-mini/core'
 import { onTabChange } from '@/utils/index.js'
-import { storeKey } from '../store'
 
 defineComponent({
   setup(props, { selectComponent }) {
-    const { notes } = inject(storeKey)
 
     const visible = ref(false)
     const bill = ref({})
@@ -17,7 +15,6 @@ defineComponent({
     onReady(() => {
       // 获取表单组件实例
       billForm.value = selectComponent('#bill-form')
-      billForm.value.setExtra('notes', notes)
     })
 
     let _resolve, _reject

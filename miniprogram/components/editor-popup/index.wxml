@@ -1,29 +1,15 @@
 <van-popup show="{{ visible }}" position="top" style="--overlay-background-color: rgba(0, 0, 0, 0.1)" @close="onClose">
   <view class="flex flex-col">
-    <view class="flex w-full gap-1">
-      <scroll-view scroll-y class="w-[300rpx] h-[350rpx] shadow-md bg-slate-50">
-        <view
-          wx:for="{{ notes }}"
-          wx:key="*this"
-          class="p-2 text-sm cursor-pointer hover:bg-gray-50 van-ellipsis"
-          data-note="{{ item }}"
-          @tap="onSelectNote"
-        >
-          {{ item }}
-        </view>
-      </scroll-view>
-      <van-cell-group class="flex-1">
-        <van-field
-          value="{{ text }}"
-          type="textarea"
-          custom-class="flex-1 h-full"
-          style="--field-text-area-min-height: 300rpx"
-          @change="onChange"
-        />
-      </van-cell-group>
-    </view>
-    <view class="flex justify-between items-center m-4">
-      <view class="text-xs text-gray-400">点击左侧已加载帐单备注可快速填写</view>
+    <van-cell-group>
+      <van-field
+        value="{{ text }}"
+        type="textarea"
+        border="{{ false }}"
+        style="--field-text-area-min-height: 350rpx"
+        @change="onChange"
+      />
+    </van-cell-group>
+    <view class="flex justify-end items-center m-4">
       <view class="flex">
         <van-button size="small" custom-class="w-19" @tap="onCancel">取消</van-button>
         <van-button type="primary" custom-class="w-19" size="small" class="ml-2" @tap="onConfirm">确定</van-button>

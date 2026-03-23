@@ -5,7 +5,7 @@ import { storeKey } from '../store'
 
 defineComponent({
   setup(props, { selectComponent }) {
-    const { rawBills, notes, batchChecked, clearBatchCheck, batchAllChecked, batchCheckAll } =
+    const { rawBills, batchChecked, clearBatchCheck, batchAllChecked, batchCheckAll } =
       inject(storeKey)
 
     const visible = ref(false)
@@ -41,7 +41,6 @@ defineComponent({
     onReady(() => {
       // 获取表单组件实例
       updateForm.value = selectComponent('#update-form')
-      updateForm.value.setExtra('notes', notes)
     })
 
     const show = () => {

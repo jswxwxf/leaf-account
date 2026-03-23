@@ -35,9 +35,7 @@ defineComponent({
     }
 
     async function handleIconClick() {
-      const newValue = await showEditorPopup(props.value, {
-        notes: formState.extra?.notes?.value ?? [],
-      })
+      const newValue = await showEditorPopup(props.value)
       triggerEvent('change', newValue)
     }
 
