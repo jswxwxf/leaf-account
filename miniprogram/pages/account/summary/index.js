@@ -1,8 +1,24 @@
-import { defineComponent, inject, ref, watch, computed } from '@vue-mini/core'
+import { defineComponent, inject, ref, watch, computed, onShow } from '@vue-mini/core'
 import dayjs from 'dayjs'
 import { storeKey } from '../store'
 import { onTabChange } from '@/utils/index.js'
 import { getAccountMonths } from '@/service/account-service.js'
+import { getCurrentMonth } from '@/utils/date.js'
+
+/**
+ * 生成两个月份之间所有缺失月份的选项列表，结果按最新月份在前排列
+ * @param {string} fromMonth - 起始月份（不含），格式 'YYYY-MM'
+ * @param {string} toMonth - 结束月份（含），格式 'YYYY-MM'
+ * @returns {{ text: string, value: string }[]}
+ */
+export function fillMonths(fromMonth, toMonth) {
+  const from = dayjs(fromMonth)
+  const monthsCount = dayjs(toMonth).diff(from, 'month')
+  return Array.from({ length: monthsCount }, (_, i) => {
+    const d = from.add(monthsCount - i, 'month')
+    return { text: d.format('YYYY年MM月'), value: d.format('YYYY-MM') }
+  })
+}
 
 defineComponent({
   properties: {
@@ -71,6 +87,17 @@ defineComponent({
       },
       { immediate: true },
     )
+
+    // 每次切回前台时，将列表中最近月份到当前月之间所有缺失的月份补全
+    onShow(() => {
+      const realNow = getCurrentMonth()
+      const validOptions = monthOptions.value.filter((opt) => opt.value !== '')
+      // 列表为空或最近月份已不早于当前月，无需补全
+      if (!validOptions.length || validOptions[0].value >= realNow) return
+      // 插入"全部"之后、原有月份之前
+      const [allOption, ...rest] = monthOptions.value
+      monthOptions.value = [allOption, ...fillMonths(validOptions[0].value, realNow), ...rest]
+    })
 
     const handleDateChange = (e) => {
       monthValue.value = e.detail
