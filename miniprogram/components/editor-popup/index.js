@@ -5,6 +5,7 @@ defineComponent({
   setup() {
     const visible = ref(false)
     const text = ref('')
+    const fieldKey = ref(0)
     let _resolve = null
     let _reject = null
 
@@ -15,6 +16,12 @@ defineComponent({
     const show = (initialText = '', options = {}) => {
       text.value = initialText
       visible.value = true
+      
+      // 弹窗显示后过一会儿 touch 一下 key，强制 field 重新渲染以触发 auto-focus
+      setTimeout(() => {
+        fieldKey.value = Date.now()
+      }, 100)
+
       return new Promise((resolve, reject) => {
         _resolve = resolve
         _reject = reject
@@ -49,6 +56,7 @@ defineComponent({
     return {
       visible,
       text,
+      fieldKey,
       show,
       onConfirm,
       onCancel,

@@ -1,13 +1,16 @@
 <van-popup show="{{ visible }}" position="top" style="--overlay-background-color: rgba(0, 0, 0, 0.1)" @close="onClose">
   <view class="flex flex-col">
     <van-cell-group>
-      <van-field
-        value="{{ text }}"
-        type="textarea"
-        border="{{ false }}"
-        style="--field-text-area-min-height: 350rpx"
-        @change="onChange"
-      />
+      <block wx:for="{{ [fieldKey] }}" wx:key="*this">
+        <van-field
+          auto-focus
+          value="{{ text }}"
+          type="textarea"
+          border="{{ false }}"
+          style="--field-text-area-min-height: 350rpx"
+          @change="onChange"
+        />
+      </block>
     </van-cell-group>
     <view class="flex justify-end items-center m-4">
       <view class="flex">
