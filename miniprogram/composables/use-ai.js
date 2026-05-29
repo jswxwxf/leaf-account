@@ -62,9 +62,9 @@ export function useAi() {
     wx.showLoading({ title: 'AI 解析中...' })
 
     try {
-      const model = wx.cloud.extend.AI.createModel('hunyuan-exp')
+      const model = wx.cloud.extend.AI.createModel('hunyuan-v3')
       const res = await model.generateText({
-        model: 'hunyuan-lite',
+        model: 'hy3-preview',
         messages: [
           {
             role: 'user',
