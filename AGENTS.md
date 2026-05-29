@@ -5,7 +5,8 @@
 ## 核心技术
 
 *   **前端**: `@vue-mini/core`, Tailwind CSS, Vant Weapp
-*   **后端**: CloudBase (腾讯云)
+*   **后端**: CloudBase (腾讯云)；Cloudflare Workers 作为渐进式迁移目标
+*   **Worker**: Cloudflare Workers, Hono, TypeScript, Wrangler
 
 ## AI 代理角色
 
@@ -30,3 +31,8 @@ AI 代理在不同开发场景中会参考对应的规则文件，以避免规�
 *   `rules/workflows.mdc`: 描述开发工作流程。
 *   `rules/database.mdc`: 描述云开发 CloudBase 数据库操作的专业规则。
 *   `rules/ui-design.mdc`: 描述 web/小程序等页面设计和 UI 规范。
+*   `.agents/cloudflare-rules/`: 描述 Cloudflare Workers 开发、配置、存储和平台集成规则。
+
+## 子项目说明
+
+*   `account-worker/`: Cloudflare Worker REST API 服务。该目录下的开发应优先参考 `account-worker/AGENTS.md`。
